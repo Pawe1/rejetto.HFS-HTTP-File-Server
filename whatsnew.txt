@@ -1,0 +1,1768 @@
+HFS - what's new
+
+LEGEND
+!   very important
++   new feature
+*   change
+-   bug fix
+AV  access violation
+
+#288
+- invalid usernames were displayed in the log even if the "accept any login..." option was disabled
+- "&" in file names caused problems http://www.rejetto.com/forum/bug-reports/could-not-generate-corrrect-link-with-file-name-contailing-html-entities/ 
+
+#287
+* a 169-class address is now considered worse than other local addresses
+- {.delete.} was not always working with wildcards http://www.rejetto.com/forum/italiano/messaggio-x-rejetto-~cancellamessaggi-non-funzionante-su-hfs-285-11170/
+
+#286
++ local variables available for non-connection-oriented events http://www.rejetto.com/forum/hfs-~-http-file-server/requests/
+- unexpected behavior with commands {.for.} and {.for each.} http://www.rejetto.com/forum/bug-reports/variable-showing-wrong-value/
+
+#285
++ new scripting command: get ini
++ new scripting symbol: %port%
+
+#284
+- file was still locked at [download completed] event
+- ?mode=section URLs not working with non-browsable root http://www.rejetto.com/forum/bug-reports/browse-css-and-js-lost-if-root-not-browsable/
+
+#283
++ new scripting command: delete item
++ extreme speed up of VFS loading
+* default folder for "bind root" is now the exe's folder http://www.rejetto.com/forum/hfs-~-http-file-server/feature-request-bind-root-to-where-hfs-exe-is/msg1057697/#msg1057697
+- folders named "0" was causing problems http://www.rejetto.com/forum/index.php/topic,10613.msg1056880/topicseen.html#msg1056880
+
+#282
++ TAR OEM file names introduced in #280 now turned into option (under "other options")
+- unreadable font in "accounts" http://www.rejetto.com/forum/index.php/topic,9629.msg1055351.html#msg1055351
+- "don't count as download" doesn't affect logging of "fully downloaded"
+- [upload-results] is needed but should not http://www.rejetto.com/forum/index.php/topic,9829.0.html
+- self-test doesn't say it doesn't work with https http://www.rejetto.com/forum/index.php/topic,9841.0.html
+- hanging with 100% CPU with {.get account.} and {.set account.} http://www.rejetto.com/forum/index.php/topic,10326.new.html#new
+
+#280
++ {.add to log|var=XXX.}
++ improved android compatibility with archives http://www.rejetto.com/forum/index.php/topic,9699.0/topicseen.html#msg1054287
+* "@" allowed in user name
++ {.add header.} will now overwrite previous values http://www.rejetto.com/forum/index.php/topic,10141.0.html
++ new scripting commands: start server, stop server http://www.rejetto.com/forum/index.php/topic,9577.msg1054784.html#msg1054784
+- extra white space on {.set account.} http://www.rejetto.com/forum/index.php/topic,10246.msg1055988.html#msg1055988
+- tar archives were using ANSI instead of OEM to encode filenames http://www.rejetto.com/forum/index.php/topic,9629.msg1055397.html#msg1055397
+
+#279
++ new scripting command: delete account
++ {.set item|archivable=XXX|browsable=XXX|download forbidden=XXX|files filter=XXX|folders filter=XXX.}
++ logged some more reasons for disconnections
+- reading {.cookie.} was not working http://www.rejetto.com/forum/index.php/topic,9612.0.html
+- self test slow http://www.rejetto.com/forum/index.php/topic,9621.0.html
+
+#277
++ connections %symbols% were not accessible in [on macro rename] http://www.rejetto.com/forum/index.php/topic,9542.html
++ {.set item|diff template=XXX.} http://www.rejetto.com/forum/index.php/topic,9504.msg1053747.html#msg1053747
++ scripting commands are now working in links http://www.rejetto.com/forum/index.php/topic,9546.0.html
+- AV messing with non-existant paths led to  http://www.rejetto.com/forum/index.php/topic,9504.msg1053787.html#msg1053787
+- {.add folder.} with wrong parameters could destroy the VFS http://www.rejetto.com/forum/index.php/topic,9559.html
+- some template updating problems http://www.rejetto.com/forum/index.php/topic,9564.0.html
+
+#276
++ single parameter version for {.set speed limit for address.}
++ {.get|speed limit.}
+- {.!text.} was not working in [special:import] 
+- small fixes to the default template
+
+#275
++ default template: improved usability selecting files, better IE6 compatibility, easier customization 
++ new scripting command: upload failed
++ small menu improvement http://www.rejetto.com/forum/index.php/topic,9444.html
+- delete was not working for files with character # in the name http://www.rejetto.com/forum/index.php/topic,9410.msg1053413.html#msg1053413
+- updates were automatically installed when the specific option was disabled http://www.rejetto.com/forum/index.php/topic,9418.0.html
+
+#274
++ {.get|protocolon.}
++ upload progress now displays the "time left"
+- "move" was limited to a single file http://www.rejetto.com/forum/index.php/topic,9394.msg1053241.html#msg1053241
+- fixed a browser error related to default template + stunnel http://www.rejetto.com/forum/index.php/topic,7080.msg1053291.html#msg1053291
+
+#273
++ highlighting bad login redirections http://www.rejetto.com/forum/index.php/topic,9329.html
+- upload permissions broken in build #272
+- links with "?" in the URL were not listed http://www.rejetto.com/forum/index.php/topic,9326.0.html
+
+#272
++ new scripting command: maybe utf8
+- default template: problems with "move" and non-ansi items
+- AV with junctions in uploadable folders 
+
+#271
+- VFS context menu broken in build #270 http://www.rejetto.com/forum/index.php/topic,9113.msg1052156.html#msg1052156
+- possible "error" in the port http://www.rejetto.com/forum/index.php/topic,9128.0.html
+- memory leak in {.set speed limit for connection.}
+
+#270
++ new "move" feature, requires delete and upload permission
++ new scripting alias: redirect http://www.rejetto.com/forum/index.php/topic,9105.msg1052112.html#msg1052112
++ new scripting commands: vfs to disk, break
++ redirection now works on template, not only events http://www.rejetto.com/forum/index.php/topic,9105.msg1052112.html#msg1052112
++ {.get|can upload|path=XXX.}
++ {.get|can access|path=XXX.}
+- "update automatically" broken in build #265 http://www.rejetto.com/forum/index.php/topic,9093.msg1051986.html#msg1051986
+- better recognition of UTF-8 templates
+
+#269
++ Menu > Updates > "Delay update to serve last requests"
++ accounts options now more accessible
+* forced dns update every 24 days
+- event [server start] was not working
+- {.from table|#ini.} broken in build #254
+- search was not working with non-ansi characters http://www.rejetto.com/forum/index.php/topic,9079.0.html
+
+#268
+- AV with too many accounts http://www.rejetto.com/forum/index.php/topic,9044.0.html
+- no file is sent for a permitted file request following a forbidden request of the same url. A use-the-cache message is sent instead
+- "show customized options" broken in build #267 http://www.rejetto.com/forum/index.php/topic,9047.msg1051855.html#msg1051855
+
+#267
++ {.encodeuri|add=XXX|not=XXX|only=XXX.}
++ "show customized options" now includes version
++ forced dns update every 15 days www.rejetto.com/forum/?topic=5414
+- problems with root bound to folder http://www.rejetto.com/forum/index.php/topic,8981.msg1051526.html#msg1051526
+- tray icons problem introduced in build #263 http://www.rejetto.com/forum/index.php/topic,8848.0.html
+- symbol %user% now supporting UTF-8 http://www.rejetto.com/forum/index.php/topic,8981.msg1051730.html#msg1051730
+
+#266
++ {.get|can delete|path=XXX.}
+- fixed more problems with non-ansi characters in filenames
+- browser cache support for embedded icons disabled until a fix is found
+
+#265
++ Menu > updates > revert to previous version
+* "keep old version" now enabled by default
+- Menu > log > log what > uploads : it was not saved http://www.rejetto.com/forum/index.php/topic,8843.msg1051149.html#msg1051149
+- no more log spam for Requested GET /?mode=section&id=lib.js
+- uploads were not logged on disabled "Log what > Browsing" http://www.rejetto.com/forum/index.php/topic,8843.0.html
+- the "update available" warning was stopping some background features http://www.rejetto.com/forum/index.php/topic,8220.msg1049022.html#msg1049022
+
+#264
++ new scripting commands: get item, vfs select
++ {.set item|resource=XXX.}
+- delete, rename, comment and new folder were not supporting non-ansi characters
+- /~files.lst broken in build #263 http://www.rejetto.com/forum/index.php/topic,8840.msg1051099.html#msg1051099
+- some features (e.g. custom IPs) broken in build #261 http://www.rejetto.com/forum/index.php/topic,8840.msg1051096.html#msg1051096 
+
+#263
++ new scripting command: notify http://www.rejetto.com/forum/index.php/topic,8811.msg1050942.html#msg1050942 
++ {.disconnection reason|if=XXX.}
++ URI support for scripting commands rename,copy,move
++ new scripting symbol: %stream-size% http://www.rejetto.com/forum/index.php/topic,8609.0.html
++ loading of "default.tpl" in the exe's folder
++ browser cache support for embedded icons
++ new connections monitor, now compatible with screen readers
++ {.disconection reason.} now supported in template (it was only in events)
+- {.add folder.} was not supporting real folders in specific VFS paths
+- win95 support broken in build #262 http://www.rejetto.com/forum/index.php/topic,8755.0.html
+- big archive folders may cause freezing http://www.rejetto.com/forum/index.php/topic,8775.0.html 
+
+#262
++ new template macro: js encode
++ new template feature: remembers paging user's choice
++ new template option: "paged", to disable paging for everyone
++ hints for accounts with long name
+* "B" for "bytes" removed from %total-size%, %item-size% and some other symbols http://www.rejetto.com/forum/index.php/topic,8247.msg1050616.html#msg1050616
+- mime types broken in build #260 http://www.rejetto.com/forum/index.php/topic,8459.msg1049722.html#msg1049722
+- random AV http://www.rejetto.com/forum/index.php/topic,8278.msg1049888.html#msg1049888
+- attempt to fix quitting AV http://www.rejetto.com/forum/index.php/topic,8699.0.html
+- hashed files were not working correctly with the new template http://www.rejetto.com/forum/index.php/topic,8459.msg1050184.html#msg1050184
+
+#260
++ new default template
++ added "switch to easy/expert mode" for screen readers
+* {.play system event.} renamed to {.play.}
+- macros.log was never cleared
+
+#259
+- problems with folder sorting http://www.rejetto.com/forum/index.php/topic,8324.msg1049380.html#msg1049380
+
+#258
++ {.get|agent.} now supports iPhone, iPod, iPad, Chrome and generic WebKit browsers
++ log record for external address change (you can disable it by "other events")
++ new event [pre-filter-request] http://www.rejetto.com/forum/index.php/topic,8320.msg1049250/topicseen.html#msg1049250
+* "show customized options" will not list last-external-address and dynamic-dns-host
+* filelists sorting was disabled, and is now enabled http://www.rejetto.com/forum/index.php/topic,8313.0.html
+- {.get|uri.} was ignoring any parameter after a parameter not in the form X=Y 
+
+#257
+- error on quit introduced in build #256 http://www.rejetto.com/forum/index.php/topic,8274.msg1049007.html#msg1049007
+- multiline comments not correctly stored in hfs.comments.txt and descript.ion
+
+#256
+- {.delete.} didn't support file masks when parameter bin was set to false
+- "minimum disk space" broken in build #255
+- "enables macros.log" had become very slow in recent builds
+
+#255
++ items counting while switching from real folder to virtual folder (just as for adding a folder)
++ icon-masks-user-images now excluded from the "show customized options"
++ macros.log now in html format
++ {.get account|XXX|exists.}
++ {.get account|XXX|password is|YYY.}
++ alternative method to get archive: ?mode=archive instead of ~folder.tar (will be deprecated in the future)
+* removed support for deprecated %linked-accounts% and old format {.set item.}
+- misbehaviour for disk space limit http://www.rejetto.com/forum/index.php/topic,8250.0.html
+- you couldn't enter new symbol "lan" in the bans' page
+
+#254
++ new template macro: chr, var domain
++ {.dir|separator=XXX.}
++ {.get account|XXX|password.}
++ "lan" symbol for address masks
+* "auto-hide empty folders" was badly affecting folder searches http://www.rejetto.com/forum/index.php/topic,8159.0.html
+- holding CTRL at startup was not working for second instances
+- sort by extension is not applied to folders anymore http://www.rejetto.com/forum/index.php/topic,8210.0.html
+- files and folders starting with "n" could have problems 
+
+#253
++ new template macro: dir, disk free, filetime, file changed, load tpl
++ {.get|tpl file.}
+- {.current downloads.} parameters 'user' and 'ip' were inverted
+- connections box was not compatible with large system fonts  
+
+#252
++ {.between.} now works also with inverted min-max 
+- solved some problems with large system fonts
+- automatic update check broken in build #251 http://www.rejetto.com/forum/index.php/topic,7970.0.html
+
+#251
++ new macro alias: between, 123 if 2
++ command line parameter -c to set configuration directly on the command line
++ bans: sort button
+- attempt to fix a problem with breadcrumbs on search
+- attempt to fix problem with non-ansi folders and proxies http://www.rejetto.com/forum/index.php/topic,7837.0.html
+- default template: file list was not compatible with searches http://www.rejetto.com/forum/index.php/topic,7939.new.html
+- speed limit for single address wasn't working with folder archives http://www.rejetto.com/forum/index.php/topic,7900.0.html
+
+#250
++ new template macro: save cfg, save vfs
+- self-test was blocked by ban rules http://www.rejetto.com/forum/index.php?topic=7048.new#new
+- timestamps within real folders broken in build #249 http://www.rejetto.com/forum/index.php/topic,7793.msg1047504.html#msg1047504
+
+#249
++ parameter "var" for {.urlvar.} {.postvar.} {.replace.}
+* {.regexp|replace=XXX|var=YYY.} will store result in variable YYY
+* text coming from the http request and containing macros will not be just discarded but encoded http://www.rejetto.com/forum/index.php/topic,7724.0.html
+- problems appending to [section] of the template, from a diff template http://www.rejetto.com/forum/index.php/topic,7765.msg1047264.html#msg1047264
+- problems with bad timestamps files http://www.rejetto.com/forum/index.php?topic=7717.msg1047040#msg1047040
+
+#248
++ "view http header" will now show even incomplete http headers
+* by default descript.ion and *.md5 files cannot be uploaded
+- {.substring.} could not include right delimiter http://www.rejetto.com/forum/index.php?topic=7664
+- hanging on webdav requests
+- {.load.} will not quote the loaded data if it's put in a variable
+- {.save|var=XXX.} was saving wrong stuff if the variable didn't exist
+
+#247
++ new event [file deleting] with symbol %item-deleting% http://www.rejetto.com/forum/index.php?topic=7492.0
++ new template macro: quote http://www.rejetto.com/forum/index.php?topic=7537.msg1046443#msg1046443
+* [special:begin] is no more prepended to the output page http://www.rejetto.com/forum/index.php?topic=7625
+* macros no more allowed for internal comments http://www.rejetto.com/forum/index.php?topic=7537.msg1046562#msg1046562
+- %item-relative-folder% was wrong when applied at root www.rejetto.com/forum/?topic=7464
+- some problems with the template engine
+- macro command to set comments was not working correctly with descript.ion http://www.rejetto.com/forum/index.php?topic=7537.msg1046474#msg1046474
+
+#246
++ new template macro: get account http://www.rejetto.com/forum/index.php?topic=7434.msg1046060#msg1046060
++ {.delete|bin=XXX.}
+* %linked-accounts% is now deprecated - use {.member of.}
+* {.set account.} can now work with empty username (the current one is considered)
+- %item-dl-count% for folders broken in #245
+- occasional errors retrieving external IP address www.rejetto.com/forum/?topic=7362
+- wrong error message on a failed {.rename.} www.rejetto.com/forum/?topic=7463
+
+#245
++ new template macros: exists, is file www.rejetto.com/forum/?topic=7437
++ URI support in {.mkdir.} http://www.rejetto.com/forum/index.php?topic=7453.msg1046000#msg1046000
+- {.add folder.} broken in build #244
+
+#244
++ new symbols %old-name% and %new-name% for event [on macro rename]
++ running a {.rename.} during [on macro rename] won't fire the event again (but you can override this with parameter "recursive")
++ {.add folder|overwrite=XXX.}
++ {.regexp|replace=XXX.}
+- the pattern in {.regexp.} can now be {:quoted:} so that you can use the pipe "|"
+- {.regexp.} was sometimes failing
+- {.from table|#ini.} was not handling correctly the "no" values
+- total in/out were not reset with "reset totals"
+
+#243
++ {.set|mode=XXX.}
++ new event [on macro rename] www.rejetto.com/forum/?topic=7291
+* {.add folder.} will now replace any existing folder with same name
+- after searching for files, archive was not applying to results (again!) http://www.rejetto.com/forum/index.php?topic=7063.msg1045142#msg1045142
+- archiving and deletion was not working for file with "+" in the name www.rejetto.com/forum/?topic=7293
+
+#242
++ {.exec|out=XXX|timeout=YYY.}
++ new {.set item.} version, check documentation
+* {.is substring.} not deprecated anymore, but obsolete and now alias of {.pos.}
+- tray icon menu won't disappear, broken in build #241
+
+#241
++ {.add to log.} supports more color formats
++ new template macro: focus
++ direct access to "Tray icon for each download" from clicking
++ the TAR format is more standard compliant (is it?)
++ new event [file deleted] with symbol %item-deleted%
++ Log Menu > "Tabbed instead of multi-line for the log file" http://www.rejetto.com/forum/index.php?topic=6904.msg1042953#msg1042953
++ {.cut|var=XXX|to=YYY.}
++ {.set|var=XXX.}
++ {.set append|var=XXX.}
+* left clicking on the download tray icon will popup the menu, just as the right click used to do
+* renamed {.pos|ofs.} in {.pos|from.}
+* {.is substring.} deprecated - use {.pos.}
+
+#240
++ {.load|XXX|from=|to=|size=.}
++ in template and scripting {:|:} is replaced by |
++ new template macro: no pipe, filepath
+- auto loading at start a VFS that was deleted, was erroneously warning of file corruption
+- {.exec.} broken in build #232 http://www.rejetto.com/forum/index.php?topic=6964.msg1043276#msg1043276
+- at [upload completed] time, the uploaded file was still locked http://www.rejetto.com/forum/index.php?topic=6964.msg1043258#msg1043258
+- {.get|url.} broken in build #238 www.rejetto.com/forum?topic=6992
+- {.clipboard|XXX.} displayed a bogus error
+
+#238
++ Menu > Debug > Show memory usage
++ faster self-test
++ "temporarily reset options" will keep accounts
++ new template macro: clipboard
+- fixed a memory leak on scripts execution
+- log deletions option was not saved
+- after searching for files, archive was not applying to results http://www.rejetto.com/forum/index.php?topic=6906.msg1043070#msg1043070
+- attempt to fix problems with system shutdown www.rejetto.com/forum/?topic=6955
+
+#237
++ address masks support form 1.2.3.4/5 http://en.wikipedia.org/wiki/CIDR#CIDR_blocks
++ Log menu -> Log what -> Deletions
++ apply button in file properties
++ {.delete|XXX|forced=1.}
++ {.save|XXX|var=YYY.}
++ {.section|XXX|back=YYY.}
++ {.breacrumbs|XXX|from=YYY.}
++ new template macros: cache, regexp
++ %item-type% in [file] [folder] [link]
++ breadcrumbs in search result
+- event [start] was not working
+- sometimes a white blank icon near "open in browser"
+- could not delete folders over junctions www.rejetto.com/forum/?topic=6889
+- it was not possible to empty a [section] with diff templates
+- {.set table.} was not working at first time for multilines values
+- {.section.} didn't work in most event scripts
+
+#235
++ initial junction points support http://www.rejetto.com/forum/index.php?topic=6870.msg1042608#msg1042608
++ no more archive error
++ Menu -> Other options -> "Change port..." 
+* {.disconnection reason.} in event [download] will result in page [deny] instead of [max contemp downloads]
+* {.disconnection reason.} message is now displayed on the browser http://www.rejetto.com/forum/index.php?topic=6874.msg1042597#msg1042597
+- unix time format was not working for {.cookie.}
+- {.disconnection reason.} was not working for event [request]
+- it was possible to download as folder archive, files protected by the "no download" flag
+
+#234
++ global variables http://www.rejetto.com/forum/index.php?topic=6849.0;topicseen
++ new template macro: cookie, while
++ new events: server start, server stop
++ [section|private] to make the section not reachable by the browser http://www.rejetto.com/forum/index.php?topic=6835.0
++ {.length|var=xxx.}
+- several memory leaks
+- event [unauthorized] was not fired for login http://www.rejetto.com/forum/index.php?topic=6843.0 
+
+#232
++ {.exec|program|out=xxx.} will capture the output in variable xxx
++ timed events http://www.rejetto.com/forum/index.php?topic=6588.msg1042304#msg1042304
++ new events: request completed, download completed http://www.rejetto.com/forum/index.php?topic=6744.msg1042286#msg1042286
+* renamed "Address 2 name" -> "Assign name to address"
+- "temporarily reset options" was switching off the server
+- {.member of.} was wrong sometimes www.rejetto.com/forum/?topic=6822
+- {.postvar.} was not working with multi-line texts
+- AV clicking on "address 2 name" http://www.rejetto.com/forum/index.php?topic=6792.msg1042236#msg1042236
+- flaws in diff template concatenation http://www.rejetto.com/forum/index.php?topic=6828.msg1042284#msg1042284
+- accessing /~section was not working for sections contained in diff templates
+- {.member of.} was not working for group-in-group http://www.rejetto.com/forum/index.php?topic=6822.msg1042289#msg1042289
+
+#231
++ default template will warn the user if it is interrupting an upload 
+- archive was not working with sub-folders of real folders www.rejetto.com/forum/?topic=6773
+- possible AV on quit http://www.rejetto.com/forum/index.php?topic=6764.msg1041907#msg1041907
+- AV with some script events http://www.rejetto.com/forum/index.php?topic=6764.msg1041814#msg1041814
+
+#230
+! in April 2009 i will remove macros {.current downloads by user.} and {.current downloads for file.}  Please update your scripts to use just {.current downloads.}
++ new template macro: current downloads, set ini
++ {.set account|name|notes=xxx.}
++ {.set account|name|notes key=xxx=yyy.}
++ new events: [upload name] [archive name] www.rejetto.com/forum/?topic=6740
++ new tabbed format for the regular log http://www.rejetto.com/forum/index.php?topic=6719.msg1041763#msg1041763
+* .bak files are now used also in case the original file is missing http://www.rejetto.com/forum/index.php?topic=6753.msg1041713#msg1041713
+- "temporarily reset options" was not affecting event scripts
+- {.time|dddd.} was not supporting utf-8 http://www.rejetto.com/forum/index.php?topic=6696.msg1041458#msg1041458
+- %folder% was not working in event scripts 
+
+#229
++ improved Windows links support (again)
++ new parameter "comment" for {.set item.}
++ new event script: [unauthorized] www.rejetto.com/forum/?topic=6719
++ new template symbol: %password% (the one supplied by the browser, not necessarily the correct one)
+- fixed compatibility problem with MS ISA 2004 firewall www.rejetto.com/forum/?topic=6711
+- "ignore limits" was applied only to new connections http://www.rejetto.com/forum/index.php?topic=6706.msg1041487#msg1041487
+
+#228
++ {.from table|$section|key.} will now work on [sections] as it did for variables
++ improved Windows links support (*.lnk)   
++ new template macro: set table
+* {.get|can archive.} even in [file] will always refer to the folder. Use {.get|can archive item.} instead 
+- {.time.} broken in build #223 www.rejetto.com/forum/?topic=6696
+- virtual files inside real folders were not working with folder archive
+- single files could be downloaded via folder archive without necessary permissions
+- file properties graphical glitches http://www.rejetto.com/forum/index.php?topic=6689.msg1041183#msg1041183
+
+#226
++ %build-time% in other pages
++ now you can archive even search results
++ URL parameter "nofolders" for folder archives http://www.rejetto.com/wiki/index.php/HFS:_URL_parameters
+- folder archive was not always working with spaces http://www.rejetto.com/forum/index.php?topic=6689.msg1041162#msg1041162
+- fixed some problems with the default template http://www.rejetto.com/forum/index.php?topic=6689.msg1041110#msg1041110
+- {.add to log.} was not working without optional color parameter
+
+#225
++ selective folder archive
++ new template section [special:alias] http://www.rejetto.com/forum/index.php?topic=6635.msg1040986#msg1040986
+- problems installing templates http://www.rejetto.com/forum/index.php?topic=6678.msg1041056#msg1041056
+
+#224
++ new template macro: pos, var length
++ new parameters 'include' and 'case' for {.substring.}
++ new template symbol: %bread-idx%
++ new event script: [download name] www.rejetto.com/forum/?topic=6657
++ by specifying [+section] instead of [section], the new text will not overwrite a previously existing [section] but will be appended 
+* {.substring.} is now case insensitive by default
+* no more {.trunc.} use {.substring||.|number.} instead
+- {.time.} broken in build #223 
+
+#223
++ new template symbols: %now% %item-added-dt% %item-modified-dt%
++ {.time.} supports new parameter "when" to use a different time than the current one
++ new template macro: trunc
+- solved some problems when adding many single files 
+- "open it" was not working if the path had spaces http://www.rejetto.com/forum/index.php?topic=6632.msg1040608#msg1040608
+- sometimes the editor didn't run http://www.rejetto.com/forum/index.php?topic=6632.msg1040616#msg1040616
+- deletion and {.postvar.} broken in build #222 http://www.rejetto.com/forum/index.php?topic=6632.msg1040575#msg1040575
+- deletion never worked with some features enabled http://www.rejetto.com/forum/index.php?topic=6632.msg1040575#msg1040575 
+
+#222
+- "%%" will hang the template
+- remotely deleting files will create an empty descript.ion (since build #221) 
+- ghosts of post variables were hunting our macros http://www.rejetto.com/forum/index.php?topic=6570.msg1040545#msg1040545
+- fixed (once again!) "x-forwarded-for" support http://www.rejetto.com/forum/index.php?topic=5811.msg1040394#msg1040394
+- installation of RAWR template was broken in build #221 (because of a bug in {.add folder.} http://www.rejetto.com/forum/index.php?topic=6616.msg1040538#msg1040538  
+
+#221
++ Menu -> Debug -> "Run script..."
++ Account notes (and related %user-notes%)
++ {.add folder.} always added to the root. Now (by default) to the current folder, but you can specify where by entering the full VFS path within the name
++ new {.get|stop spiders.}
++ new template macro: add to log
++ fingerprint and comment are delete when a file is deleted via web
+* account link renamed to "member of"
+* {.account linked.} renamed to {.member of.}
+* {.set account|group.} renamed to {.set account|is group.}
+* {.set account|link.} renamed to {.set account|member of.} 
+- once-real-now-virtual-folders continued to devolve their past upload permissions http://www.rejetto.com/forum/index.php?topic=6504.msg1040094#msg1040094
+- accounts: rename and ENTER, without any change, broken in recent build http://www.rejetto.com/forum/index.php?topic=6578.msg1040081#msg1040081
+
+#220
+- security fix: groups were allowed to login http://www.rejetto.com/forum/index.php?topic=6550.msg1039964#msg1039964
+- setting same name for 2 accounts was not prevented http://www.rejetto.com/forum/index.php?topic=6550.msg1039964#msg1039964 
+- there was a problem that prevented usage of telnet www.rejetto.com/forum/?topic=6517
+- some problems with diff tpl www.rejetto.com/forum/?topic=6508
+- {.set item.} was not accepting @special usernames http://www.rejetto.com/forum/index.php?topic=6097.msg1039938#msg1039938
+- permissions were not correctly inherited and displayed in hints www.rejetto.com/forum/?topic=6504
+- ugly bug of the default template on uploads http://www.rejetto.com/forum/index.php?topic=6484.msg1039325#msg1039325
+- blank spaces prevented {.set item.} to recognize accounts http://www.rejetto.com/forum/index.php?topic=6484.msg1039628#msg1039628
+- problems after closing "manage accounts" in file properties
+
+#219
++ easier way to restore options after "temporarily reset options"
+- big security problem only for Win95/98/ME (not others): directory crossing www.rejetto.com/forum/?topic=6542
+- {.mime.} was not working
+- file properties: "add new" icon was enabled for root
+
+#218
++ new template macro: current downloads of file
+- "manage user accounts" proper moving resizing dialog
+- "speed limit for single address" didn't apply sometimes
+- {.add header.} didn't work properly www.rejetto.com/forum/?topic=6481
+  
+#217
++ shortcut to accounts from file properties
+- rename broken in build #216
+- new-line missing for empty folders in file listing http://www.rejetto.com/forum/index.php?topic=6403.msg1038897#msg1038897 
+
+#216
++ {.get|accounts.} can now filter groups and non-groups
++ {.set item.} can now set permissions
++ dynamic dns: "custom" will refuse https urls
++ plain text format is supported for username:password loading accounts from the ini file www.rejetto.com/forum/?topic=6337 
+* "stop spiders" is ON by default (again! was disabled in build #168)
+- fixed (again!) "x-forwarded-for" support http://www.rejetto.com/forum/index.php?topic=6371.msg1038556#msg1038556
+- attempt to fix AV on quit www.rejetto.com/forum/?topic=6383
+- save log had extension .tt instead of .txt
+- solved some AVs on quit
+
+#215
++ support for "x-forwarded-host" www.rejetto.com/forum/?topic=6327
++ network handler improved (some strange old problems may disappear)
++ parameters for {.disconnect.}
++ new template symbols: %item-ip% and %item-port% in [progress-upload-file] and [progress-download-file]
++ %item...% symbols working in event [upload completed] http://www.rejetto.com/forum/index.php?topic=6154.msg1037630#msg1037630 
+- fixed "x-forwarded-for" support www.rejetto.com/forum/?topic=6292
+
+#214
+* removed the "do error" function
+- endless freezing on requests with accounts (broken in build #213)
+- adding files via command line did not always work www.rejetto.com/forum/?topic=6316
+
+#213
+! Please BACKUP your VFS: this version will convert anyone/any account permissions, and they won't work if you revert to an older build. 
+* "anyone" permission available again
+* wordwrap again, in file properties
+* moved "icon" menu to file properties
+* "Backup on save" is now ON by default (you are invited doing it on your current configuration)
+- "new account" in properties didn't work
+- workaround for IE7 that most times will solve the "underscore_instead_of_spaces" problem www.rejetto.com/forum/?topic=6275 
+
+#212
++ scrollbars for diff tpl and comment
++ now you can alt+click to open file properties
++ as you open file properties, pressing a number 1..6 will instantly access the corresponding tab 
+* all other windows appears at the center of the main window
+- "anonymous" (and thus older "anyone") was not working for UPLOAD and DELETE permissions
+- some values in the file properties were lost 
+
+#211
++ File Menu -> "Properties..."
++ Log menu -> "Max lines on screen..."
+* the "anyone" in file permissions is no more: you can get it by enabling both "any account" and "anonymous" 
+- renaming accounts was not updating upload permissions
+- account redirection to ~upload was not working
+
+#209
+* nicer permission menus
+- "Max sim. downloads from single address" broken in recent build 
+- erroneous handling of null chars in the URL
+- problems with multiple versions and run-on-startup www.rejetto.com/forum/?topic=6236
+- accounts sorting is no more case sensitive
+
+#208
++ reorder accounts with drag&drop
++ new template macros: mkdir, add header
++ add files/folder dialog will automatically place on the last used folder, even if hfs has been quitted in the while
+* event script [download] is executed even when the download is going to be aborted for limits, so you can cancel and let it pass   
+- minor fixes on groups
+- running "path\hfs.exe relativepath\file.vfs" was not working
+
+#207
++ new template macros: account linked, move, copy, current downloads by user, disconnection reason 
++ new template symbol: %linked-accounts% %number-users% %number-users-downloading%
++ accounts: up/down/sort buttons 
+- renaming a group would not update links in other accounts
+- misbehaviour on deleting an account, and then cancelling
+
+#206
++ in {.set account.} added parameters group, link, link add, link remove
++ group icons in accounts panel
++ accounts: select groups facility 
+
+#205
++ account linking: an account can be linked to another, inheriting permissions (an easy way to get groups)
++ new template macros: new account, set account, get|accounts
++ added F7 shortcut for accounts
++ a way to give access/upload to any account
+- "set user/pass" broken in build #204 
+
+#204
++ Folder menu -> "Delete permissions"
+* renamed "Upload" -> "Upload permissions"
+* disabled accounts' credentials were accepted for unprotected resources, now are not (just a formal thing, not a security problem) 
+- solved a no-ip compatibility issue www.rejetto.com/forum/?topic=6177
+- sometimes {.delete.} would not work
+- "No download" broken in build #202
+- "hide file extension" broken few builds ago www.rejetto.com/forum/?topic=6187
+- "Browse it" broken in build #191 for URLs with "%" (like blank spaces) 
+
+#203
++ Options -> MIME types -> "Open directly in browser when MIME type is defined"
++ Options -> Accounts -> new "upload" box preview
++ Options -> Tray message -> new preview box  
++ Menu -> Other options -> "Edit event scripts..."
++ event scripts: new [start] [quit] [upload failed]
+- "Hide file extension" broken in build #202    
+
+#202
++ File menu -> Advanced -> Purge
++ Event scripts: associate your macros-script to an event www.rejetto.com/forum/?topic=6154 
++ new template macros: set speed limit for address, set speed limit for connection, disconnect 
+* when an automatically checked update is refused, it is not offered again next day  
+* Menu -> "Donate!"
+* some commands are now visible only in expert-mode
+* when changing the IP address from the menu, the url will be automatically copied to the clipboard
+- if user/pass restriction was set on a file, accounts on the same file were not considered
+- the problem addressed in build #199 is now solved also with regular folder pages www.rejetto.com/forum/?topic=6097
+- {.chdir.} was not working
+
+#201
+- "add2log" bug introduced in build #200
+
+#200
++ new template macros: exec chdir
++ new template symbol: %cwd% (current working directory of HFS process)
++ little improvements on file sorting (tpl side)
+- "enable macros" was affecting also %symbols%, while it shouldn't
+
+#199
++ Menu -> HTML template -> "Enable macros"
++ "Restore default" template disabled when template is not customized
++ show header(x-forwarded-for) instead of IP, but only if IP in a customizable ip-mask (127.0.0.1 by default) www.rejetto.com/forum/?topic=5811
+* Renamed "Quit without asking to save" -> "Force quitting (no dialogs)" 
+- menu with IE broken in build #198
+- ini command "load-tpl-from" now works as "change file" for template
+- error pages used resources not necessarily available www.rejetto.com/forum/?topic=6097
+
+#198
+- bug of the "save file system?" www.rejetto.com/forum/?topic=6084
+
+#197
++ new parameter "not as download" for macro "set item"
+- IE compatibility broken in build #195 or #196
+- IE6 refresh problem should be now fixed www.rejetto.com/forum/?topic=5376
+
+#196
++ optional precision for {.round.}
++ new template macro: md5 file
+- "edit template" not working in case no tpl editor was defined by user 
+
+#195
++ new template macros: calc, round
+* left click on tray icon brings the window to front
+- connections box font color was broken few builds ago www.rejetto.com/forum/?topic=6049
+
+#194
++ adding an "upload" folder suggest proper settings
+- apache log format broken in build #193
+- problems opening weblinks with internet explorer  
+
+#193
++ apache log format improved (more symbols, conditions, parameters)
+- MIME types would not work with blank spaces in file masks
+
+#192
++ template installation through drag&drop
++ new template macro: mime
+- "Edit" broken in build #191 (didn't work with spaces in the editor path)
+- "Browse it" wasn't working with links http://www.rejetto.com/forum/index.php?topic=6010.msg1035702#msg1035702
+- "hints for newcomers" has been extended to more hints    
+
+#191
+- "clipboard" error message should be solved
+- "adding folder" setting wasn't working adding multiple folders www.rejetto.com/forum/?topic=5782
+- solved an AV problem while deleting crowed folders, and switching to real/virtual folders www.rejetto.com/forum/?topic=5782
+- "open in browser" was not working with some settings (it happened to me with firefox3)
+
+#190
++ "copy to clipboard" button near the URL, changing in "already in clipboard" when it is so
+- connections panel broken in build #189
+
+#189
++ log toolbar: button to copy to editor only matched lines
++ default template editor is notepad++ (if installed) instead of notepad
+- UTF-8 support broken in build #188 http://www.rejetto.com/forum/index.php?topic=6001.msg1035602#msg1035602
+- problem with default template editor (notepad) and Vista http://www.rejetto.com/forum/index.php?topic=6001.msg1035615#msg1035615
+- graphical glitches introduced in build #188
+
+#188
++ external template editor (internal one is no more) www.rejetto.com/forum/?topic=5034
++ collapsed log toolbar
+- {.$section.} was not compatible with "|" and "=" operators (options and alias)
+- renaming a user account didn't update the VFS permissions http://www.rejetto.com/forum/index.php?topic=5795.msg1034617#msg1034617
+- was not possible to upload file with ";" in the name
+- AV on {.set item|/unexisting file.} http://www.rejetto.com/forum/index.php?topic=5983.msg1035598#msg1035598
+
+#187
++ inline layout for log toolbar
++ new template macros: dialog encodeuri decodeuri
+- for range "0-0" it was sent the whole file instead of the first byte
+- the [style.user] trick was not applied to all the pages http://www.rejetto.com/forum/index.php?topic=5952.msg1035285#msg1035285
+- vfs loading could jam www.rejetto.com/forum/?topic=5979  
+
+#186
++ external file "hfs.ips.txt" used only for 50+ IPs (for less, ini file is used)  
+* double slash in URL ignored (Apache behaviour)
+- sometimes configuration files get losts (hope this fixes it)
+- "minimum disk space" not working when using HFS on removable drives
+- trying to restore some compatibility with NT4 and 95 www.rejetto.com/forum/?topic=5758
+- pendrive support wasn't applied by "edit resource"
+
+#185
++ remembers trusted VFS files
+
+#184
++ new symbol %item-user% available in [progress-download-file] and [progress-upload-file] reporting the username used for the connection www.rejetto.com/forum/?topic=5789
+* root diff template is always applied to special root pages like /~progress 
+* macros in diff templates inside the VFS are allowed again - a warning is issued if they contain macros 
+* {.replace.} and {.count substring.} will work with blanks
+* filenames containing macro markers are allowed 
+- {.for.} and {.foreach.} were broken in build #180
+- couldn't load some files with read only attribute
+- sometimes it was reported "options saved" when they were not
+
+#183
++ URI and URL support in {.filesize.}
+- absurd bug introduced in build #182
+
+#182
+- AV on every connection, introduced in build #181
+
+#181
++ URI support in {.save.} and {.append.}
++ now also external template files should be converted to the new syntax
++ disallowed some bad filenames like . .. {. | .}
++ new template macro: any macro marker 
++ macros are allowed to be loaded through {.load.} and {.section.} if the file resides in the hfs folder
++ "addresses ever connected" moved to external file hfs.ips.txt, and hopefully fixed performance problems with many addresses www.rejetto.com/forum/?topic=5716
+* [special:begin] now applies to other pages as well
+- {.postvar.} was not working with utf-8
+
+#180
++ Menu -> Other options -> "Prevent system standby on network activity" www.rejetto.com/forum/?topic=5694 
++ per-folder default sorting http://www.rejetto.com/forum/index.php?topic=5656.msg1033337#msg1033337
+* new template macros syntax (automatically converted)
+* re-enabled macros in diff templates, added a warning at loading
+- diff templates broken in build #178 (again)
+- some problems automatic updates
+- {{delete}} broken in build #179
+- warning shown also when removing restriction from links www.rejetto.com/forum/?topic=5603
+
+#179
++ safer template macros execution
+* {{delete}} moves to recycle bin 
+- diff templates broken in build #178
+- wrong template parsing for dinamically generated macro quotings www.rejetto.com/forum/?topic=5641
+- removed <?tpl syntax introduced in build #176 :-(
+
+#178
++ new template macro: for each 
++ URI support in {{load}}
++ support for paths . and .. in {{add folder}}
++ support for multiple substitutions in {{replace}}
+* DNS updater: lowered frequency of external IP check     
+- {{substring}} was returning whole string when first pattern was not found
+- possible memory leak in {{set item}}
+- possible macro injection in comments  
+- {{delete}} required unnecessary extra parameter
+- NT4 incompatibility with automatic updates
+- automatic backup restoration on VFS corruption was not working
+- wrong template parsing of "[unclosed section"
+- erroneous loading of diff templates from subfolders of a real folder www.rejetto.com/forum/?topic=5605
+- {{from table}} was not synced to variable content www.rejetto.com/forum/?topic=5620
+- using special characters in username led to hanging connections http://www.rejetto.com/forum/index.php?topic=5573.msg1033030#msg1033030
+
+#177
+- missing ":" in host, broken in build #176 
+
+#176
++ {{load}} can load directly in a variable
++ {{!}} now searches also in variable special:string before section special:strings
++ "hide tree" in {{set item}}
++ new template macro: play system event
++ new syntax mode for macros <?tpl {macros} tpl?>  http://www.rejetto.com/forum/index.php?topic=5531.msg1032530#msg1032530  
++ named parameters for {{load}}
+* %user% in log file name is empty when there's no username (it was a pair of parenthesis before) 
+- misbehaving template parser
+- the "line break less in sections" was not applied to last section
+- prevent XSS over %host% and %user%
+- AV on very long file paths
+- AV on httpEvent(6) introduced in build #171
+
+#174
++ new template macros: add folder, set item, postvar, delete, rename, random number
++ [special:import]
+* please change your [section|nolog] to [section|no log] (old version will be supported for few weeks more)
+* {{repeat}} now dequoting
+- macros were unable to expand to multiple macro parameters www.rejetto.com/forum/?topic=5353.msg1032381#msg1032381
+
+#171
++ new template macro: force ansi
+- unicode problems with comments on upload http://www.rejetto.com/forum/index.php?topic=5411.msg1031480#msg1031480
+- removable drives error www.rejetto.com/forum/?topic=5018 + www.rejetto.com/forum/?topic=5029
+- upload with unicode filenames reports a false positive www.rejetto.com/forum/?topic=5322
+- self test was not compatible with "no port" option www.rejetto.com/forum/?topic=5211
+- infix macros were not working with both operands blank   
+- small file upload bug www.rejetto.com/forum/?topic=5044
+
+#169
++ new template macro: save
++ Menu -> Other options -> "Enable macros.log"
+- "stop spiders" wrongly disabled
+- %sym-section% was broken in build #166
+- speed graph and download tray icon broken in a recent build
+
+#168
++ new template macros: set append, dequote, after the list, from table
++ predefined macro variable "ini" with current configuration (meant to be used with {{from table}} )
++ 64bit instead of 32bit integers in macros
+* characters ;|^,{} are no more encoded in URLs 
+- problems with javascripts containing }}
+- wrong disconnections due to false inactivity building the page 
+- even not showing hidden/system files, access was granted http://www.rejetto.com/forum/index.php?topic=5324.0
+- first parmeter for {{!}} was not working 
+
+#167
+- fixed %host% and %archive%
+- searching * was not working
+
+#166
++ Menu -> Limits -> Speed limit for single address
++ improved macro error handling
++ new template macro: convert
++ new template symbol: %item-icon%
+- fixed broken unicode support for folder comment introduced in build #165   
+
+#165
++ new parameters for {{get}}: is new, can access
++ new template macros: breadcrumbs dec
++ {{and}} and {{or}} now works the pythonic way
++ customize the default template by putting a [style.user] section in the diff template of the root
++ optional parameter for {{!id}}
++ %folder-item-comment% has the same value of %item-comment% in [folder-comment]
+- nested macro quoting was not supported
+- %folder-resource% was not always working
+- {{inc}} was not working with 1 parameter
+- no more /~style flooding the log
+
+#164
++ [special:begin] www.rejetto.com/forum/?topic=5349.msg1031223#msg1031223
++ search results have links to their folder http://www.rejetto.com/forum/index.php?topic=5371.msg1031206#msg1031206
++ new template macro: <> != for, time, filename
++ searching ABC* will force the name to begin by ABC, while *ABC force it to be at the end
++ automatic comment for the uploaded file 
++ %item-resource% %folder-resource%
++ {{?name = X}} is a shortcut for {{ {{?name}} = X }}
+* a line break less in [sections]
+* searches are now made in current folder
+* "back" instead of "up" after search
+- AV of the template engine
+- problems with macros names ending with space
+- "backup on save" was not working www.rejetto.com/forum/?topic=5378
+- hang up by searching * in the log
+- "...https instead of http" and "stop spiders" was not saved
+- infix macro operators >= <= were not working  
+
+#163
++ downloading new versions, try twice before aborting
++ reverse sorting by clicking twice
++ new template macro: {{!string-id}} www.rejetto.com/forum/?topic=5349
++ new template macros: > < >= <= add sub mul div mod min max filesize set call inc "count substring"
++ {{?name}} is a shortcut for {{urlvar|name}}
++ {{^name}} is a shortcut for {{call|name}}
++ new template symbol: %url%
++ Menu -> URL encoding -> "URLs starting with https instead of http" http://www.rejetto.com/forum/index.php?topic=2002.msg1030879#msg1030879
+- search was not correctly disabled together with "enable recursive listing"
+
+#161
++ log toolbar
++ upload filter will by default reject index.htm* and default.htm* files for improved security
++ nicer icon for the self test, thanks to Jayrome
++ {{section|name|file}}
++ {{$name}} is an alias for {{section|name}}
++ {{A = B}} is an alias for {{=|A|B}}
++ new template macro: append
++ Menu -> Other options -> "Dump traffic"
+- urlvar now UTF-8 compatible
+
+#160
++ "dynamic dns updater" automatically disables "find external address on startup" because they are incompatible.
++ new template macros: switch, repeat, upper, lower, trim, cut, length, match, match address, random, is substring
++ (expert mode) Menu -> Limits -> "Stop spiders" www.rejetto.com/forum/?topic=3097
++ proportional files/log size www.rejetto.com/forum/?topic=5310
+* %item-comment% is available also in [file] [folder] [link]
+* blank spaces in search are translated to * www.rejetto.com/forum/?topic=5288
+- blank space in url parameters was not correctly handled
+- %item-folder% was empty when it shouldn't be www.rejetto.com/forum/?topic=5294
+- files with local characters were not sorted correctly www.rejetto.com/forum/?topic=5288
+- possible fix for losing dyndns address on restart www.rejetto.com/forum/?topic=5216
+- possible fix for blank connections www.rejetto.com/forum/?topic=5238
+- fix for %item-full-url% on links
+- recursive symbols or macros led to crash www.rejetto.com/forum/?topic=5281
+- sometimes importing an UTF-8 template resulted in an empty text www.rejetto.com/forum/?topic=5306
+- forged uploads were able to upload outside the assigned folder
+- self test sometimes wasted time trying on local IPs     
+- tpl editor: when searching with the cursor placed at the very beginning, nothing is found  
+
+#146
++ new template macros: count, replace
++ new template symbol: %item-relative-folder% www.rejetto.com/forum/?topic=5250
+* %ip2name% renamed to %ip-to-name%
+* "Experimental high speed handling" is ON by default 
+- sometimes macros or symbols were left untranslated
+- some bugs in the template engine
+- updating asks twice for saving www.rejetto.com/forum/?topic=5269
+- fixed a bug preventing Apache to act as a reverse proxy www.rejetto.com/forum/?topic=4200 
+
+#145
++ (expert mode) Menu -> Updates -> "Update automatically"
++ quoting feature for macros
++ new template macro: substring
+- "links before" was not saved www.rejetto.com/forum/?topic=5212
+- fix for "Grid index out of range"
+- was not working with template Live2 www.rejetto.com/forum/?topic=5208.msg1029695#msg1029695
+- search was not compatible with other filters configured in the VFS www.rejetto.com/forum/?topic=5208.msg1029775#msg1029775
+
+#144
++ new macros engine
++ Options -> Accounts -> "After login, redirect to"
+- AV with F2 on the accounts box when no account is selected
+- fixed some other template problems introduced in build #142
+- sorting not working in a search 
+
+#143
++ (expert mode) Menu -> Virtual File System -> "Links before"
+- firefox template incompatibility introduced in build #142
+- updating failed when the exe name was hfs.new.exe
+- ?page was not working
+- ?offset was not working with ?recursive 
+- search is now correctly disabled when "Recursive listing" is   
+
+#142
++ some improvements to the default template
+- some folders were stuck on "replying" www.rejetto.com/forum/?topic=5154
+- "open in browser" didn't work on some systems www.rejetto.com/forum/?topic=5159
+- search results were incorrectly linked
+- sort by hits was not applied to folders
+- %item-ext% was not working with enabled "Hide file extension in listing"
+- adding a file.lnk the virtual name was the one of the pointed file instead of the link itself
+
+#141
++ default template with search, sort by extension
++ new template symbol: %lang% (language identifier furnished by the browser)
++ new template symbol: %ip2name% (as %ip% but translated with the "Address 2 name" feature of the log) www.rejetto.com/forum/?topic=4894
++ new URL parameter: ?search=XXX (shortcut for ?recursive&filter=*XXX* )
++ workaround for IE6+SSL+XML+Flash+Compressed browsing
++ new macro: {{load|XXX}} where XXX is a filename or an URL to include
++ new macro: {{header|XXX}} where XXX is the http header field name to get
+- default sorting by extension was not working 
+
+#140
+- ?filter was not working recursively on virtual folders
+- incorrect behaviour accessing /~
+
+#139
++ new macro: {{urlvar|XXX}} where XXX is the name of the URL parameter to get
++ new macro: {{section|XXX}} where XXX is the name of the section to include
+- ?filter was not working recursively
+- %number% did not include the number of links
+- "Not modified" replies were not logged
+
+#138
++ new tray symbol: %build%
++ new URL parameters: filter, files-filter, folders-filter, page www.rejetto.com/forum/?topic=5073#msg1028672
++ new URL parameters: sort=e, rev www.rejetto.com/forum/?topic=5123
++ new template symbols: %urlvar-NAME% www.rejetto.com/forum/?topic=5073#msg1028672
++ new template symbol: %number-links%
++ automatically fixes a broken "Add to HFS"
++ list of services for external address is refreshed every 24h (before it was done after a restart)
+* Renamed "Offer me to update to beta versions even if i'm using official version" -> "Updates from official to beta versions"
+* Renamed "Backup saving" -> "Backup on save"
+- apache log file format was not fully compliant www.rejetto.com/forum/?topic=4982
+- real folders with "No download" has no more archive link, and all files in it are displayed as protected www.rejetto.com/forum/?topic=4979#msg1027816
+- bad URL for links with ?recursive www.rejetto.com/forum/?topic=5070  
+- renaming a file didn't refresh address bar
+- template editor position was lost quitting
+
+#137
++ Graph Menu -> Reset
++ new template symbols: %time% %date% www.rejetto.com/forum/?topic=4963 
+* moved some of the new menu items to the expert mode
+- incorrect handling of very long filenames www.rejetto.com/forum/?topic=4962
+- incorrect handling of some disconnections www.rejetto.com/forum/?topic=4908
+- incorrect handling of // in URI www.rejetto.com/forum/?topic=4969
+- archive for subfolders of real folders had a wrong path 
+
+#136
++ (expert mode) Menu -> Other options -> "Accept any login for unprotected resources"
++ (expert mode) Menu -> Virtual File System -> "Backup on save"
++ improved handling of corrupted  files
+* persistent graph in easy mode when manually enabled
+* sorting disabled for recursive file listing
+* %item-archivable% renamed to %item-archive%
+- no more accepting invalid login for unprotected files
+- no more loading or saving while adding files
+
+#135
++ (expert mode) Real Folder Menu -> Advanced -> "Upload filter mask"
+* "allowed referer" will always accept HFS itself as referer
+* the automatic update is downloaded to the same folder of hfs.exe instead of the working folder
+- fixed log incoherence for failed uploads  
+
+#134
++ new template symbol: %item-archivable% (to be used in [folder] section, expands to [item-archivable] if the folder is archivable)
+- fixed unicode support for uploading file names
+- folder was left locked after downloading it as archive  
+- AV deleting a folder while it is sent 
+- incorrect behaviour adding an empty CD drives
+
+#133
++ command line parameter -b <size> to control ICS buffer
++ command line parameter -B <size> to control socket buffer
+* speed enhancer now optional (menu -> other options -> Experimental high speed handling)
+- possible fix for hanging disconnected connections introduced in build #131
+- reduced flickering problem in connection header bar 
+
+#131
++ increased performance
++ kbps in bandwidth graph
+* preconfigured "default file mask" 
+
+#130
+- annoying error messaged introduced in build #129
+
+#129
+- granted access to /~progress with non-browsable root
+- menu web links didn't work on some systems
+- some fixes on request handling  
+
+#128
++ [section|nolog] to prevent sections to be logged www.rejetto.com/forum/?topic=5084 
+- possible fix for crash on multiple "add to hfs"
+- solved graphical glitches
+- download limits were not applied to folder archive
+- possible fix for broken upload files www.rejetto.com/forum/?topic=4606
+- size reported in the log of uploaded file was wrong by few bytes
+
+#126
++ Menu -> Start/Exit -> "Quit without asking to save"  
++ warning for whom enters Speed limit = 0 
+- "folders filter" wasn't working for virtual folders
+- moving columns in the connections panel could screw up things
+- error on switching to real/virtual on multiple folders
+- monolib error  
+
+#125
++ Menu -> Other options -> "Temporarily reset options"
+* compression threshold in bytes instead of items
+- file icons on Windows98 broken in build #123
+- URLs to folders with no trailing / were not always redirected
+
+ver: 2.2c
+propaganda
+  Security fixes
+/propaganda
+- prevent possible XSS attack
+- on specific (non-default) configuration DoS attack and arbitrary file creation was possible
+- was possible to know the version of HFS even with proper configuration
+
+ver: 2.2b
+propaganda
+  Bug fixes
+/propaganda
+- forged uploads were able to upload outside the assigned folder
+- sometimes importing an UTF-8 template resulted in an empty text www.rejetto.com/forum/?topic=5306
+- files with local characters were not sorted correctly
+- %item-ext% was not working with enabled "Hide file extension in listing"
+- folder was left locked after downloading it as archive  
+- incorrect behaviour accessing /~
+- incorrect handling of // in URI www.rejetto.com/forum/?topic=4969
+- incorrect behaviour adding an empty CD drives
+- bad URL for links with ?recursive www.rejetto.com/forum/?topic=5070  
+- archive for subfolders of real folders had a wrong path 
+- fixed unicode support for uploading file names
+- file icons on Windows98 broken in build #123
+- URLs to folders with no trailing / were not always redirected
+
+ver: 2.2a
+propaganda
+  Bug fixes
+/propaganda
+- a protected folder inside a folder protected by different account, was not accessible
+- occasional wrong URL building (double slash)
+- invasion of "save file system?" dialogs
+- AV upgrading
+- some files had no icon
+- no more dupe filenames if you add items to a real folder
+- "hide empty folders" was very slow 
+
+ver: 2.2
+propaganda
+  Folder archive: download a folder with 1 click
+  Anti-leeching system (download accelerators)
+  better USB drive support
+  Improved usability
+  Lot of new features
+  Many bug fixes
+/propaganda
++ Folder archive
++ smarter bandwidth division (between connections)
++ specific warning messages on some limits
++ Menu -> Limits -> "Allowed referer..." (to stop hotlinking)
++ when the port is busy, reports the name of process holding the port
++ new log file name symbol: %user% 
++ new template symbols: %build% %item-ext% %sequential% %number-addresses-ever%
++ Log menu -> "Addresses ever connected..."
++ File menu -> "Don't log"
++ Menu -> Limits -> "Prevent leeching"
++ custom symbols %sym-NAME%
++ offset and limit URL parameters 
++ main tray icon shows -> number of different IP addresses
++ main tray icon shows -> number of different IP addresses ever connected
++ CTRL A in some editors, to select the whole text
++ smarter saving prompting
++ Menu -> Virtual File System -> "Use OEM for DESCRIPT.ION"
++ failed logins are now logged, if enabled Log what -> Other events  
++ warning message after aborting file addition
++ support for dynamic path for the log
++ double (or right) clicking on statusbar: "out" opens speed limit, "vfs not saved" opens save dialog
++ speed limit is shown in the graph
++ remembers edit position for last diff template
++ introduced a workaround uploading 2GB+ files with browser not supporting it
++ \t (tab) and \n (newline) symbols supported in apache log format
++ warning on "don't include port in url"  
++ if hfs runs on a  ble drive, any file on the same drive is pointed relatively (useful for pendrives) 
++ (expert mode) Log menu -> "Clear and reset totals"
++ locks are shown also on the browser (new template symbol: %protected%)    
+* log menu -> log what -> replies  ...now disabled by default
+* log: no more "served" messages after "full downloaded"
+* Moved some File Menu items in a "Advanced" subgroup
+* big change for the ON button and the Port box
+* beta versions will check for new build every 8 hours
+- the "from stable versions to unstable" was not working with the daily check
+- "Create fingerprints" misbehaved when fingerprints were disabled  
+- problems with multi monitor
+- focus problem with options modal off 
+- "copy URL with fingerprint" now visible only for files
+- virtual file inside real folders made wrong counters
+- "Minimize to tray clicking the close button" was not working with Aero in Vista
+- removable drives were not handled correctly with real folders
+- hovering with mouse while editing a filename in vfs would stop the editing
+- clicking on statusbar may lead to the wrong dialog
+- "out of space" was shown also for disconnected drives
+- possible problem disabling "speed limit"
+- sometimes reporting "disconnected by server" while it was actually the client
+- "log icons" now filters also favicon in subfolders
+- fixed vfs corruption on loading abortion
+- file list for "/a/new a" was broken
+- user icon indexes are not fixed, breaking saved iconMasks 
+- problems with the "always on top"
+- problem with "confirm exit" and windows shutdown
+- download got corrupted if resumed after 2GB  
+- file list not working with diff template
+- file list on unexistant path now returns [not found]
+- occasional AVs 
+- freezing on listing/archiving
+- didn't save option when the system shuts down
+- access rights, beside upload rights, are now checked for uploads
+- inherited files/folders filter was not displayed in hint
+- fixed possible non standard formatting in cache commands
+- the connection was unfairly closed/reset after downloads (IE6 sometimes complaining about this)
+- complains updating  
+- graph visibility was not saved
+- bad %protected% behaviour
+- sometimes "Edit HTML template" was not working from the tray icon 
+- @anonymous restriction was considered as protection
+- using DNS updater, the IP changes when it shouldn't
+- unicode support for diff tpl
+- fix for uninstalling error
+- handle uninstall/update without only1instance
+- AV on void rename
+
+ver: 2.1d - build #088
+propaganda
+  UTF8 support improved
+  bug fixes
+/propaganda
++ Menu -> Virtual File System -> "Reset totals"
++ speed limit accepts decimal values 
+* clearing the log no longer reset totals
+* renamed: "Reset downloads" > "Reset files hits"
+* renamed: "Don't count as download" > "Don't consider as a download" 
+* renamed: "Save total in/out" > "Save totals", also saves hits/downloads/uploads, enabled by default 
+* show browser icon in address bar
+- updated template help
+- UTF8 fix for filename in progress frame (only uploading)
+- ~specials (urls with ~) didn't work with folders with "?" in the name
+- holding SHIFT and CTRL keys were undetected at startup
+- hfs.comments.txt was not used for symbol %folder-comment%
+- template import/export support for UTF8
+
+ver: 2.1d - build #086
+propaganda
+  template features: section aliasing, new symbols, graph colors, better UTF8 support
+  many bug fixes
+/propaganda
++ new template symbols: %total-downloads% %total-uploads% %total-hits% %folder-name% %time-left% %item-folder% %item-url%
++ template section aliasing, e.g. [file.gif = file.jpg = file.png]
++ Menu -> Other options -> "Default sorting"
++ dns updater: host is now automatically included in IP address list
++ graph colors customizable via URL 
++ Upgrading, prompt for saving before quitting
++ if an update attempt fails, re-use the already downloaded update
++ Menu -> Updates -> "Offer me to update from stable versions to unstable testing versions"
+* now visible in easy mode: Menu -> Upload -> "How to?"
+* improved readability in transfer progress bar  
+* renamed: "save in/out totals" > "save total in/out"
+* non-ascii option applied also inside pages
+* file menu: now hidden in easy mode: comment, icon, switch to, new link, browse it
+* file menu: rearranged and renamed some items to improve usability (let download > no download, new folder > new empty folder, copy URL > copy URL address, let browse > browsable) 
+* address bar redesigned  
+* "HFS last update check.tmp" is now created as hidden, less intrusive
+* now some special files are protected with same access rights as the root folder: /~img*, /~progress, /favicon.ico
+- fixed UTF-8 support 
+- removed passwords from "show customized options"
+- dns updater: User and Host are now saved in options
+- favicon.ico now respect the "log icons" option
+- uploading, only upload rights were checked but no access rights
+- "Encode non-ASCII characters" was not working anymore
+- server refuses to turn on after a "complete" IP change 
+- fixed continous DNS update requests
+- "Max addresses downloading" was not working
+- problem fixed with no-ip
+- fixed support of special characters in folders
+- it was possible set empty name for folders   
+- possible DoS vulnerability by asking for big graph
+
+ver: 2.1c - build #071
+propaganda
+  UTF8 support
+  bug fixes
+/propaganda
++ Menu -> Upload -> "How to?"
++ support for UTF-8 templates
++ autoupdate clipboard on change ip
+- no backward compatibility for no-ip
+- "Check update: failed" every minute
+- HFS was no more working with "Persistent connections" disabled 
+- "last update check" thing works also without saving options
+
+ver: 2.1b
+propaganda
+  autocheck updates
+  bug fixes
+/propaganda
++ Menu -> Updates -> "Auto check every day"
++ new template symbol: %ip%
++ filelist.tpl is loaded at every change, not only at start
++ the "Fully downloaded" event, reports the URL
+* Build number shown in the title bar
+* SVG files are added to the default "open directly in browser"
+- edit template: same shortcut for font and find
+- solved win9x problem
+- downloaders browser was not detected
+
+ver: 2.1a
+propaganda
+  many bug fixes
+/propaganda
+* "Keep old version updating" now disabled by default
+- forged html could let upload were not allowed
+- with port different than 80 and "include password in pages" enabled, port was included twice
+- was unable to interpret no-ip response
+- problems with unicode encoding of special ascii characters
+- characters in the "UP" link were not properly encoded
+- upload is broken sometimes
+- update feature not working on 98/ME systems
+- support for 4byte unicode characters   
+- "Let download" erroneously shown for virtual folders
+
+ver: 2.1
+propaganda
+  improved usability
+  fingerprints
+  external comments
+  bind to single network interface
+  [file.EXT] sections in template
+  many bug fixes
+/propaganda
++ Menu -> "Accept connections on"
++ Menu -> Virtual File System -> "Support DESCRIPT.ION"
++ Menu -> Virtual File System -> "Adding folder"  
++ Menu -> Virtual File System -> "Icon masks..."
++ Menu -> Virtual File System -> "Enable recursive listing"  
++ Menu -> Virtual File System -> "Support Link Fingerprints"
++ Menu -> Virtual File System -> "Skip confirmation on deletion"
++ Menu -> Other options -> "Input comment on file addition"
++ Menu -> Other options -> "Show customized options"
++ Menu -> Other options -> "Use ISO date format"
++ Menu -> Other options -> "Browse using localhost" 
++ Menu -> Other options -> "Add icons..."
++ Menu -> Dynamic DNS updater -> "Disable"
++ Menu -> Fingerprints
++ Menu -> URL encoding -> "Unreadable passwords in URLs"
++ Menu -> URL encoding -> "Include password in pages"
++ Log menu -> Log what -> "Only served requests" (enabled by default)
++ File Menu -> "Copy URL with fingerprint"
++ File Menu -> "Diff template" (overlap main template)
++ File Menu -> "Hide file extention in listing"
++ File Menu -> Restrict acces -> "@anonymous"
++ File Menu -> Restrict acces -> "New account"
++ File Menu -> Upload -> Upload for accounts -> "New account"
++ File Menu -> Icon -> "New icon"
++ Self Test distinguish between router and firewall problems
++ confirm on item deletion
++ Self-test now cancelable
++ improved file/folder hints
++ improved drag&drop scrolling on VFS
++ when no port is specified and port 80 is busy, port 8080, 280, 10080 are probed (then dynamic port is used)
++ Log menu: clicking "Address 2 name" automatically fills the IP field 
++ total download counter works now also for real-folders 
++ symbol ~nodefault to skip the default file 
++ command line: -a <FILENAME> (load additional ini file)
++ support browser cache command (If-Modified-Since)
++ [file.<EXT>] sections in template
++ "Copy url" now works for multiple files
++ double clicking on download tray icon brings to HFS window
++ F8 key switches easy/expert 
++ cancel folder reading if client disconnected (useful for big folders)
++ speed up folder sorting (useful for big folders)
++ template editor: customizable font and status bar 
++ sort by hits
++ added ini-commmand to be used with -a parameter: "load-tpl-from=FULLPATH"
+* template: changed default refresh time for progress frame, from 3 to 7 seconds
+* removed feature: "Visible only to anonymous users"
+* self test: clearer warning
+* Set url: old value as default
+* accept IP masks with less than 3 dots if wildcards are used
+* %up% %host% in [upload] [upload-results]
+* renamed items in "Restrict access"
+* renamed "Get passworded URL" in "Copy URL with password"
+* split "Copy URL" and "Copy URL with different address"
+* Users renamed to Accounts
+- shortcut to folders inside real-folders are unsupported, thus now are correctly not listed  
+- eliminated the lnk2frame() error message
+- using "Add to HFS" on many folders, many instances stayed open
+- messages "Cannot open clipboard" now trapped
+- ~files.lst was not protected
+- fixed and improved dns updater
+
+VER: 2.0b
+- problem with Login and IE
+
+VER: 2.0a
+propaganda
+  boosted startup download speed
+  bug fixes
+/propaganda
++ boosted startup download speed
+- problem requesting folders without including trailing slash
+- authentication didn't work for URLs http://user:pwd@host/folder (no trailing slash)
+- "file list" was not affected by "Let browse"
+- "file list" didn't work for folders with single quotes (')
+- moving a protected item, didn't paint the lock anymore
+- "get passwored url" was not working for inherited user/pass 
+- authentication didn't work for URLs http://user:pwd@host/folder (no trailing slash)
+- other minor bugfixes
+
+ver: 2.0
+propaganda
+  Upload
+  Default file mask
+  Easy/Expert mode
+  Load comments from external files
+  Dynamic DNS updater
+  IP-ranges
+  Self Test
+  Uninstall
+  Flag files added recently
+  Apache log file format
+  Autoupdate (automatic download & replace)
+  For full list check the website
+/propaganda
++ File Menu -> Upload (only for real-folders)
++ File Menu -> Default file mask
++ Easy/Expert mode
++ multiselect files
++ load comments from external files
++ support for IP-ranges (syntax FROM_ADDRESS-TO_ADDRESS)
++ you can abort loading VFS and downloading update
++ new VFS format with compression
++ warn you loading incompatible VFS formats
++ Menu -> Start/Exit -> "Only 1 instance"
++ Menu -> Other options -> "Compressed browsing"
++ Menu -> Other options -> "Delete partial uploads"
++ Menu -> Other options -> "Rename partial uploads"
++ Menu -> Other options -> "Modal dialog for options"
++ Menu -> "Self Test"
++ Menu -> "Uninstall"
++ Menu -> Virtual File System -> "Flag files added recently"
++ Menu -> Virtual File System -> "Auto-save every..."
++ Menu -> Tray icons -> The tray icon shows -> "Number of logged uploads"
++ Menu -> Start/Exit -> "Confirm exit"
++ Menu -> IP address -> "Don't include port in URL"
++ Menu -> IP address -> "Find external address"
++ Menu -> "Dynamic DNS updater"
++ Menu -> Start/Exit -> "Find external address at startup"
++ Menu -> Other options -> "Save in/out totals"
++ Menu -> Other options -> "Keep old version updating"
++ Menu -> Limits -> "Minimum disk space"
++ Menu -> Limits -> "Max contemporary downloads"
++ Menu -> Limits -> "Max contemporary downloads from single address"
++ Menu -> Limits -> "Max contemporary addresses"
++ Menu -> Limits -> "Max contemporary addresses downloading"
++ Menu -> Flash taskbutton -> "Also beep"
++ Menu -> Save options -> "Auto-save every..."
++ File Menu -> "Bind/unbind root to real-folder"
++ File Menu -> "Switch to real-folder" 
++ File Menu -> "Don't count as download"
++ File Menu -> "Flag as new"
++ File Menu -> "Reset <new> flag"
++ File Menu -> "Edit resource"
++ File Menu -> "Visible only to anonymous users"
++ File Menu -> "Let download"
++ File Menu -> "Auto-hide empty folders"
++ Log Menu -> "Do not log address"
++ Log Menu -> "Ban this address" (an address must be at caret position)
++ Log Menu -> Log what -> "Banned"
++ Log Menu -> "Apache log file format..."
++ shell context menu: checkbox instead of add/delete (moved to Other options)
++ Template editor -> Find
++ warning on many items
++ better "open folder" dialog
++ "Ignore limits" for accounts
++ Bans -> "Add/delete row" (easier to understand)
++ new HTML template symbols: you can find a full list in the included help
++ file-masks and address-masks now support inverted logic: just put "\" ahead
++ pipelined requests now supported
++ autoupdate (automatic download & replace)
++ /~progress
++ multiple custom addresses
++ new symbol in tray message: %uploads% (global uploads counter)
++ "File list" link generating a list to feed download managers
++ new symbols in the log filename for log rotation
++ username displayed (when logged in)
++ Download counter now works also for real folders
++ command line: -d X (waits at start for X tenth of second)
++ command line: -q (quit, useful with "only 1 instance")
++ command line: -i X (load/save hfs.ini in folder X)
++ average speed are logged
++ ~files.lst template can be loaded from external file "filelist.tpl"
++ first start: a dialog suggest to enable shell integration
+* hfs.ini by default saved in the same folder with hfs.exe
+* "copy URL" as submenu
+* save options -> "delete" replaced by "Clear options and quit"
+* "No tray icon for file extentions" has been removed because obsolete
+* symbol %login% renamed in %login-link%
+* new behaviour for Options dialog
+* "Abort file addition" more visible
+* "Access for users" renamed to "Restrict access"
+* "Run it" renamed to "Open it"
+* by default config is now saved in user registry
+* filetime sorts from newer to older
+- sometimes the VFS was not flagged as modified (and then not auto-saved)
+- newline problem in tray message
+- comments were limited to 255 chars
+- "Flash task button: on download" was flashing on every GET request
+- clearing the file system, no new file name was asked
+- problem downloading empty files
+- "leave disconnected connections" prevented tray icons from being removed
+- tray icons now display total percentage, to be consistent with the main window
+- fixed problems with unicode 
+- logging bytes sent/received could stuck
+- ban list was unproperly saved in configuration
+- loading a new VFS didn't discard completely old settings 
+- sometimes IE hangs after reaching 100%
+- ~files.lst showing filenames it shouldn't
+- "let browse" was not inherited by subfolders of real folders
+- set user/pass: inputing a password with empty username did not raise error
+- other minor fixes
+
+ver: 1.6a
+propaganda
+  many bug fixes
+/propaganda
+- file hints: also inherited user access were shown (while the rest shown is just local)
+- having folders URLs with no trailing slash, caused problems with some folder/browser pairs
+- users panel: you was able to enter 2 users with same username
+- sometimes DEL and CTRL+V shortcuts were lost
+- port changes were not applied to the address bar
+- Accept-Ranges was not sent
+- URL problems with non-latin characters (thanks Pavel Rus)
+
+ver: 1.6
+propaganda
+  LOGIN button (browsing)
+  support for external links in the VFS: File Menu -> `New link`
+  customizable 401 and 403 HTTP error pages
+  customizable ban page
+  faster page generation
+  more XP styled
+  support for default favicon.ico (i saw Mozilla using it)
+  new HTML template symbols
+  File hint now additionally displays: users, files/folders filter, realm
+  fixed possible DoS attack
+  4GB single file limit removed
+  many bug fixes
+/propaganda
++ LOGIN button (browsing)
++ support for external links in the VFS: File Menu -> "New link"
++ customizable 401 and 403 HTTP error pages
++ customizable ban page
++ faster page generation
++ Menu -> Other options -> "Use comment as realm"
++ Menu -> Other options -> "Login realm"
++ Menu -> Limits -> "Connection inactivity timeout"
++ Menu -> Encoding URL -> "Use UNICODE in HTML"
++ Menu -> Help -> "Introduction"
++ Menu -> Virtual File System -> "Reset hits"
++ Menu -> Virtual File System -> "Reset downloads"
++ Menu -> "Abort file addition"
++ Menu -> "Clear file system"
++ File Menu -> Icon
++ File Menu -> Switch to virtual
++ File Menu -> "Customized realm"
++ File Menu -> Access for users -> ALL/NONE
++ Log Menu -> "Log what"
++ Log Menu -> "Log on video"
++ Connections menu -> "Kick idle connections"
++ Users -> User properties: browse protected resources by user
++ complete downloads counting
++ "Time left"
++ more XP styled
++ added Reset button in "Set user/pass" dialog
++ support for default favicon.ico (i saw Mozilla using it)
++ new HTML template symbols: %total-bytes%, %total-kbytes%, %total-size%  (size of listed files)
++ File hint now additionally displays: users, files/folders filter, realm
+* connections box: merge of "IP" and "User" fields
+* connections box: "Agent" and "Start time" displayed in tip
+* folders known before as "autoupdated folders" are now "real folders", others (yellow) are "virtual folders"
+* "Get passworded URL" doesn't show password anymore
+* new "let browse" behavior
+* options saved to file by default
+* "reload open VFS" by default
+* username is now case insensitive
+- problems sending HTTP error pages
+- problems with files with corrupted timestamp
+- VFS: minor redrawing problem
+- "Hide tree" was not propagating to autoupdated folders
+- hits were not displayed (in tips) for folders
+- it is safer now during long files addition: files are locked and you can quit the program at once
+- removed a useless limit on filenames
+- drag&drop was restricted to labels area
+- inverted ban logic was not applyed on start (but after opening options window)
+- the hidden graph was reappearing after a couple of restarts
+- fixed possible DoS attack
+- 4GB single file limit removed
+- whole drives were unsupported
+- file & folder filters were not applied to subfolders
+- adding files by copy&paste caused instability
+- problems with non-virtual shared folders
+- problems with wildcards
+- other minor bugs
+
+ver: 1.5g
++ wildcards (*,?) allowed in Bans window
++ Menu -> Virtual File System -> "List files with <hidden> attribute"
++ Menu -> Virtual File System -> "List files with <system> attribute"
++ Menu -> Virtual File System -> "List protected items only for allowed users"
++ username is shown in Log and in Connections box
++ more distinction between main tray icon and download icons
++ Log Menu -> "Font"
+* moved some options here and there
+* new GIF library: made by Anders Melander
+- virtual sub-items of an autoupdated folder were listed also at deeper levels
+- log font is wrong on some systems
+- 2GB limit removed on several things (like status bar)
+- problem with HEAD requests (0 bytes)
+
+ver: 1.5f
++ Dual mode ban list: ban/allow
++ Log menu -> "Log file"
++ File Menu -> "Hide tree"
+- hang on starting
+
+ver: 1.5e
+- adding an auto-updated folder can cause AV
+- "speed limit" was not able to get over 10k/s
+
+ver: 1.5d
++ Menu -> Other Options -> "Persistent connections"
+- files remained blocked (open)
+- prevents Windows from shutting down
+
+ver: 1.5c
++ improved speed/cpu usage
++ Menu -> Other Options -> "Send HFS identifier"
+- on some systems HFS refuses to open any port for listening
+- the "no download" timeout was reset only at download start, and not downloading
+- unstable while user browsing if a "speed limit" was set
+- files bigger 2Gb+ were not handled
+- ban was not immediate
+- the check for duplicate files was case sensitive
+- AV if quit occours while uploading
+
+ver: 1.5
++ now the statusbar shows the total bytes sent
++ Menu -> Other Options -> "Users"
++ Menu -> "URL encoding"
++ Menu -> Tray Icons -> "Tray message"
++ Menu -> Other Options -> "Getright browser specific HTML"
++ Menu -> Other Options -> "Auto-save VFS on exit"
++ File Menu -> "Get passworded URL"
++ File Menu -> "Access for users"
++ File Menu -> Filters
++ File Menu -> Expand/Collapse
++ different tray icon when the server is offline
++ items can be added to an autoupdated folder
++ customizable "server full" page
++ user/pass validation on user input
++ statusbar: [not saved] appears when the VFS is edited
+- you was unable to set a local address if an internet address was available
+- "Hide" should not be available for the root item
+- other minor fixes
+
+ver: 1.5 rc6
++ IP address is checked every 10 seconds
++ HTML template: %item-added% is the item's addition time
++ items' downloads count is now saved to file
++ Menu -> Other Options -> "Reload on startup VFS file previously open"
++ Menu -> Other Options -> "MIME types"
++ Menu -> Other Options -> "Auto-copy URL on start"
+* added standard "..." to menu
+- user/pass was not saved for the root item
+- non-ascii characters were not encoded in the URL
+
+ver: 1.5 rc5
++ you can now hide the bandwidth graph
++ Connection menu -> "Pause"
++ window position is saved
++ Menu -> Other Options -> "Always on top"
++ Menu -> Tray icons -> "No tray icon for file extentions"
++ Menu -> "Auto-close"
++ switching off the server, user is asked for closing open connections
++ File Menu -> Edit
++ sorting
++ F4 switch the server on/off
++ log improved
++ customizable file-not-found page (404)
++ new template symbols: %item-modified% %item-dl-count%
++ more info on download tray icons
++ brand new html template
++ files in VFS that does not exist anymore are not listed while browsing
++ check for updates
++ browse button
++ comment is sent as message/realm to the user/password dialog (if present)
++ a padlock is displayed
++ Menu -> Limits -> "Bans"
++ Menu -> "Recent files"
++ Connection Menu -> "Ban IP address"
++ F10 shows the main menu
++ support for persistent connections (HTTP 1.1)
+* moved many options to Menu -> "Other options"
+* when drag&dropping a folder, the dialog for autoupdate is set foreground
+- problems with url-encoding for … Š  • — (IE, Opera)
+- problems saving a template to registry
+- sometimes "check for update" was not working after a failure
+- CRITICAL: directory crossing was possible on autoupdating folders
+- agent was not shown for folder requests
+- problems with not-found documents (404)
+- solved possible DoS attack
+- internal GIFs were not transparent
+- password was not applied to items in autoupdated folders
+- sometimes the server button was ON when the server was OFF
+- sometimes AV on "Kick IP address"
+- sometimes the config file was saved in the wrong folder
+- fast hits cause AVs
+- several minor bugs fixed
+
+ver: 1.5 beta1
++ user/password protection
++ comments for files/folders
++ Menu -> Limits -> "Pause streaming"
++ hidden items in VFS are painted in italic
+
+ver: 1.4 beta2
++ download tray icons, now % filling
++ improved bandwidth graph
++ now you can publish files via copy&paste
++ now you can publish files via "Add files" and "Add Folder"
++ Menu -> Weblinks
+
+ver: 1.4 beta1
++ Menu -> Limits -> "Speed limit"
++ Menu -> Limits -> "Max connections", "Max connections for single address"
++ Menu -> Save options -> "Auto-save options on exit"
++ speed improvement, over 3Mb/s on my Duron@1300
++ smarter tray refresh (less CPU)
+- hiding a file, adjacent one was hidden too
+
+ver: 1.3 beta8
+- custom ip was never selected on start
+
+ver: 1.3 beta7
++ Menu -> "Use system icons"
++ Menu -> "Official website"
++ Menu -> Tray icons -> "Show main tray icon"
+* new tray icon
+- invalid mime-type was sent for GIF files
+- individual tray icons for downloads were not working
+
+ver: 1.3 beta6
+- forgot to encode blank-spaces in clipboard
+
+ver: 1.3 beta5
++ "Custom ip", now you can use yourowndomain.com
+- autoupdate folders was not applying the "Folders before" setting
+- there were problems with url-encoding for blank-space, ø and "
+- some crashes may have been fixed
+
+ver: 1.3 beta4
++ added GIF support for internal images (requires JVCL library)
+* brand new html template
+- kick all connections was not working
+- html folder pages were not served for folders with 1 single item, and hidden
+
+ver: 1.3 beta3
++ added CRC checking to VFS files
+
+ver: 1.3 beta2
++ check for same filename in same folder
+* new icons
+- %folder% in template was not url-decoded
+- problems with URLs encoding
+
+ver: 1.3 beta1
++ Autoupdate folders
++ "Leave disconnected connections" in connections menu
++ smarter "agent" colum
++ Bandwidth graph
+* Loading a project the tree is not expanded
+- Problems with special characters
+- While editing the filename, Delete key deletes the file
+- "Tray icon for each download" was not saved
+- Renaming a virtual folder was not applied on the web
+
+ver: 1.2
++ "Tray icon for each download" in main menu
++ Drastic speed up on fast downloads (LAN)
+- Closing HFS with open connections causes AV
+- Fast hits cause AV
+
+ver: 1.1
++ "agent" column for connections
++ colored log
+- StarDownloader was not recognizing resume feature
+- On fast downloads (LAN), information on window was not updated
+- Resume was not always working correctly
+
+ver: 1.0
+first sane release, fully rewritten
+
+ver: 0.1
+please, forget it
