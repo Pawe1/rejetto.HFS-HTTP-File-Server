@@ -1699,6 +1699,7 @@ else
   if IPservices = NIL then
     loadIPservices(getRes('IPservices'));
   if IPservices = NIL then exit;
+
     repeat
     s:=IPservices[random(length(IPservices))];
     until s <> lastProvider;

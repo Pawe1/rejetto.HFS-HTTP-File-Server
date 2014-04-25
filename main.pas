@@ -35,8 +35,8 @@ uses
   HSlib, traylib, monoLib, progFrmLib, classesLib;
 
 const
-  VERSION = '2.3';
-  VERSION_BUILD = '288';
+  VERSION = '2.3a';
+  VERSION_BUILD = '289';
   VERSION_STABLE = {$IFDEF STABLE } TRUE {$ELSE} FALSE {$ENDIF};
   CURRENT_VFS_FORMAT :integer = 1;
   CRLF = #13#10;
@@ -76,7 +76,7 @@ const
   YESNO :array [boolean] of string=('no','yes');
   DEFAULT_MIME = 'application/octet-stream';
   IP_SERVICES_URL = 'http://hfsservice.rejetto.com/ipservices.php';
-  SELF_TEST_URL = 'http://hfstest.rejetto.com';
+  SELF_TEST_URL = 'http://hfstest.rejetto.com/';
 
   USER_ANONYMOUS = '@anonymous';
   USER_ANYONE = '@anyone';
@@ -5441,6 +5441,7 @@ case event of
     data.tplCounters.clear();
     refreshConn(data);
     end;
+  HE_GOT_HEADER: runEventScript('got header');
   HE_REQUESTED:
     begin
     data.dontLog:=FALSE;
@@ -6069,7 +6070,7 @@ else s:=intToStr(rec.every);
   until false;
 end; // autosaveClick
 
-// change port and test it working
+// change port and test it working. Restore if not working.
 function changePort(newVal:string):boolean;
 var
   act: boolean;
@@ -6083,7 +6084,7 @@ if act and (newVal = srv.port) then exit;
 stopServer();
 if startServer() then
   begin
-  if not act then stopServer();
+  if not act then stopServer(); // restore
   exit;
   end;
 result:=FALSE;
@@ -7454,17 +7455,35 @@ var
   end; // everyMinute
 
   procedure every10sec();
+  var
+    s: string;
+    ss: Tstrings;
   begin
   if not stringExists(defaultIP, getPossibleAddresses()) then
     // previous address not available anymore (it happens using dial-up)
     findSimilarIP(defaultIP);
+    
+  if searchbetteripChk.checked
+  and not stringExists(defaultIP, customIPs) // we don't mess with custom IPs
+  and isLocalIP(defaultIP) then // we prefer non-local addresses
+    begin
+    s:=getIP();
+    if not isLocalIP(s) then // clearly better
+      setDefaultIP(s)
+    else if ansiStartsStr('169', defaultIP) then // we consider the 169 worst of other locals
+      begin
+      ss:=LocalIPList();
+      if ss.count > 1 then
+        setDefaultIP(ss[ if_(ss[0]=defaultIP, 1, 0) ]);
+      end;;
+    end;
+
   end; // every10sec
 
   procedure everySec();
   var
     i, outside, size: integer;
     data: TconnData;
-    s: string;
   begin
   // this is a already done in utilLib initialization, but it's a workaround to http://www.rejetto.com/forum/?topic=7724
   decimalSeparator:='.';
@@ -7538,17 +7557,6 @@ var
       and ((now_-data.lastActivityTime)*SECONDS >= connectionsInactivityTimeout) then
         data.disconnect('inactivity');
       end;
-
-  if searchbetteripChk.checked
-  and not stringExists(defaultIP, customIPs) // we don't mess with custom IPs
-  and isLocalIP(defaultIP) then // we prefer non-local addresses
-    begin
-    s:=getIP();
-    if (s <> defaultIP) // anything new?
-    and (not isLocalIP(s) or ansiStartsStr('169', defaultIP)) // is it better?
-    then
-      setDefaultIP(getIP());
-    end;
 
   // server inactivity timeout
   if noDownloadTimeout > 0 then
@@ -9905,7 +9913,7 @@ if info = NIL then
   end;
 
 try
-  msgDlg(format(MSG_INFO, [ info['last stable'], info['last untested'] ]));
+  msgDlg(format(MSG_INFO, [ info['last stable'], first([info['last untested'],'none']) ]));
 
   updateURL:='';
   if trim(info['last stable build']) > VERSION_BUILD then
@@ -10851,12 +10859,12 @@ end;
 procedure TmainFrm.SelfTest1Click(Sender: TObject);
 const
   MSG_BEFORE = 'Here you can test if your server does work on the Internet.'
-    +#13'If you are not interested in serving files over the Internet, this is not for you.'
+    +#13'If you are not interested in serving files over the Internet, this is NOT for you.'
     +#13
     +#13'We''ll now perform a test involving network activity.'
     +#13'In order to complete this test, you may need to allow HFS''s activity in your firewall, by clicking Allow on the warning prompt.'
     +#13
-    +#13'WARNING: for the duration of the test, all ban rules and limits on the number of connections won''t apply. Consider being exposed to risks.';
+    +#13'WARNING: for the duration of the test, all ban rules and limits on the number of connections won''t apply.';
   MSG_OK = 'The test is successful. The server should be working fine.';
   MSG_OK_PORT = 'Port %s is not working, but another working port has been found and set: %s.';
   MSG_3 = 'You may be behind a router or firewall.';
@@ -10906,14 +10914,11 @@ const
     name:=host+':'+port;
   progFrm.show('Testing '+name+' ...', TRUE);
   if not srv.active and not startServer() then exit;
-  // we many need to try this specific test more than once   
+  // we many need to try this specific test more than once
     repeat
     t:=now();
-    selfTesting:=TRUE;
-    try
-      try result:=httpGet(SELF_TEST_URL+'?port='+port+'&host='+host+'&natted='+YESNO[localIPlist.IndexOf(externalIP)<0] )
-      except break end; 
-    finally selfTesting:=FALSE end;
+    try result:=httpGet(SELF_TEST_URL+'?port='+port+'&host='+host+'&natted='+YESNO[localIPlist.IndexOf(externalIP)<0] )
+    except break end;
     t:=now()-t;
     if (result ='') or (result[1] <> '4') or progFrm.cancelRequested then break;
     ms:=3100-round(t*SECONDS*1000); // we mean to never query faster than 1/3s
@@ -10943,13 +10948,12 @@ var
   // ensure defaultIP is the first one
   insertString(defaultIP, 0, tries);
   uniqueStrings(tries);
-  // remove local addresses
-  for i:=length(tries)-1 downto 0 do
-    if isLocalIP(tries[i]) then removeString(tries, i);
 
   best.res:='';
   for i:=0 to length(tries)-1 do
     begin
+    if isLocalIP(tries[i]) then continue;
+
     progFrm.progress:=succ(i)/succ(length(tries));
     s:=doTheTest(tries[i]);
     // we want a digit
@@ -10976,10 +10980,10 @@ var
   ip:=defaultIP;
   if isLocalIP(ip) then
     ip:=externalIP;
-  if isLocalIP(ip) then
+  if (ip='') or isLocalIP(ip) then
     exit;
   // build list of ports we'll test
-  tries:=toSA(['80','81','8000','8080']);
+  tries:=toSA(['80','8123']);
   removeString(srv.port, tries); // already tested
 
   bak.active:=srv.active;
@@ -10990,10 +10994,10 @@ var
     port:=tries[i];
     stopServer();
     if not startServer() then continue;
-    s:=doTheTest(defaultIP);
+    s:=doTheTest(ip);
     if successful(s) then break;
     end;
-  if successful(s) or (best.res = '') then
+  if successful(s) and (best.res = '') then
     begin
     best.res:=s;
     best.host:=defaultIP;
@@ -11034,6 +11038,7 @@ if httpsUrlsChk.checked then
 
 disableUserInteraction();
 progFrm.show('Self testing...');
+selfTesting:=TRUE;
 try
   best.res:='';
   progFrm.push(0.5);
@@ -11055,7 +11060,9 @@ try
       msgDlg(format(MSG_OK_PORT, [originalPort, port]));
     if best.host <> defaultIP then setDefaultIP(best.host);
     exit;
-    end;
+    end
+  else
+
 
   if progFrm.cancelRequested then
     begin
@@ -11082,6 +11089,7 @@ try
   msgDlg(s, MB_ICONERROR);
 
 finally
+  selfTesting:=FALSE;
   reenableUserInteraction();
   progFrm.hide();
   end;
