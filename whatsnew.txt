@@ -7,7 +7,20 @@ LEGEND
 -   bug fix
 AV  access violation
 
+ver 2.3b
+propaganda
+  Security fixes
+/propaganda
+- fixed default template for serious security flaws 
+- fixed possible discovery of server paths
+- fixed "bind root to real folder"
+- fixed {.load tpl.} not applying to some pages http://www.rejetto.com/forum/html-templates/multiple-templates-based-on-browser/msg1058862/#msg1058862
+- fixed {.filename.} and {.filepath.} to work with backslashes
+
 ver 2.3a
+propaganda
+  Self-test fixed
+/propaganda
 - fixed self-test
 - fixed external IP services
 + new event [got header] http://www.rejetto.com/forum/hfs-~-http-file-server/new-events-section/

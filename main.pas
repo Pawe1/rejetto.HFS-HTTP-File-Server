@@ -35,8 +35,8 @@ uses
   HSlib, traylib, monoLib, progFrmLib, classesLib;
 
 const
-  VERSION = '2.3a';
-  VERSION_BUILD = '289';
+  VERSION = '2.3b';
+  VERSION_BUILD = '290';
   VERSION_STABLE = {$IFDEF STABLE } TRUE {$ELSE} FALSE {$ENDIF};
   CURRENT_VFS_FORMAT :integer = 1;
   CRLF = #13#10;
@@ -53,11 +53,12 @@ const
   HFS_HTTP_AGENT = 'HFS/'+VERSION;
   COMMENTS_FILE = 'hfs.comments.txt';
   DIFF_TPL_FILE = 'hfs.diff.tpl';
-  FILELIST_TPL_FILE = 'filelist.tpl';
+  FILELIST_TPL_FILE = 'hfs.filelist.tpl';
   EVENTSCRIPTS_FILE = 'hfs.events';
   MACROS_LOG_FILE = 'macros-log.html';
   PREVIOUS_VERSION = 'hfs.old.exe';
   SESSION_COOKIE = 'HFS_SID';
+  PROTECTED_FILES_MASK = 'hfs.*;index.htm*;default.htm*;descript.ion;*.md5';
   G_VAR_PREFIX = '#';
   HOURS = 24;
   MINUTES = HOURS*60;
@@ -3731,6 +3732,12 @@ buildTime:=now();
 externalTpl:=assigned(tpl2use);
 if not externalTpl then
   tpl2use:=tplFromFile(Tfile(first(f, rootFile)));
+if assigned(data.tpl) then
+  begin
+  data.tpl.over:=tpl2use.over;
+  tpl2use.over:=data.tpl;
+  end;
+
 
 try
   data.conn.reply.mode:=HRM_REPLY;
@@ -3766,10 +3773,14 @@ try
   s:=tpl2use['special:begin'];
   tryApplyMacrosAndSymbols(s, md, FALSE);
 
-  s:=section.txt;
-  if data.conn.reply.mode <> HRM_REPLY then
-    s:=xtpl(tpl2use['error-page'], ['%content%', s]);
-
+  if data.conn.reply.mode = HRM_REPLY then
+    s:=section.txt
+  else
+    begin
+    s:=xtpl(tpl2use['error-page'], ['%content%', section.txt]);
+    if s = '' then
+      s:=section.txt;
+    end;
 
   tryApplyMacrosAndSymbols(s, md);
 
@@ -4579,7 +4590,7 @@ var
   procedure logUploadFailed();
   begin
   if not logUploadsChk.checked then exit;
-  add2log(format('Upload failed, %s: %s', [data.uploadFailed, data.uploadSrc]), data);
+  add2log(format('Upload failed for %s: %s', [data.uploadSrc, data.uploadFailed]), data);
   end; // logUploadFile
 
   function eventToFilename(event:string; table:array of string):string;
@@ -5361,7 +5372,7 @@ var
   result:= minDiskSpace <= diskSpaceAt(data.uploadDest) div MEGA;
   if result then exit;
   closeUploadingFile_partial();
-  data.uploadFailed:='Minimum disk space reached';
+  data.uploadFailed:='Minimum disk space reached.';
   end; // canWriteFile
 
   function complyUploadFilter():boolean;
@@ -5371,14 +5382,14 @@ var
     if f.isTemp() then result:=f.parent.uploadFilterMask
     else result:=f.uploadFilterMask;
     if result = '' then
-      result:='\hfs.*;index.htm*;default.htm*;descript.ion;*.md5'; // the user can disable this default filter by inputing * as mask
+      result:='\'+PROTECTED_FILES_MASK; // the user can disable this default filter by inputing * as mask
     end;
 
   begin
   result:=not sameText(data.uploadSrc, DIFF_TPL_FILE)
     and fileMatch(getMask(), data.uploadSrc);
   if not result then
-    data.uploadFailed:='File name or extension forbidden';
+    data.uploadFailed:='File name or extension forbidden.';
   end; // complyUploadFilter
 
   function canCreateFile():boolean;
@@ -5387,7 +5398,7 @@ var
   rewrite(data.f^, 1);
   result:=IOresult=0;
   if result then exit;
-  data.uploadFailed:='Error creating file: '+data.uploadDest;
+  data.uploadFailed:='Error creating file.';
   end; // complyUploadFilter
 
 var
@@ -5523,7 +5534,7 @@ case event of
     data.uploadSrc:=optAnsi(tpl.utf8, conn.post.filename);
     data.uploadFailed:='';
     if (f = NIL) or not accountAllowed(FA_UPLOAD, data, f) or not f.accessFor(data) then
-      data.uploadFailed:=if_(f=NIL, 'Folder not found', 'Not allowed')
+      data.uploadFailed:=if_(f=NIL, 'Folder not found.', 'Not allowed.')
     else
       begin
       closeUploadingFile();
@@ -11711,11 +11722,13 @@ end;
 procedure TmainFrm.Bindroottorealfolder1Click(Sender: TObject);
 var
   f: Tfile;
+  res: string;
 begin
 f:=selectedFile;
 if (f = NIL) or not f.isVirtualFolder() or not f.isRoot() then exit;
-if not selectFolder('', exePath) then exit;
-f.setResource(f.resource);
+res:=exePath;
+if not selectFolder('', res) then exit;
+f.setResource(res);
 exclude(f.flags, FA_VIRTUAL);
 VFSmodified:=TRUE;
 end;

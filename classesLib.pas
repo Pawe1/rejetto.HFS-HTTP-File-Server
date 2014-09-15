@@ -247,7 +247,8 @@ if i >= 0 then
 else
   begin
   o:=TcachedTplObj.create();
-  addObject(fn, o);
+  if addObject(fn, o) > 100 then
+    delete(0);
   end;
 result:=o.tpl;
 if getMtime(fn) = o.ts then exit;

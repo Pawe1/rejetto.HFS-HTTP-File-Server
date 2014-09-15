@@ -1067,7 +1067,8 @@ var
   if ansiContainsStr(s, '/') then
     begin
     path:=uri2disk(chop(lastDelimiter('/\',s)+1, 0, s), md.folder);
-    if path > '' then  s:=path+'\'+s; // mod by mars
+    if path > '' then
+      s:=path+'\'+s; // mod by mars
     end;
   result:=s;
   end; // uri2diskMaybeFolder
@@ -1822,8 +1823,8 @@ try
 
     p:=par(0); // a handy shortcut for the first parameter
 
-    // comment it's for comments, or if you just don't want the output a macro to be sent to the browser.
-    // the content of comment (the parameter) is executed as anything else, it's not like macro quoting.
+    // comment is for comments, or if you just want to trash the output of a macro.
+    // Careful: the comment itself (the parameter of this command) is executed as anything else, unless it's {:quoted:}
     if name = 'comment' then
       begin
       result:='';
@@ -2010,10 +2011,16 @@ try
       breadcrumbs();
 
     if name = 'filename' then
-      result:=extractFileName(p);
+      result:=substr(p, lastDelimiter('\/:',p)+1);
 
     if name = 'filepath' then
-      result:=extractFilepath(p);
+      begin
+      i:=lastDelimiter('\/:',p);
+      if i = 0 then
+        result:=''
+      else
+        result:=substr(p, 1, i);
+      end;
 
     if name = 'not' then
       trueIf(isFalse(p));
@@ -2080,6 +2087,9 @@ try
       md.cd.uploadFailed:=p;
       result:='';
       end;
+
+    if name = 'is file protected' then
+      result:=if_(filematch(PROTECTED_FILES_MASK, parVar('var',0)), '1');
 
     if name = 'get' then
       try

@@ -1,5 +1,5 @@
 {
-Copyright (C) 2002-2010  Massimo Melina (www.rejetto.com)
+Copyright (C) 2002-2014  Massimo Melina (www.rejetto.com)
 
 This file is part of HFS ~ HTTP File Server.
 
@@ -18,6 +18,7 @@ This file is part of HFS ~ HTTP File Server.
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 }
 {$INCLUDE defs.inc }
+{$SetPEOptFlags $100 } //IMAGE_DLLCHARACTERISTICS_NX_COMPAT
 program hfs;
 
 uses

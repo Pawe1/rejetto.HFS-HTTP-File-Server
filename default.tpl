@@ -1,5 +1,5 @@
 Welcome! This is the default template for HFS 2.3
-template revision TR1.
+template revision TR2.
 
 Here below you'll find some options affecting the template.
 Consider 1 is used for "yes", and 0 is used for "no".
@@ -340,7 +340,7 @@ fieldset { margin-bottom:0.7em; text-align:left; padding:0.6em; }
 </head>
 <body style='margin:2em;'>
 <h1>{.!Upload results.}</h1>
-{.^ok.} {.!files uploaded correctly..}
+{.or|{.^ok.}|0.} {.!files uploaded correctly..}
 {.123 if 2|<br /> |{.^ko.}| files failed..}
 <a href="." class='back'><img src="/~img14"> {.!Back.}</a>
 {.^back.}
@@ -393,8 +393,10 @@ fieldset { margin-bottom:0.7em; text-align:left; padding:0.6em; }
 :}.}
 
 [ajax.mkdir|no log]
-{.break|if={.not|{.can mkdir.}.}|result=forbidden.}
-{.set|x|{.force ansi|%folder%{.postvar|name.}.}.}
+{.set|x|{.postvar|name.}.}
+{.break|if={.pos|\|var=x.}{.pos|/|var=x.}|result=forbidden.}
+{.break|if={.not|{.can mkdir.}.}|result=not authorized.}
+{.set|x|{.force ansi|%folder%{.^x.}.}.}
 {.break|if={.exists|{.^x.}.}|result=exists.}
 {.break|if={.not|{.length|{.mkdir|{.^x.}.}.}.}|result=failed.}
 {.add to log|User %user% created folder "{.^x.}".}
@@ -402,6 +404,8 @@ ok
 
 [ajax.rename|no log]
 {.break|if={.not|{.can rename.}.}|result=forbidden.}
+{.break|if={.is file protected|{.postvar|from.}.}|result=forbidden.}
+{.break|if={.is file protected|{.postvar|to.}.}|result=forbidden.}
 {.set|x|{.force ansi|%folder%{.postvar|from.}.}.}
 {.set|y|{.force ansi|%folder%{.postvar|to.}.}.}
 {.break|if={.not|{.exists|{.^x.}.}.}|result=not found.}
@@ -415,6 +419,7 @@ ok
 {.break|if={.not|{.and|{.can move.}|{.get|can delete.}|{.get|can upload|path={.^dst.}.}/and.}.} |result={.!forbidden.}.}
 {.set|log|{.!Moving items to.} {.^dst.}.}
 {.for each|fn|{.replace|:|{.no pipe||.}|{.force ansi|{.postvar|files.}.}.}|{:
+	{.break|if={.is file protected|var=fn.}|result=forbidden.}
     {.set|x|{.force ansi|%folder%.}{.^fn.}.}
     {.set|y|{.^dst.}/{.^fn.}.}
     {.if not |{.exists|{.^x.}.}|{.^x.}: {.!not found.}|{:
@@ -436,6 +441,7 @@ ok
 [ajax.comment|no log]
 {.break|if={.not|{.can comment.}.} |result=forbidden.}
 {.for each|fn|{.replace|:|{.no pipe||.}|{.postvar|files.}.}|{:
+	{.break|if={.is file protected|var=fn.}|result=forbidden.}
     {.set item|{.force ansi|%folder%{.^fn.}.}|comment={.force ansi|{.postvar|text.}.}.}
 :}.}
 ok
