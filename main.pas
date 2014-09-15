@@ -35,8 +35,8 @@ uses
   HSlib, traylib, monoLib, progFrmLib, classesLib;
 
 const
-  VERSION = '2.3b';
-  VERSION_BUILD = '290';
+  VERSION = '2.3c';
+  VERSION_BUILD = '291';
   VERSION_STABLE = {$IFDEF STABLE } TRUE {$ELSE} FALSE {$ENDIF};
   CURRENT_VFS_FORMAT :integer = 1;
   CRLF = #13#10;
@@ -58,7 +58,7 @@ const
   MACROS_LOG_FILE = 'macros-log.html';
   PREVIOUS_VERSION = 'hfs.old.exe';
   SESSION_COOKIE = 'HFS_SID';
-  PROTECTED_FILES_MASK = 'hfs.*;index.htm*;default.htm*;descript.ion;*.md5';
+  PROTECTED_FILES_MASK = 'hfs.*;index.htm*;default.htm*;descript.ion;*.comment;*.md5;*.corrupted';
   G_VAR_PREFIX = '#';
   HOURS = 24;
   MINUTES = HOURS*60;
@@ -101,7 +101,7 @@ const
     '*.css', 'text/css',
     '*.js',  'text/javascript'
   );
-  
+
   ICONMENU_NEW = 1;
 
   ICON_UNIT = 31;
@@ -1641,6 +1641,7 @@ this would let us have "=" inside the names, but names cannot be assigned
     try
       extractCommentsWithWildcards();
         repeat
+        application.ProcessMessages();
         cd.lastActivityTime:=now();
         // we don't list these entries
         if (sr.name = '.') or (sr.name = '..')
@@ -3710,8 +3711,8 @@ var
   for i:=0 to length(data.uploadResults)-1 do
     with data.uploadResults[i] do
       files:=files+xtpl(tpl2use[ if_(reason='','upload-success','upload-failed') ],[
-        '%item-name%', macroQuote(optUTF8(tpl2use, fn)),
-        '%item-url%', encodeURL(fn),
+        '%item-name%', htmlEncode(macroQuote(optUTF8(tpl2use, fn))),
+        '%item-url%', macroQuote(encodeURL(fn)),
         '%item-size%', smartsize(size),
         '%item-resource%', f.resource+'\'+fn,
         '%idx%', intToStr(i+1),
@@ -4292,8 +4293,39 @@ finally
   end;
 end; // runTplImport
 
-procedure setTplText(text:string);
+// returns true if template was patched
+function setTplText(text:string):boolean;
+(* postponed to next release
+  procedure patch290();
+  {$J+}
+  const
+    PATCH: string = '';
+    PATCH_RE = '(\[ajax\.mkdir.+)\[special:import';
+  var
+    se: TstringDynArray;
+    i: integer;
+  begin
+  result:=FALSE;
+  // is it default tpl?
+  if not ansiStartsText('Welcome! This is the default template for HFS 2.3', text) then
+    exit;
+  // needs to be patched?
+  if pos('template revision TR1.',substr(text,1,80)) = 0 then
+    exit;
+  // calculate the patch once
+  if length(PATCH)=0 then
+    PATCH:=reGet(defaultTpl, PATCH_RE, 1, '!mis');
+  {$J-}
+  // find the to-be-patched
+  i:=reMatch(text, PATCH_RE, '!mis', 1, @se);
+  if i=0 then exit; // something is wrong
+  result:=TRUE; // mark
+  replace(text, PATCH, i, i+length(se[1])-1); // real patch
+  text:=stringReplace(text, 'template revision TR1.', 'template revision TR3.', []); // version stamp
+  end;//patchIt
+*)
 begin
+//patch290();
 // if we'd use optUTF8() here, we couldn't make use of tpl.utf8, because text would not be parsed yet
 tpl.fullText:=text;
 tplIsCustomized:= text <> defaultTpl;
@@ -4306,7 +4338,8 @@ begin
 if fileExists(tplFilename) then
   begin
   if newMtime(tplFilename, tplLast) then
-    setTplText(loadFile(tplFilename))
+    if setTplText(loadFile(tplFilename)) then
+      saveFile(tplFilename, tpl.fullText);
   end
 else if tplLast <> 0 then
   begin
@@ -5386,7 +5419,8 @@ var
     end;
 
   begin
-  result:=not sameText(data.uploadSrc, DIFF_TPL_FILE)
+  result:=validFilename(data.uploadSrc)
+    and not sameText(data.uploadSrc, DIFF_TPL_FILE) // never allow this
     and fileMatch(getMask(), data.uploadSrc);
   if not result then
     data.uploadFailed:='File name or extension forbidden.';

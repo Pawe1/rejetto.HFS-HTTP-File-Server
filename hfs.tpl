@@ -1,5 +1,5 @@
 Welcome! This is the default template for HFS 2.3
-template revision TR2.
+template revision TR3.
 
 Here below you'll find some options affecting the template.
 Consider 1 is used for "yes", and 0 is used for "no".

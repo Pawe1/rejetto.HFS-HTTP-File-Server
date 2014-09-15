@@ -125,6 +125,7 @@ var
   i: integer;
 begin
 i:=1;
+enforceNUL(s);
   repeat
   i:=findMacroMarker(s, i);
   if i = 0 then break;
@@ -140,6 +141,7 @@ function macroQuote(s:string):string;
 var
   t: string;
 begin
+enforceNUL(s);
 if not anyMacroMarkerIn(s) then
   begin
   result:=s;
@@ -1686,7 +1688,8 @@ var
     if name = '%item-name%' then
       begin
       s:=md.f.name;
-      if md.hideExt and md.f.isFile() then setLength(s, length(s)-length(extractFileExt(s)) );
+      if md.hideExt and md.f.isFile() then
+        setLength(s, length(s)-length(extractFileExt(s)) );
       result:=htmlEncode(macroQuote(optUTF8(md.tpl, s)))
       end
     else if name = '%item-size-b%' then
@@ -1711,7 +1714,7 @@ var
     else if name = '%item-comment%' then
       result:=optUTF8(md.tpl, md.f.getDynamicComment(TRUE))
     else if name = '%item-url%' then
-      result:=optUTF8(md.tpl, md.f.url())
+      result:=macroQuote(optUTF8(md.tpl, md.f.url()))
   ;
 
   if assigned(md.f) and assigned(md.tpl) then
@@ -2144,6 +2147,9 @@ try
       applyMacrosAndSymbols(p, cbMacros, cbData);
       result:=macroQuote(p);
       end;
+
+    if name = 'encode html' then
+      result:=htmlEncode(p);
 
     if name = 'play' then
       begin

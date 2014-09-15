@@ -7,6 +7,16 @@ LEGEND
 -   bug fix
 AV  access violation
 
+ver 2.3c
+propaganda
+  Security fixes
+/propaganda
+* files are reloaded when the timestamp has changed, not only when it's newer
+- fixed Remote Command Execution CVE-2014-6287 (thanks to Daniele Linguaglossa)
+- fixed CSRF (thanks to D.L.)
+- fixed XSS on comments and upload (thanks to D.L.)
+- program was stuck on lengthy disk harvesting
+
 ver 2.3b
 propaganda
   Security fixes

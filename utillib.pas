@@ -247,6 +247,7 @@ function getFirstChar(s:string):char;
 function escapeNL(s:string):string;
 function unescapeNL(s:string):string;
 function htmlEncode(s:string):string;
+procedure enforceNUL(var s:string);
 
 implementation
 
@@ -2669,8 +2670,9 @@ var
   d: TDateTime;
 begin
 d:=getMtime(fn);
-result:=fileExists(fn) and (d > previous);
-if result then previous:=d;
+result:=fileExists(fn) and (d <> previous);
+if result then
+  previous:=d;
 end; // newMtime
 
 function dequote(s:string; quoteChars:TcharSet=['"']):string;
@@ -3054,6 +3056,12 @@ try
   result:=fs.get();
 finally fs.free end;
 end; // htmlEncode
+
+procedure enforceNUL(var s:string);
+begin
+if s>'' then
+  setLength(s, strLen(@s[1]))
+end; // enforceNUL
 
 var
   TZinfo:TTimeZoneInformation;

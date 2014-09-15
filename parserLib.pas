@@ -232,6 +232,7 @@ procedure applyMacrosAndSymbols(var txt:string; cb:TmacroCB; cbData:pointer; rem
 var
   idsStack: TparserIdsStack;
 begin
+enforceNUL(txt);
 applyMacrosAndSymbols2(txt,cb,cbData,idsStack);
 if removeQuotings then
   txt:=xtpl(txt, [MARKER_QUOTE, '', MARKER_UNQUOTE, ''])
