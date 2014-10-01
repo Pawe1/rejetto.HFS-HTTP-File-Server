@@ -2254,7 +2254,7 @@ function strAt(s, ss:string; at:integer):boolean; inline;
 begin
 if (ss = '') or (length(s) < at+length(ss)-1) then result:=FALSE
 else if length(ss) = 1 then result:=s[at] = ss[1]
-else if length(sS) = 2 then result:=(s[at] = ss[1]) and (s[at+1] = ss[2])
+else if length(ss) = 2 then result:=(s[at] = ss[1]) and (s[at+1] = ss[2])
 else result:=copy(s,at,length(ss)) = ss;
 end; // strAt
 
@@ -2404,7 +2404,7 @@ l:=length(s);
 while i <= l do
   begin
   p:=posEx('&',s,i);
-  t:=decodeURL(xtpl(substr(s,i,if_(p=0,0,p-1)), ['+',' ']), FALSE);
+  t:=decodeURL(xtpl(substr(s,i,if_(p=0,0,p-1)), ['+',' ']), FALSE); // TODO should we instead try to decode utf-8? doing so may affect calls to {.force ansi.} in the template 
   sl.add(t);
   if p = 0 then exit;
   i:=p+1;

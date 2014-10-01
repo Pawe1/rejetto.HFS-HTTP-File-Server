@@ -35,8 +35,8 @@ uses
   HSlib, traylib, monoLib, progFrmLib, classesLib;
 
 const
-  VERSION = '2.3c';
-  VERSION_BUILD = '291';
+  VERSION = '2.3d';
+  VERSION_BUILD = '292';
   VERSION_STABLE = {$IFDEF STABLE } TRUE {$ELSE} FALSE {$ENDIF};
   CURRENT_VFS_FORMAT :integer = 1;
   CRLF = #13#10;
@@ -5173,7 +5173,7 @@ var
     conn.reply.url:=f.url(); // we use f.url() instead of just appending a "/" to url because of problems with non-ansi chars http://www.rejetto.com/forum/?topic=7837
     exit;
     end;
-  if f.isFolder() and (urlCmd = '') then
+  if f.isFolder() and (urlCmd = '') and (data.urlvars.indexOfName('mode')<0) then
     switchToDefaultFile();
   if enableNoDefaultChk.checked and (urlCmd = '~nodefault') then
     urlCmd:='';

@@ -1997,8 +1997,10 @@ try
         result:=intToStr(parI(0)+random(1+parI(1)-parI(0)));
 
     if name = 'force ansi' then
-      if satisfied(md.tpl) then
-        result:=optAnsi(md.tpl.utf8, p);
+      if satisfied(md.tpl) and md.tpl.utf8 then
+        result:=noMacrosAllowed(UTF8toAnsi(p))
+      else
+        result:=p;
 
     if name = 'maybe utf8' then
       if satisfied(md.tpl) then

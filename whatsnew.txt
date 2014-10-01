@@ -7,6 +7,13 @@ LEGEND
 -   bug fix
 AV  access violation
 
+ver 2.3d
+propaganda
+  Security fixes
+/propaganda
+- fixed Remote Command Execution CVE-2014-7226 (thanks to Daniele Linguaglossa)
+- default files were totally overriding the template http://www.rejetto.com/forum/hfs-~-http-file-server/deconfiguring-template/msg1059524/#msg1059524
+
 ver 2.3c
 propaganda
   Security fixes
