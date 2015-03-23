@@ -1773,10 +1773,10 @@ if size < 0 then result:='N/A'
 else
   if size < 1 shl 10 then result:=intToStr(size)
   else
-    if size < 1 shl 20 then result:=format('%f K',[size/(1 shl 10)])
+    if size < 1 shl 20 then result:=format('%.1f K',[size/(1 shl 10)])
     else
-      if size < 1 shl 30 then result:=format('%f M',[size/(1 shl 20)])
-      else result:=format('%f G',[size/(1 shl 30)])
+      if size < 1 shl 30 then result:=format('%.1f M',[size/(1 shl 20)])
+      else result:=format('%.1f G',[size/(1 shl 30)])
 end; // smartsize
 
 function cbSelectFolder(wnd:HWND; uMsg:UINT; lp,lpData:LPARAM):LRESULT; stdcall;

@@ -32,10 +32,6 @@ object optionsFrm: ToptionsFrm
     object bansPage: TTabSheet
       Caption = 'Bans'
       ImageIndex = 25
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Panel1: TPanel
         Left = 0
         Top = 0
@@ -119,10 +115,6 @@ object optionsFrm: ToptionsFrm
     object accountsPage: TTabSheet
       Caption = 'Accounts'
       ImageIndex = 29
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         797
         385)
@@ -136,7 +128,7 @@ object optionsFrm: ToptionsFrm
       end
       object Label7: TLabel
         Left = 251
-        Top = 352
+        Top = 351
         Width = 325
         Height = 13
         Hint = 'You also need to right click on the folder, then restrict access'
@@ -153,14 +145,13 @@ object optionsFrm: ToptionsFrm
         Left = 163
         Top = 26
         Width = 619
-        Height = 320
+        Height = 319
         Anchors = [akLeft, akTop, akRight, akBottom]
         Caption = 'Account properties'
         TabOrder = 7
-        ExplicitHeight = 321
         DesignSize = (
           619
-          320)
+          319)
         object Label3: TLabel
           Left = 11
           Top = 173
@@ -192,7 +183,7 @@ object optionsFrm: ToptionsFrm
           Left = 11
           Top = 192
           Width = 302
-          Height = 119
+          Height = 118
           Anchors = [akLeft, akTop, akBottom]
           Images = mainFrm.images
           Indent = 19
@@ -203,7 +194,6 @@ object optionsFrm: ToptionsFrm
           TabOrder = 7
           OnContextPopup = accountAccessBoxContextPopup
           OnDblClick = accountAccessBoxDblClick
-          ExplicitHeight = 120
         end
         object ignoreLimitsChk: TCheckBox
           Left = 226
@@ -270,13 +260,12 @@ object optionsFrm: ToptionsFrm
           Left = 345
           Top = 39
           Width = 271
-          Height = 272
+          Height = 271
           Anchors = [akLeft, akTop, akRight, akBottom]
           ParentShowHint = False
           ScrollBars = ssVertical
           ShowHint = False
           TabOrder = 8
-          ExplicitHeight = 273
         end
         object notesWrapChk: TCheckBox
           Left = 502
@@ -293,7 +282,7 @@ object optionsFrm: ToptionsFrm
       end
       object deleteaccountBtn: TButton
         Left = 3
-        Top = 354
+        Top = 353
         Width = 45
         Height = 17
         Anchors = [akLeft, akBottom]
@@ -307,11 +296,10 @@ object optionsFrm: ToptionsFrm
         ParentFont = False
         TabOrder = 2
         OnClick = deleteaccountBtnClick
-        ExplicitTop = 355
       end
       object renaccountBtn: TButton
         Left = 53
-        Top = 331
+        Top = 330
         Width = 49
         Height = 17
         Anchors = [akLeft, akBottom]
@@ -325,11 +313,10 @@ object optionsFrm: ToptionsFrm
         ParentFont = False
         TabOrder = 3
         OnClick = renaccountBtnClick
-        ExplicitTop = 332
       end
       object addaccountBtn: TButton
         Left = 3
-        Top = 331
+        Top = 330
         Width = 45
         Height = 17
         Anchors = [akLeft, akBottom]
@@ -342,11 +329,10 @@ object optionsFrm: ToptionsFrm
         ParentFont = False
         TabOrder = 1
         OnClick = addaccountBtnClick
-        ExplicitTop = 332
       end
       object upBtn: TButton
         Left = 107
-        Top = 331
+        Top = 330
         Width = 45
         Height = 17
         Anchors = [akLeft, akBottom]
@@ -360,11 +346,10 @@ object optionsFrm: ToptionsFrm
         TabOrder = 5
         OnClick = upBtnClick
         OnMouseUp = upBtnMouseUp
-        ExplicitTop = 332
       end
       object downBtn: TButton
         Left = 107
-        Top = 354
+        Top = 353
         Width = 45
         Height = 17
         Anchors = [akLeft, akBottom]
@@ -378,11 +363,10 @@ object optionsFrm: ToptionsFrm
         TabOrder = 6
         OnClick = upBtnClick
         OnMouseUp = upBtnMouseUp
-        ExplicitTop = 355
       end
       object sortBtn: TButton
         Left = 53
-        Top = 354
+        Top = 353
         Width = 49
         Height = 17
         Anchors = [akLeft, akBottom]
@@ -396,13 +380,12 @@ object optionsFrm: ToptionsFrm
         TabOrder = 4
         OnClick = sortBtnClick
         OnMouseUp = upBtnMouseUp
-        ExplicitTop = 355
       end
       object accountsBox: TListView
         Left = 3
         Top = 35
         Width = 149
-        Height = 290
+        Height = 289
         Anchors = [akLeft, akTop, akBottom]
         Columns = <>
         DragMode = dmAutomatic
@@ -422,16 +405,12 @@ object optionsFrm: ToptionsFrm
         OnDragDrop = accountsBoxDragDrop
         OnDragOver = accountsBoxDragOver
         OnKeyDown = accountsBoxKeyDown
-        ExplicitHeight = 291
+        OnKeyPress = accountsBoxKeyPress
       end
     end
     object mimePage: TTabSheet
       Caption = 'MIME types'
       ImageIndex = 7
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object mimeBox: TValueListEditor
         Left = 0
         Top = 30
@@ -488,10 +467,6 @@ object optionsFrm: ToptionsFrm
     object trayPage: TTabSheet
       Caption = 'Tray Message'
       ImageIndex = 10
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Label2: TLabel
         Left = 8
         Top = 16
@@ -537,10 +512,6 @@ object optionsFrm: ToptionsFrm
     object a2nPage: TTabSheet
       Caption = 'Address2name'
       ImageIndex = -1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Panel4: TPanel
         Left = 0
         Top = 0
@@ -600,10 +571,6 @@ object optionsFrm: ToptionsFrm
     object iconsPage: TTabSheet
       Caption = 'Icon masks'
       ImageIndex = -1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         797
         385)
@@ -626,11 +593,10 @@ object optionsFrm: ToptionsFrm
         Left = 8
         Top = 48
         Width = 225
-        Height = 248
+        Height = 247
         Anchors = [akLeft, akTop, akBottom]
         TabOrder = 0
         OnChange = iconMasksBoxChange
-        ExplicitHeight = 249
       end
       object iconsBox: TComboBox
         Left = 272

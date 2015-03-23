@@ -1,5 +1,5 @@
 {
-Copyright (C) 2002-2012  Massimo Melina (www.rejetto.com)
+Copyright (C) 2002-2014  Massimo Melina (www.rejetto.com)
 
 This file is part of HFS ~ HTTP File Server.
 
@@ -35,8 +35,8 @@ uses
   HSlib, traylib, monoLib, progFrmLib, classesLib;
 
 const
-  VERSION = '2.3d';
-  VERSION_BUILD = '292';
+  VERSION = '2.3e';
+  VERSION_BUILD = '293';
   VERSION_STABLE = {$IFDEF STABLE } TRUE {$ELSE} FALSE {$ENDIF};
   CURRENT_VFS_FORMAT :integer = 1;
   CRLF = #13#10;
@@ -137,7 +137,7 @@ const
   MSG_SINGLE_INSTANCE = 'Sorry, this feature only works with the "Only 1 instance" option enabled.'
     +#13#13'You can find this option under Menu -> Start/Exit'
     +#13'(only in expert mode)';
-  MSG_ENABLED = 'Option enabled';
+  MSG_ENABLED =   'Option enabled';
   MSG_DISABLED = 'Option disabled';
   MSG_COMM_ERROR = 'Network error. Request failed.';
 
@@ -1399,8 +1399,8 @@ var
   result:=0;
   case sortby of
     SB_SIZE: result:=compare_(f1.size, f2.size);
-    SB_TIME: result:=-compare_(f1.mtime, f2.mtime);
-    SB_DL: result:=-compare_(f1.DLcount, f2.DLcount);
+    SB_TIME: result:=compare_(f1.mtime, f2.mtime);
+    SB_DL: result:=compare_(f1.DLcount, f2.DLcount);
     SB_EXT:
       if not f1.isFolder() and not f2.isFolder() then
         result:=compareExt(f1.name, f2.name);
@@ -3528,7 +3528,8 @@ try
   fast:=TfastStringAppend.Create();
   listing:=TfileListing.create();
   hasher:=Thasher.create();
-  hasher.loadFrom(folder.resource);
+  if fingerprintsChk.checked then
+    hasher.loadFrom(folder.resource);
   try
     listing.fromFolder( folder, cd, recur );
     listing.sort(cd, if_(recur or (otpl = filelistTpl), '?', diffTpl['sort by']) ); // '?' is just a way to cause the sort to fail in case the sort key is not defined by the connection
@@ -3717,7 +3718,8 @@ var
         '%item-resource%', f.resource+'\'+fn,
         '%idx%', intToStr(i+1),
         '%reason%', optUTF8(tpl2use, reason),
-        '%speed%', intToStr(speed)
+        '%speed%', intToStr(speed div 1000), // legacy
+        '%smart-speed%', smartsize(speed)
       ]);
   addArray(md.table, ['%uploaded-files%', files]);
   end; // addUploadResultsSymbols
@@ -4376,7 +4378,7 @@ var
   end; // switchToDefaultFile
 
   function calcAverageSpeed(bytes:int64):integer;
-  begin result:=round(safeDiv(bytes, (now()-data.fileXferStart)*SECONDS*1000)) end;
+  begin result:=round(safeDiv(bytes, (now()-data.fileXferStart)*SECONDS)) end;
 
   function runEventScript(event:string; table:array of string):string; overload;
   var
@@ -4509,18 +4511,19 @@ var
         add2log(format('Uploading %s', [data.uploadSrc]), data);
     HE_POST_END_FILE:
       if logUploadsChk.checked and (data.uploadFailed = '') then
-        add2log(format('Fully uploaded -  %s @ %d KB/s', [
+        add2log(format('Fully uploaded -  %s @ %sB/s', [
           smartSize(conn.bytesPostedLastItem),
-          calcAverageSpeed(conn.bytesPostedLastItem) ]), data);
+          smartSize(calcAverageSpeed(conn.bytesPostedLastItem)) ]), data);
     HE_LAST_BYTE_DONE:
       if logFulldownloadsChk.checked
       and data.countAsDownload
       and (data.downloadingWhat in [DW_FILE, DW_ARCHIVE]) then
         begin
         data.fullDLlogged:=TRUE;
-        add2log(format('Fully downloaded - %s @ %d KB/s - %s', [
+        add2log(format('Fully downloaded - %s @ %sB/s - %s', [
           smartSize(conn.bytesSentLastItem),
-          calcAverageSpeed(conn.bytesSentLastItem), url_]), data);
+          smartSize(calcAverageSpeed(conn.bytesSentLastItem)),
+          url_]), data);
         end;
     end;
 

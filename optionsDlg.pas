@@ -137,6 +137,7 @@ type
     procedure updateAccessBox();
     procedure accountsBoxDblClick(Sender: TObject);
     procedure redirBoxChange(Sender: TObject);
+    procedure accountsBoxKeyPress(Sender: TObject; var Key: Char);
   public
     procedure checkRedir();
 		procedure loadAccountProperties();
@@ -169,6 +170,7 @@ procedure ToptionsFrm.selectAccount(i:integer; saveBefore:boolean=TRUE);
 begin
 if saveBefore then saveAccountProperties();
 accountsBox.itemIndex:=i;
+accountsBox.ItemFocused:=accountsBox.Selected;
 loadAccountProperties();
 end; // selectAccount
 
@@ -736,6 +738,27 @@ if shift = [ssAlt] then
     VK_DOWN: downBtn.click();
     end;
 {/mod}
+end;
+
+procedure ToptionsFrm.accountsBoxKeyPress(Sender: TObject; var Key: Char);
+var
+  s, i, ir, n: integer;
+begin
+key:=upcase(key);
+if key in ['0'..'9','A'..'Z'] then
+  begin
+  s:=accountsBox.ItemIndex;
+  n:=length(tempAccounts);
+  for i:=1 to n-1 do
+    begin
+    ir:=(s+i) mod n;
+    if key = upcase(tempAccounts[ir].user[1]) then
+      begin
+      selectAccount(ir);
+      exit;
+      end;
+    end;
+  end;
 end;
 
 procedure ToptionsFrm.redirBoxChange(Sender: TObject);

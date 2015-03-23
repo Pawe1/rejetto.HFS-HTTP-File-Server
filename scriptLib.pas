@@ -498,7 +498,7 @@ var
           else
             vars.add(par(i))  // didn't exist, put the whole
         else
-          if s > '' then
+          if s = '' then
             vars.delete(ex) //  exists, but we are trying to empty it
           else
             vars.valueFromIndex[ex]:=s; // exists, change the value

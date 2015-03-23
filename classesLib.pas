@@ -791,6 +791,7 @@ var
   sr: TsearchRec;
   s, l, h: string;
 begin
+if path='' then exit;
 path:=includeTrailingPathDelimiter(lowercase(path));
 if findFirst(path+'*.md5', faAnyFile-faDirectory, sr) <> 0 then exit;
   repeat

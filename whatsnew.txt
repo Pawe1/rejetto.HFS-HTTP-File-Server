@@ -7,6 +7,18 @@ LEGEND
 -   bug fix
 AV  access violation
 
+ver 2.3e
+propaganda
+  Small fixes
+/propaganda
++ upload: multiple file selection
++ search accounts by typing the first letter
++ smarter speed measure in the log
+* using jquery's CDN instead of google's
+- delete not working after archive http://www.rejetto.com/forum/bug-reports/2-3d-(292)-delete-after-archive-repeats-the-archive-download-again/
+- getUri problem http://www.rejetto.com/forum/programmers-corner/last-beta-sources/msg1059938/#msg1059938
+- a big MD5 file can hang http://www.rejetto.com/forum/bug-reports/hfs-hangs-on-access/
+
 ver 2.3d
 propaganda
   Security fixes

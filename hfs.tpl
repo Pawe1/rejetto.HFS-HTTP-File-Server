@@ -1,5 +1,5 @@
 Welcome! This is the default template for HFS 2.3
-template revision TR3.
+template revision TR2.
 
 Here below you'll find some options affecting the template.
 Consider 1 is used for "yes", and 0 is used for "no".
@@ -17,6 +17,7 @@ option.newfolder=1
 option.move=1
 option.comment=1
 option.rename=1
+options.loadFromCDN=1
 COMMENT with these you can disable some features of the template. Please note this is not about user permissions, this is global!
 
 []
@@ -26,8 +27,10 @@ COMMENT with these you can disable some features of the template. Please note th
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	<title>{.!HFS.} %folder%</title>
 	<link rel="stylesheet" href="/?mode=section&id=style.css" type="text/css">
-	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.js"></script>
-    <script> if (typeof jQuery == "undefined") document.write('<script type="text/javascript" src="/?mode=jquery"></'+'script>'); </script>
+    {.if|{.!option.loadFromCDN.}|
+	   <script type="text/javascript" src="//code.jquery.com/jquery-1.4.4.min.js"></script>
+    .}
+    <script> if (!window.jQuery) document.write('<script type="text/javascript" src="/?mode=jquery"></'+'script>'); </script>
 	<link rel="shortcut icon" href="/favicon.ico">
 	<style class='trash-me'>
 	.onlyscript, button[onclick] { display:none; }
@@ -165,7 +168,7 @@ COMMENT with these you can disable some features of the template. Please note th
 		<fieldset id='upload'>
     		<legend><img src="/~img32"> {.!Upload.}</legend>
     		<form action="." method='post' enctype="multipart/form-data" style='text-align:right;'>
-    		<input type='file' name='file' style='display:block;' />
+    		<input type='file' name='file' multiple style='display:block;' />
     		<input type='submit' value='{.!Upload.}' style='margin-top:0.5em;' />
     		</form>
 		</fieldset>
