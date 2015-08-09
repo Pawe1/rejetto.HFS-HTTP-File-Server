@@ -51,6 +51,7 @@ type
     HE_REQUESTING,      // a possible new request starts here
     HE_GOT_HEADER,      // header part was fully received
     HE_REQUESTED,       // a full request has been submitted
+    HE_STREAM_READY,    // reply stream ready
     HE_REPLIED,         // the reply has been sent
     HE_POST_FILE,       // new file is posted
     HE_POST_MORE_FILE,  // more data has come for the previous file
@@ -176,7 +177,6 @@ type
     procedure datasent(sender:Tobject; error:word);
     function  fullBodySize():int64;
     function  partialBodySize():int64;
-    function  initInputStream():boolean;
     function  sendNextChunk(max:integer=MAXINT):integer;
     function  getBytesToSend():int64;
     function  getBytesToPost():int64;
@@ -209,8 +209,9 @@ type
     procedure addHeader(s:string; overwrite:boolean=TRUE); // append an additional header line
     function  getHeader(h:string):string;  // extract the value associated to the specified header field
     function  getCookie(k:string):string;
-    procedure setCookie(k, v:string; pairs:array of string);
+    procedure setCookie(k, v:string; pairs:array of string; extra:string='');
     function getBuffer():string;
+    function  initInputStream():boolean;
     property address:string read P_address;      // other peer ip address
     property port:string read P_port;            // other peer port
     property requestCount:integer read P_requestCount;
@@ -966,7 +967,7 @@ if request.method = HM_UNK then exit;
 result:=trim(request.cookies.values[k]);
 end; // getCookie
 
-procedure ThttpConn.setCookie(k, v:string; pairs:array of string);
+procedure ThttpConn.setCookie(k, v:string; pairs:array of string; extra:string='');
 var
   i: integer;
 begin
@@ -977,7 +978,7 @@ while i < length(pairs)-1 do
   v:=v+lowerCase(pairs[i])+'='+pairs[i+1]+'; ';
   inc(i,2);
   end;
-addHeader(v);
+addHeader(v+extra);
 end; // setCookie
 
 procedure ThttpConn.clearRequest();
@@ -1281,6 +1282,7 @@ if not initInputStream() then
   reply.contentType:='text/html';
   notify(HE_CANT_OPEN_FILE);
   end;
+notify(HE_STREAM_READY);
 case reply.mode of
   HRM_CLOSE: disconnect();
   HRM_IGNORE: ;

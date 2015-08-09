@@ -7,6 +7,16 @@ LEGEND
 -   bug fix
 AV  access violation
 
+ver 2.3f
+propaganda
+   Security fix
+/propaganda
++ new [stream ready] event and %is-archive% symbol http://www.rejetto.com/forum/index.php?topic=8609.msg1060172#msg1060172
++ now you can use [upload completed] to refuse uploads http://www.rejetto.com/forum/html-templates/limits-to-upload-files-by-extension-and-size/msg1060476/#msg1060476
+* no more CDN for jquery
+- "bad session" error was not handled correctly http://www.rejetto.com/forum/html-templates/troubleshooting-hfs-cookie-issues-on-rename-in-the-default-template
+- possible XSS with %symbols%, and session stealing (thanks to Daniele Linguaglossa)
+
 ver 2.3e
 propaganda
   Small fixes

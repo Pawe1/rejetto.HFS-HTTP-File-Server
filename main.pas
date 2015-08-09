@@ -35,8 +35,8 @@ uses
   HSlib, traylib, monoLib, progFrmLib, classesLib;
 
 const
-  VERSION = '2.3e';
-  VERSION_BUILD = '293';
+  VERSION = '2.3f';
+  VERSION_BUILD = '294';
   VERSION_STABLE = {$IFDEF STABLE } TRUE {$ELSE} FALSE {$ENDIF};
   CURRENT_VFS_FORMAT :integer = 1;
   CRLF = #13#10;
@@ -57,8 +57,8 @@ const
   EVENTSCRIPTS_FILE = 'hfs.events';
   MACROS_LOG_FILE = 'macros-log.html';
   PREVIOUS_VERSION = 'hfs.old.exe';
-  SESSION_COOKIE = 'HFS_SID';
-  PROTECTED_FILES_MASK = 'hfs.*;index.htm*;default.htm*;descript.ion;*.comment;*.md5;*.corrupted';
+  SESSION_COOKIE = 'HFS_SID_';
+  PROTECTED_FILES_MASK = 'hfs.*;*.htm*;descript.ion;*.comment;*.md5;*.corrupted';
   G_VAR_PREFIX = '#';
   HOURS = 24;
   MINUTES = HOURS*60;
@@ -4398,6 +4398,7 @@ var
       begin
       // we must encapsulate it in a Tfile to expose file properties to the script. we don't need to cache the object because we need it only once.
       md.f:=Tfile.createTemp(data.uploadDest);
+      md.f.size:=sizeOfFile(data.uploadDest);
       pleaseFree:=TRUE;
 
       md.folder:=data.lastFile;
@@ -4510,10 +4511,14 @@ var
       if logUploadsChk.checked and (data.uploadFailed = '') then
         add2log(format('Uploading %s', [data.uploadSrc]), data);
     HE_POST_END_FILE:
-      if logUploadsChk.checked and (data.uploadFailed = '') then
-        add2log(format('Fully uploaded -  %s @ %sB/s', [
-          smartSize(conn.bytesPostedLastItem),
-          smartSize(calcAverageSpeed(conn.bytesPostedLastItem)) ]), data);
+      if logUploadsChk.checked then
+        if data.uploadFailed = '' then
+          add2log(format('Fully uploaded %s - %s @ %sB/s', [
+            data.uploadSrc,
+            smartSize(conn.bytesPostedLastItem),
+            smartSize(calcAverageSpeed(conn.bytesPostedLastItem)) ]), data)
+        else
+          add2log(format('Upload failed %s', [data.uploadSrc]), data);
     HE_LAST_BYTE_DONE:
       if logFulldownloadsChk.checked
       and data.countAsDownload
@@ -4684,7 +4689,7 @@ var
   if data.sessionID = '' then
     begin
     data.sessionID:=getNewSID();
-    conn.setCookie(SESSION_COOKIE, data.sessionID, ['path','/']); // the session is site-wide, even if this request was related to a folder
+    conn.setCookie(SESSION_COOKIE, data.sessionID, ['path','/'], 'HttpOnly'); // the session is site-wide, even if this request was related to a folder
     end
   else
     try data.session:=sessions.objects[sessions.indexOf(data.sessionID)] as ThashedStringList
@@ -5500,6 +5505,17 @@ case event of
       freeIfTemp(f);
     refreshConn(data);
     end;
+  HE_STREAM_READY:
+    begin
+    i:=length(data.disconnectReason);
+    runEventScript('stream ready');
+    if (i=0) and (data.disconnectReason > '') then // only if it was not already disconnecting
+      begin
+      conn.reply.additionalHeaders:=''; // content-disposition would prevent the browser
+      getPage('deny', data);
+      conn.initInputStream();
+      end;
+    end;
   HE_REPLIED:
     begin
     setupDownloadIcon(data); // remove the icon
@@ -5593,18 +5609,23 @@ case event of
     ur.fn:=first(extractFilename(data.uploadDest), data.uploadSrc);
     if data.f = NIL then ur.size:=-1
     else ur.size:=filesize(data.f^);
-    ur.reason:=data.uploadFailed;
     ur.speed:=calcAverageSpeed(conn.bytesPostedLastItem);
+    // custom scripts
+    if assigned(data.f) then inc(uploadsLogged);
+    closeUploadingFile();
+    if data.uploadFailed = '' then
+      data.uploadFailed:=trim(runEventScript('upload completed'))
+    else
+      runEventScript('upload failed');
+    ur.reason:=data.uploadFailed;
+    if data.uploadFailed > '' then
+      deleteFile(data.uploadDest);
     // queue the record
     i:=length(data.uploadResults);
     setLength(data.uploadResults, i+1);
     data.uploadResults[i]:=ur;
-    // last deeds
-    if assigned(data.f) then inc(uploadsLogged);
-    closeUploadingFile();
+
     refreshConn(data);
-    if data.uploadFailed = '' then runEventScript('upload completed')
-    else runEventScript('upload failed');
     end;
   HE_POST_VAR: data.postVars.add(conn.post.varname+'='+conn.post.data);
   HE_POST_VARS:
@@ -11452,7 +11473,6 @@ function Tmainfrm.finalInit():boolean;
 var
   cfgLoaded: boolean;
   params: TStringDynArray;
-  i: integer;
 begin
 result:=FALSE;
 
@@ -11476,8 +11496,6 @@ srv:=ThttpSrv.create();
 srv.autoFreeDisconnectedClients:=FALSE;
 srv.limiters.add(globalLimiter);
 srv.onEvent:=httpEvent;
-i:=getImageIndexForFile(getBrowserPath());
-browseBtn.ImageIndex:=i;
 tray_ico:=Ticon.create();
 tray:=TmyTrayicon.create(self);
 DragAcceptFiles(handle, true);
@@ -12153,6 +12171,7 @@ tempScriptFilename:=getTempDir()+'hfs script.tmp';
 
 logfile.apacheZoneString:=if_(GMToffset < 0, '-','+')
   +format('%.2d%.2d', [abs(GMToffset div 60), abs(GMToffset mod 60)]);
+
 
 FINALIZATION
 

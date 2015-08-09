@@ -131,6 +131,7 @@ enforceNUL(s);
   if i = 0 then break;
   replace(s, '&#'+intToStr(charToUnicode(s[i]))+';', i,i);
   until false;
+s:=reReplace(s,'%([-a-z0-9]+%)','&#39;$1', 'mi');
 result:=s;
 end; // noMacrosAllowed
 
@@ -1656,6 +1657,8 @@ var
       else result:=md.cd.account.notes
     else if name = '%stream-size%' then
       result:=intToStr(md.cd.conn.bytesFullBody)
+    else if name = '%is-archive%' then
+      trueIf(md.cd.downloadingWhat=DW_ARCHIVE)
     end;
 
 
@@ -2259,9 +2262,7 @@ try
         end;
 
     if name = 'get ini' then
-      begin
       result:=getKeyFromString(mainFrm.getCfg(), p);
-      end;
 
     if name = 'set ini' then
       begin

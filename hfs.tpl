@@ -17,7 +17,6 @@ option.newfolder=1
 option.move=1
 option.comment=1
 option.rename=1
-options.loadFromCDN=1
 COMMENT with these you can disable some features of the template. Please note this is not about user permissions, this is global!
 
 []
@@ -27,10 +26,7 @@ COMMENT with these you can disable some features of the template. Please note th
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	<title>{.!HFS.} %folder%</title>
 	<link rel="stylesheet" href="/?mode=section&id=style.css" type="text/css">
-    {.if|{.!option.loadFromCDN.}|
-	   <script type="text/javascript" src="//code.jquery.com/jquery-1.4.4.min.js"></script>
-    .}
-    <script> if (!window.jQuery) document.write('<script type="text/javascript" src="/?mode=jquery"></'+'script>'); </script>
+    <script type="text/javascript" src="/?mode=jquery"></script>
 	<link rel="shortcut icon" href="/favicon.ico">
 	<style class='trash-me'>
 	.onlyscript, button[onclick] { display:none; }
@@ -187,7 +183,7 @@ COMMENT with these you can disable some features of the template. Please note th
 		<button id='commentBtn' onclick='setComment.call(this)'>{.!Comment.}</button>
 		.}
 		{.if|{.get|can delete.}|
-		<button id='deleteBtn' onclick='if (confirm("{.!confirm.}")) submit({action:"delete"})'>{.!Delete.}</button>
+		<button id='deleteBtn' onclick='if (confirm("{.!confirm.}")) submit({action:"delete"}, "{.get|url.}")'>{.!Delete.}</button>
 
 		{.if|{.and|{.!option.move.}|{.can move.}.}| <button id='moveBtn' onclick='moveClicked()'>{.!Move.}</button> .}
 		.}
@@ -251,7 +247,7 @@ fieldset { margin-bottom:0.7em; text-align:left; padding:0.6em; }
 #files .selector { display:none; }
 #actions button { margin:0.2em; } 
 #breadcrumbs { margin-top:1em; padding-left:0.5em; }
-#breadcrumbs a { padding:0.15em 0; border-width:2px; display:block; }
+#breadcrumbs a { padding:0.15em 0; border-width:2px; display:block; word-break:break-all; }
 #folder-stats, #foldercomment { margin-top:1em; padding-top:0.5em; border-top:1px solid #666;  }
 #folder-stats { color:#666; text-align:center; }
 #msgs { display:none; }
@@ -357,7 +353,7 @@ fieldset { margin-bottom:0.7em; text-align:left; padding:0.6em; }
 [upload-success]
 {.inc|ok.}
 <li> <a href="%item-url%">%item-name%</a>
-<br />%item-size% @ %speed% KB/s
+<br />%item-size% @ %smart-speed%B/s
 {.if| {.length|%user%.} |{: {.append| %folder-resource%\hfs.comments.txt |{.filename|%item-resource%.}=uploaded by %user%
 /append.} :}/if.}
 
@@ -404,7 +400,7 @@ fieldset { margin-bottom:0.7em; text-align:left; padding:0.6em; }
 {.break|if={.exists|{.^x.}.}|result=exists.}
 {.break|if={.not|{.length|{.mkdir|{.^x.}.}.}.}|result=failed.}
 {.add to log|User %user% created folder "{.^x.}".}
-ok
+{.pipe|ok.}
 
 [ajax.rename|no log]
 {.check session.}
@@ -417,7 +413,7 @@ ok
 {.break|if={.exists|{.^y.}.}|result=exists.}
 {.break|if={.not|{.length|{.rename|{.^x.}|{.^y.}.}.}.}|result=failed.}
 {.add to log|User %user% renamed "{.^x.}" to "{.^y.}".}
-ok
+{.pipe|ok.}
 
 [ajax.move|no log]
 {.check session.}
@@ -451,7 +447,7 @@ ok
 	{.break|if={.is file protected|var=fn.}|result=forbidden.}
     {.set item|{.force ansi|%folder%{.^fn.}.}|comment={.encode html|{.force ansi|{.postvar|text.}.}.}.}
 :}.}
-ok
+{.pipe|ok.}
 
 [ajax.changepwd|no log]
 {.check session.}
@@ -459,7 +455,7 @@ ok
 {.if|{.length|{.set account||password={.force ansi|{.postvar|new.}.}.}/length.}|ok|failed.}
 
 [special:alias]
-check session=break|if={.{.cookie|HFS_SID.} != {.postvar|token.}.}|result=bad session
+check session=if|{.{.cookie|HFS_SID_.} != {.postvar|token.}.}|{:{.cookie|HFS_SID_|value=|expires=-1.} {.break|result=bad session}:}
 can mkdir=and|{.get|can upload.}|{.!option.newfolder.}
 can comment=and|{.get|can upload.}|{.!option.comment.}
 can rename=and|{.get|can delete.}|{.!option.rename.}
@@ -616,7 +612,7 @@ $(function(){
 function ajax(method, data, cb) {
 	if (!data)
 		data = {};
-	data.token = getCookie('HFS_SID');
+	data.token = "{.cookie|HFS_SID_.}";
 	return $.post("?mode=section&id=ajax."+method, data, cb||getStdAjaxCB());
 }//ajax
 
@@ -792,8 +788,13 @@ function getStdAjaxCB(what2do) {
         what2do = true;
     return function(res){
         res = $.trim(res);
-        if (res != "ok")
-            return alert("{.!Error.}: "+res);
+
+        if (res !== "ok") {
+            alert("{.!Error.}: "+res);
+            if (res === 'bad session')
+                location.reload();
+            return;
+        }
         // what2do is a list of actions we are supposed to do if the ajax result is "ok"
         if (typeof what2do == 'undefined') 
             return;            

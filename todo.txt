@@ -1,3 +1,5 @@
+HTTP only
+cache reReplace
 + hash&salt passwords
 - setInterval > setTimeout
 + target=_blank as an option on links

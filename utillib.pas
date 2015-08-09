@@ -438,17 +438,16 @@ begin result:=movefile(src, dst, FO_COPY) end;
 var
   reTempCache, reFixedCache: THashedStringList;
 
-function reMatch(s, exp:string; mods:string='m'; ofs:integer=1; subexp:PstringDynArray=NIL):integer;
+function reCache(exp:string; mods:string='m'):TregExpr;
 const
   CACHE_MAX = 100;
 var
   i: integer;
-  re: TRegExpr;
-  key: string;
   cache: THashedStringList;
   temporary: boolean;
+  key: string;
+
 begin
-result:=0;
 
 // this is a temporary cache: older things get deleted. order: first is older, last is newer.
 if reTempCache = NIL then
@@ -468,15 +467,15 @@ key:=mods+#255+exp;
 i:=cache.indexOf(key);
 if i >= 0 then
   begin
-  re:=cache.objects[i] as TregExpr;
+  result:=cache.objects[i] as TregExpr;
   if temporary then
     cache.move(i, cache.count-1); // just requested, refresh position
   end
 else
   begin
   // cache fault, create new object
-  re:=TRegExpr.Create;
-  cache.addObject(key, re);
+  result:=TRegExpr.Create;
+  cache.addObject(key, result);
 
   if temporary and (cache.count > CACHE_MAX) then
     // delete older ones
@@ -486,12 +485,21 @@ else
         cache.delete(0);
       except end;
 
-  re.modifierS:=FALSE; 
-  re.modifierStr:=mods;
-  re.expression:=exp;
-  re.compile();
+  result.modifierS:=FALSE;
+  result.modifierStr:=mods;
+  result.expression:=exp;
+  result.compile();
   end;
 
+end;//reCache
+
+function reMatch(s, exp:string; mods:string='m'; ofs:integer=1; subexp:PstringDynArray=NIL):integer;
+var
+  i: integer;
+  re: TRegExpr;
+begin
+result:=0;
+re:=reCache(exp,mods);
 if assigned(subexp) then
   subexp^:=NIL;
 // do the job
@@ -518,17 +526,11 @@ else
 end; // reGet
 
 function reReplace(subj, exp, repl:string; mods:string='m'):string;
+var
+  re: TRegExpr;
 begin
-with TRegExpr.create do
-  try
-    modifierS:=FALSE; 
-    modifierStr:=mods;
-    expression:=exp;
-    try
-      compile();
-      result:=replace(subj, repl, TRUE);
-    except end;
-  finally free end
+re:=reCache(exp,mods);
+result:=re.replace(subj, repl, TRUE);
 end; // reReplace
 
 // converts from integer to string[4]
@@ -2245,8 +2247,7 @@ end; // isOnlyDigits
 
 function openURL(url:string):boolean;
 begin
-result:=exec(loadregistry('http\shell\open\command','', HKEY_CLASSES_ROOT), url)
-  or exec(url);
+result:=exec(url);
 end; // openURL
 
 // tells if a substring is found at specific position
