@@ -285,7 +285,7 @@ const
   MINIMUM_CHUNK_SIZE = 2*1024;
   MAXIMUM_CHUNK_SIZE = 1024*1024;
   HRM2CODE: array [ThttpReplyMode] of integer = (200, 200, 403, 401, 404, 400,
-  	500, 0, 0, 405, 302, 503, 414, 301, 304 );
+  	500, 0, 0, 405, 302, 503, 413, 301, 304 );
   METHOD2STR: array [ThttpMethod] of string = ('UNK','GET','POST','HEAD');
   HRM2STR: array [ThttpReplyMode] of string = ('Head+Body', 'Head only', 'Deny',
     'Unauthorized', 'Not found', 'Bad request', 'Internal error', 'Close',
@@ -327,7 +327,7 @@ uses
   Windows;
 const
   CRLF = #13#10;
-  MAX_REQUEST_LENGTH = 2*1024;
+  MAX_REQUEST_LENGTH = 16*1024;
   MAX_INPUT_BUFFER_LENGTH = 256*1024;
   // used as body content when the user did not specify any
   HRM2BODY: array [ThttpReplyMode] of string = (
@@ -343,7 +343,7 @@ const
     '405 - Method not allowed',
     '<html><head><meta http-equiv="refresh" content="url=%url%" /></head><body onload=''window.location="%url%"''>302 - <a href="%url%">Redirection to %url%</a></body></html>',
     '503 - Server is overloaded, retry later',
-    '414 - The request has exceeded the max length allowed',
+    '413 - The request has exceeded the max length allowed',
     '301 - Moved permanently to <a href="%url%">%url%</a>',
     '' // RFC2616: The 304 response MUST NOT contain a message-body
   );
@@ -1538,7 +1538,7 @@ case code of
   403: result:='Forbidden';
   404: result:='Not Found';
   405: result:='Method Not Allowed';
-  414: result:='Request-URI Too Large';
+  413: result:='Payload Too Large';
   500: result:='Internal Server Error';
   503: result:='Service Unavailable';
   else result:='';

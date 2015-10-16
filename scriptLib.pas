@@ -131,7 +131,7 @@ enforceNUL(s);
   if i = 0 then break;
   replace(s, '&#'+intToStr(charToUnicode(s[i]))+';', i,i);
   until false;
-s:=reReplace(s,'%([-a-z0-9]+%)','&#39;$1', 'mi');
+s:=reReplace(s,'%([-a-z0-9]+%)','&#37;$1', 'mi');
 result:=s;
 end; // noMacrosAllowed
 
@@ -471,7 +471,7 @@ var
     s: string;
   begin
   if not satisfied(md.cd) then exit;
-  result:=noMacrosAllowed(md.cd.conn.request.url);
+  result:=md.cd.conn.request.url;
   if pars.count < 2 then exit;
   s:=result;
   result:=chop('?', s);
@@ -799,7 +799,7 @@ var
 
   begin
   result:='';
-  f:=mainfrm.findFileByURL(p);
+  f:=mainfrm.findFileByURL(p, md.folder);
   if f = NIL then exit; // doesn't exist
 
   try f.setDynamicComment(macroDequote(parEx('comment'))) except end;
@@ -858,7 +858,7 @@ var
 
   begin
   result:='';
-  f:=mainfrm.findFileByURL(p);
+  f:=mainfrm.findFileByURL(p, md.folder);
   if f = NIL then exit; // doesn't exist
 
   try
@@ -1877,7 +1877,12 @@ try
 
     if name = 'disconnection reason' then
       begin
-      try if isFalse(parEx('if')) then exit;
+      try
+        if isFalse(parEx('if')) then
+          begin
+          result:='';
+          exit;
+          end;
       except end;
       result:=md.cd.disconnectReason; // return the previous state
       if pars.count > 0 then md.cd.disconnectReason:=p;

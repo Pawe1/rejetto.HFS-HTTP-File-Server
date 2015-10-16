@@ -35,8 +35,8 @@ uses
   HSlib, traylib, monoLib, progFrmLib, classesLib;
 
 const
-  VERSION = '2.3f';
-  VERSION_BUILD = '294';
+  VERSION = '2.3g';
+  VERSION_BUILD = '295';
   VERSION_STABLE = {$IFDEF STABLE } TRUE {$ELSE} FALSE {$ENDIF};
   CURRENT_VFS_FORMAT :integer = 1;
   CRLF = #13#10;
@@ -1479,6 +1479,21 @@ case v[1] of
 qsort( 0, length(dir)-1 );
 end; // sort
 
+procedure loadIon(path:string; comments:TstringList);
+var
+  s, l, fn: string;
+begin
+if not mainfrm.supportDescriptionChk.checked then exit;
+s:=loadDescriptionFile(path);
+while s > '' do
+  begin
+  l:=chopLine(s);
+  if l = '' then continue;
+  fn:=chop(nonQuotedPos(' ', l), l);
+  comments.add(dequote(fn)+'='+trim(unescapeIon(l)));
+  end;
+end; // loadIon
+
 // returns number of skipped files
 function TfileListing.fromFolder(folder:Tfile; cd:TconnData;
   recursive:boolean=FALSE; limit:integer=-1; toSkip:integer=-1; doClear:boolean=TRUE):integer;
@@ -1527,21 +1542,6 @@ var
   var
     comments: THashedStringList;
     commentMasks: TStringDynArray;
-
-    procedure loadIon();
-    var
-      s, l, fn: string;
-    begin
-    if not mainfrm.supportDescriptionChk.checked then exit;
-    s:=loadDescriptionFile(folder.resource);
-    while s > '' do
-      begin
-      l:=chopLine(s);
-      if l = '' then continue;
-      fn:=chop(nonQuotedPos(' ', l), l);
-      comments.add(dequote(fn)+'='+trim(unescapeIon(l)));
-      end;
-    end; // loadIon
 
     // moves to "commentMasks" comments with a filemask as filename
     procedure extractCommentsWithWildcards();
@@ -1632,7 +1632,7 @@ this would let us have "=" inside the names, but names cannot be assigned
     comments.caseSensitive:=FALSE;
     try comments.loadFromFile(folder.resource+'\'+COMMENTS_FILE);
     except end;
-    loadIon();
+    loadIon(folder.resource, comments);
     i:=if_((filesFilter='\') or (urlFilesFilter='\'), faDirectory, faAnyFile);
     setBit(i, faSysFile, mainFrm.listfileswithsystemattributeChk.checked);
     setBit(i, faHidden, mainFrm.listfileswithHiddenAttributeChk.checked);
@@ -2431,7 +2431,7 @@ end; // isEmptyFolder
 // uses comments file
 function Tfile.getDynamicComment(skipParent:boolean=FALSE):string;
 var
-  comments: TstringList;
+  comments: THashedStringList;
 begin
 try
   result:=comment;
@@ -2439,14 +2439,23 @@ try
   if mainfrm.loadSingleCommentsChk.checked then
     result:=loadFile(resource+COMMENT_FILE_EXT);
   if (result > '') or skipParent then exit;
-  comments:=TstringList.create();
+  comments:=THashedStringList.create();
   try
     try
       comments.CaseSensitive:=FALSE;
       comments.LoadFromFile(resource+'\..\'+COMMENTS_FILE);
-      result:=unescapeNL(comments.values[name]);
+      result:=comments.values[name];
     except end
-  finally comments.free end;
+  finally
+    if result = '' then
+      begin
+      loadIon(resource+'\..', comments);
+      result:=comments.values[name];
+      end;
+    if result > '' then
+      result:=unescapeNL(result);
+    comments.free
+  end;
 finally result:=macroQuote(result) end;
 end; // getDynamicComment
 
@@ -2482,14 +2491,23 @@ try
   s:=loadDescriptionFile(path);
   cmt:=escapeIon(cmt); // that's how multilines are handled in this file
   i:=findNameInDescriptionFile(s, name);
-  if i = 0 then
-    s:=s+quoteIfAnyChar(' ', name)+' '+cmt+CRLF // not found, then append
+  if i = 0 then // not found
+    if cmt='' then // no comment, we are good
+      exit
+    else
+      s:=s+quoteIfAnyChar(' ', name)+' '+cmt+CRLF // append
+  else // found, then replace
+    if cmt='' then
+      replace(s, '', i, findEOL(s, i)) // remove the whole line
+    else
+      begin
+      i:=nonQuotedPos(' ', s, i); // replace just the comment
+      replace(s, cmt, i+1, findEOL(s, i, FALSE));
+      end;
+  if s='' then
+    deleteFile(path)
   else
-    begin // found, then replace
-    i:=nonQuotedPos(' ', s, i); // replace just the comment
-    replace(s, cmt, i+1, findEOL(s, i, FALSE));
-    end;
-  savefile(path, s);
+    saveFile(path, s);
 except end;
 end; // setDynamicComment
 

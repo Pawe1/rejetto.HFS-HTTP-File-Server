@@ -7,6 +7,14 @@ LEGEND
 -   bug fix
 AV  access violation
 
+ver 2.3g
+propaganda
+   Bugs fixed
+/propaganda
+- general problems navigating folders http://www.rejetto.com/forum/bug-reports/404-not-found-server-error/
+- default template: comment was not moved with the file http://www.rejetto.com/forum/bug-reports/descript-ion-and-comment-not-cleaned-up-after-moving-file/msg1060608/#msg1060608
+- request header limit too small, now raised to 16KB
+
 ver 2.3f
 propaganda
    Security fix

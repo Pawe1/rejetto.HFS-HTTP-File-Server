@@ -2687,6 +2687,7 @@ end; // dequote
 // finds the end of the line
 function findEOL(s:string; ofs:integer=1; included:boolean=TRUE):integer;
 begin
+ofs:=max(1,ofs);
 result:=posEx(#13, s, ofs);
 if result > 0 then
   begin

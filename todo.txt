@@ -1,5 +1,5 @@
-HTTP only
 cache reReplace
+- comments are not updated when moving or renaming files http://www.rejetto.com/forum/bug-reports/descript-ion-and-comment-not-cleaned-up-after-moving-file/
 + hash&salt passwords
 - setInterval > setTimeout
 + target=_blank as an option on links

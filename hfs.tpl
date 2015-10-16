@@ -53,7 +53,7 @@ COMMENT with these you can disable some features of the template. Please note th
             <table id='files'>
             {.set|sortlink| {:<a href="{.trim|
                     {.get|url|sort=$1| {.if| {.{.?sort.} = $1.} |  rev={.not|{.?rev.} .} /if.} /get.}
-                /trim.}">{.!$2.}{.if| {.{.?sort.} = $1.} | &{.if|{.?rev.}|u|d.}arr;.}</a>:} .}
+                /trim.}">{.!$2.}{.if| {.{.?sort.} = $1.} | &{.if|{.?rev.}|u|d.}Arr;.}</a>:} .}
             <th>{.^sortlink|n|Name.}{.^sortlink|e|.extension.}
             <th>{.^sortlink|s|Size.}
             <th>{.^sortlink|t|Timestamp.}
@@ -429,7 +429,7 @@ fieldset { margin-bottom:0.7em; text-align:left; padding:0.6em; }
             {.if|{.length|{.move|{.^x.}|{.^y.}.}.} |{: 
                 {.set|log|{.chr|13.}{.^fn.}|mode=append.}
                 {.move|{.^x.}.md5|{.^y.}.md5.}
-                {.move|{.^x.}.comment|{.^y.}.comment.}
+                {.set item|{.^y.}|comment={.get item|{.^x.}|comment.}.}
             :} | {:
                 {.set|log|{.chr|13.}{.^fn.} (failed)|mode=append.}
                 {.maybe utf8|{.^fn.}.}: {.!not moved.}
@@ -463,7 +463,7 @@ can change pwd=member of|can change password
 can move=or|1
 escape attr=replace|"|&quot;|$1
 commentNL=if|{.pos|<br|$1.}|$1|{.replace|{.chr|10.}|<br />|$1.}
-add bytes=switch|{.cut|-1||$1.}|,|0,1,2,3,4,5,6,7,8,9|$1 bytes|K,M,G,T|$1bytes
+add bytes=switch|{.cut|-1||$1.}|,|0,1,2,3,4,5,6,7,8,9|$1 Bytes|K,M,G,T|$1Bytes
 
 [special:import]
 {.new account|can change password|enabled=1|is group=1|notes=accounts members of this group will be allowed to change their password.}
