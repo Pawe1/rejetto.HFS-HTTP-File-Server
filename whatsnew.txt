@@ -7,6 +7,16 @@ LEGEND
 -   bug fix
 AV  access violation
 
+ver 2.3h
+propaganda
+   Bugs fixed
+/propaganda
+- account names were uppercased http://www.rejetto.com/forum/bug-reports/account-names/
+- malformed TAR files with long file paths http://www.rejetto.com/forum/hfs-~-http-file-server/tar-headers-corrupt/
+- template [+sections] with a plus sign ahead were not working in diff template http://www.rejetto.com/forum/html-templates/disable-right-click-in-template/msg1061207/#msg1061207 
+- in case of lnk files, wrong file size was displayed
+- a lnk in a folder was stored with the wrong path if downloaded as archive
+
 ver 2.3g
 propaganda
    Bugs fixed

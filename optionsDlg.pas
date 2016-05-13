@@ -138,6 +138,8 @@ type
     procedure accountsBoxDblClick(Sender: TObject);
     procedure redirBoxChange(Sender: TObject);
     procedure accountsBoxKeyPress(Sender: TObject; var Key: Char);
+    procedure accountsBoxEditing(Sender: TObject; Item: TListItem;
+      var AllowEdit: Boolean);
   public
     procedure checkRedir();
 		procedure loadAccountProperties();
@@ -165,6 +167,7 @@ var
   lastAccountSelected: integer = -1; // stores the previous selection index
   tempAccounts: Taccounts; // the GUI part can't store the temp data
   tempIcons: array of integer;
+  renamingAccount: boolean;
 
 procedure ToptionsFrm.selectAccount(i:integer; saveBefore:boolean=TRUE);
 begin
@@ -700,6 +703,7 @@ var
   old, err: string;
   i, idx: integer;
 begin
+renamingAccount:=FALSE;
 try idx:=item.index  // workaround to wine's bug http://www.rejetto.com/forum/index.php/topic,9563.msg1053890.html#msg1053890
 except idx:=lastAccountSelected end;
 old:=tempAccounts[idx].user;
@@ -720,6 +724,12 @@ if err > '' then
 for i:=0 to length(tempAccounts)-1 do
   replaceString(tempAccounts[i].link, old, s);
 tempAccounts[idx].user:=s;
+end;
+
+procedure ToptionsFrm.accountsBoxEditing(Sender: TObject; Item: TListItem;
+  var AllowEdit: Boolean);
+begin
+renamingAccount:=TRUE;
 end;
 
 procedure ToptionsFrm.accountsBoxKeyDown(Sender: TObject; var Key: Word;
@@ -744,6 +754,8 @@ procedure ToptionsFrm.accountsBoxKeyPress(Sender: TObject; var Key: Char);
 var
   s, i, ir, n: integer;
 begin
+if renamingAccount then
+  exit;
 key:=upcase(key);
 if key in ['0'..'9','A'..'Z'] then
   begin

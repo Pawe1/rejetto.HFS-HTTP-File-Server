@@ -128,7 +128,7 @@ object optionsFrm: ToptionsFrm
       end
       object Label7: TLabel
         Left = 251
-        Top = 351
+        Top = 350
         Width = 325
         Height = 13
         Hint = 'You also need to right click on the folder, then restrict access'
@@ -145,13 +145,13 @@ object optionsFrm: ToptionsFrm
         Left = 163
         Top = 26
         Width = 619
-        Height = 319
+        Height = 318
         Anchors = [akLeft, akTop, akRight, akBottom]
         Caption = 'Account properties'
         TabOrder = 7
         DesignSize = (
           619
-          319)
+          318)
         object Label3: TLabel
           Left = 11
           Top = 173
@@ -183,7 +183,7 @@ object optionsFrm: ToptionsFrm
           Left = 11
           Top = 192
           Width = 302
-          Height = 118
+          Height = 117
           Anchors = [akLeft, akTop, akBottom]
           Images = mainFrm.images
           Indent = 19
@@ -260,7 +260,7 @@ object optionsFrm: ToptionsFrm
           Left = 345
           Top = 39
           Width = 271
-          Height = 271
+          Height = 270
           Anchors = [akLeft, akTop, akRight, akBottom]
           ParentShowHint = False
           ScrollBars = ssVertical
@@ -282,7 +282,7 @@ object optionsFrm: ToptionsFrm
       end
       object deleteaccountBtn: TButton
         Left = 3
-        Top = 353
+        Top = 352
         Width = 45
         Height = 17
         Anchors = [akLeft, akBottom]
@@ -299,7 +299,7 @@ object optionsFrm: ToptionsFrm
       end
       object renaccountBtn: TButton
         Left = 53
-        Top = 330
+        Top = 329
         Width = 49
         Height = 17
         Anchors = [akLeft, akBottom]
@@ -316,7 +316,7 @@ object optionsFrm: ToptionsFrm
       end
       object addaccountBtn: TButton
         Left = 3
-        Top = 330
+        Top = 329
         Width = 45
         Height = 17
         Anchors = [akLeft, akBottom]
@@ -332,7 +332,7 @@ object optionsFrm: ToptionsFrm
       end
       object upBtn: TButton
         Left = 107
-        Top = 330
+        Top = 329
         Width = 45
         Height = 17
         Anchors = [akLeft, akBottom]
@@ -349,7 +349,7 @@ object optionsFrm: ToptionsFrm
       end
       object downBtn: TButton
         Left = 107
-        Top = 353
+        Top = 352
         Width = 45
         Height = 17
         Anchors = [akLeft, akBottom]
@@ -366,7 +366,7 @@ object optionsFrm: ToptionsFrm
       end
       object sortBtn: TButton
         Left = 53
-        Top = 353
+        Top = 352
         Width = 49
         Height = 17
         Anchors = [akLeft, akBottom]
@@ -385,7 +385,7 @@ object optionsFrm: ToptionsFrm
         Left = 3
         Top = 35
         Width = 149
-        Height = 289
+        Height = 288
         Anchors = [akLeft, akTop, akBottom]
         Columns = <>
         DragMode = dmAutomatic
@@ -402,6 +402,7 @@ object optionsFrm: ToptionsFrm
         OnData = accountsBoxData
         OnDblClick = accountsBoxDblClick
         OnEdited = accountsBoxEdited
+        OnEditing = accountsBoxEditing
         OnDragDrop = accountsBoxDragDrop
         OnDragOver = accountsBoxDragOver
         OnKeyDown = accountsBoxKeyDown
@@ -593,7 +594,7 @@ object optionsFrm: ToptionsFrm
         Left = 8
         Top = 48
         Width = 225
-        Height = 247
+        Height = 246
         Anchors = [akLeft, akTop, akBottom]
         TabOrder = 0
         OnChange = iconMasksBoxChange

@@ -1,4 +1,4 @@
-3Welcome! This is the default template for HFS 2.3
+Welcome! This is the default template for HFS 2.3
 template revision TR2.
 
 Here below you'll find some options affecting the template.

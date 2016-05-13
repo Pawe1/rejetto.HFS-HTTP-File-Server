@@ -436,7 +436,8 @@ result:=FALSE;
 fh:=fileopen(src, fmOpenRead+fmShareDenyNone);
 if fh = -1 then exit;
 result:=TRUE;
-if dst = '' then dst:=extractFileName(src);
+if dst = '' then
+  dst:=extractFileName(src);
 i:=length(flist);
 setLength(flist, i+1);
 flist[i].src:=src;
@@ -523,8 +524,8 @@ procedure TtarStream.headerInit();
   var
     d: integer;
   begin
-  result:=dupeString(' ', fieldLength);
   d:=fieldLength-1;
+  result:=dupeString('0', d)+#0;
   while d > 0 do
     begin
     result[d]:=CHARS[i and 7];
@@ -560,6 +561,8 @@ procedure TtarStream.headerInit();
 
 const
   FAKE_CHECKSUM = '        ';
+  USTAR = 'ustar'#0'00';
+  PERM = '0100777'#0'0000000'#0'0000000'#0; // file mode, uid, gid
 var
   fn, s, pre: string;
 begin
@@ -569,18 +572,19 @@ if fileNamesOEM then
 pre:='';
 if length(fn) >= 100 then
   begin
-  pre:=str('././@LongLink', 124)+num(length(fn)+1, 12)+num(0, 12)
+  pre:=str('././@LongLink', 100)+PERM
+    +num(length(fn)+1, 12)+num(flist[cur].mtime, 12)
     +FAKE_CHECKSUM+'L';
+  pre:=str(pre, 256)+str(#0+USTAR,256);
   applyChecksum(pre);
-  pre:=str(pre, 512)+str(fn, 512);
+  pre:=pre+str(fn, 512);
   end;
-s:=str(fn, 100)
-  +'100666 '#0'     0 '#0'     0 '#0 // file mode, uid, gid
+s:=str(fn, 100)+PERM
   +num(flist[cur].size, 12) // file size
   +num(flist[cur].mtime, 12)  // mtime
   +FAKE_CHECKSUM
   +'0'+str('', 100)       // link properties
-  +'ustar  '#0+str('user',32)+str('group',32);    // not actually used
+  +USTAR;
 applyChecksum(s);
 s:=str(s, 512); // pad
 block.Size:=0;
@@ -742,6 +746,7 @@ while (count > 0) and (cur < length(flist)) do
       goRead(block);
       if not eos(block) then continue;
       where:=TW_FILE;
+      freeAndNIL(fs); // in case the same files appear twice in a row, we must be sure to reinitialize the reader stream
       block.size:=0;
       end;
     TW_FILE:
@@ -1022,7 +1027,7 @@ var
     base: TtplSection;
     till: pchar;
     append: boolean;
-    sect: PtplSection;
+    sect, from: PtplSection;
   begin
   till:=pred(bos);
   if till = NIL then till:=pred(strEnd(ptxt));
@@ -1047,18 +1052,25 @@ var
     if append then
       delete(s,1,1);
     si:=getIdx(s);
+    from:=NIL;
     if si < 0 then // not found
-      sect:=newSection(s)
+      begin
+      if append then
+        from:=getSection(s);
+      sect:=newSection(s);
+      end
     else
       begin
       sect:=@sections[si];
       if append then
-        begin
-        sect.txt:=sect.txt+base.txt;
-        sect.nolog:=sect.nolog or base.nolog;
-        sect.nourl:=sect.nourl or base.nourl;
-        continue;
-        end;
+        from:=sect;
+      end;
+    if from<>NIL then
+      begin // inherit from it
+      sect.txt:=from.txt+base.txt;
+      sect.nolog:=from.nolog or base.nolog;
+      sect.nourl:=from.nourl or base.nourl;
+      continue;
       end;
     sect^:=base;
     sect.name:=s; // restore this lost attribute

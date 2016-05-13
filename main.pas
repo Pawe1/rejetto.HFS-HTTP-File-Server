@@ -35,8 +35,8 @@ uses
   HSlib, traylib, monoLib, progFrmLib, classesLib;
 
 const
-  VERSION = '2.3g';
-  VERSION_BUILD = '295';
+  VERSION = '2.3h';
+  VERSION_BUILD = '296';
   VERSION_STABLE = {$IFDEF STABLE } TRUE {$ELSE} FALSE {$ENDIF};
   CURRENT_VFS_FORMAT :integer = 1;
   CRLF = #13#10;
@@ -188,7 +188,7 @@ type
     procedure setDLcount(i:integer);
     function  getDLcountRecursive():integer;
   public
-    name, comment, user, pwd: string;
+    name, comment, user, pwd, lnk: string;
     resource: string;  // link to physical file/folder; URL for links
     flags: TfileAttributes;
     node: Ttreenode;
@@ -1678,8 +1678,11 @@ this would let us have "=" inside the names, but names cannot be assigned
 
         f.size:=0;
         if f.isFile() then
-          f.size:=sr.FindData.nFileSizeLow
-            +int64(sr.FindData.nFileSizeHigh) shl 32;
+          if FA_SOLVED_LNK in f.flags then
+            f.size:=sizeOfFile(f.resource)
+          else
+            f.size:=sr.FindData.nFileSizeLow
+              +int64(sr.FindData.nFileSizeHigh) shl 32;
         f.mtime:=filetimeToDatetime(sr.FindData.ftLastWriteTime);
         addToListing(f);
         until (findNext(sr) <> 0) or (cd.conn.state = HCS_DISCONNECTED) or (limit >= 0) and (actualCount >= limit);
@@ -1798,8 +1801,8 @@ forArchive:=assigned(cd) and (cd.downloadingWhat = DW_ARCHIVE);
 seeProtected:=not mainfrm.hideProtectedItemsChk.Checked and not forArchive;
 noEmptyFolders:=(urlFilesFilter = '') and folder.hasRecursive(FA_HIDE_EMPTY_FOLDERS);
 try
-  if folder.isRealFolder() and not (FA_HIDDENTREE in folder.flags)
-  and allowedTo(folder) then includeFilesFromDisk();
+  if folder.isRealFolder() and not (FA_HIDDENTREE in folder.flags) and allowedTo(folder) then
+    includeFilesFromDisk();
   includeItemsFromVFS();
 finally setLength(dir, actualCount) end;
 result:=toSkip;
@@ -2349,6 +2352,7 @@ if isExtension(res, '.lnk') or fileExists(res+'\target.lnk') then
   if isExtension(s, '.lnk') then
     setLength(s, length(s)-4);
   setName(s);
+  lnk:=res;
   res:=resolveLnk(res);
   include(flags, FA_SOLVED_LNK);
   end
@@ -2364,12 +2368,14 @@ resource:=res;
 if (length(res) = 2) and (res[2] = ':') then // logical unit
   begin
   include(flags, FA_UNIT);
-  if not isRoot() and not (FA_SOLVED_LNK in flags) then setName(res);
+  if not isRoot() and not (FA_SOLVED_LNK in flags) then
+    setName(res);
   end
 else
   begin
   exclude(flags, FA_UNIT);
-  if not isRoot() and not (FA_SOLVED_LNK in flags) then setName(extractFileName(res));
+  if not isRoot() and not (FA_SOLVED_LNK in flags) then
+    setName(extractFileName(res));
   end;
 size:=-1;
 end; // setResource
@@ -2637,7 +2643,10 @@ result:=name;
 f:=parent;
 if isTemp() then
   begin
-  result:=copy(resource, length(f.resource)+2, length(resource));
+  if FA_SOLVED_LNK in flags then
+    result:=extractFilePath(copy(lnk,length(f.resource)+2, MAXINT))+name // the path is the one of the lnk, but we have to replace the file name as the lnk can make it
+  else
+    result:=copy(resource, length(f.resource)+2, MAXINT);
   if delim <> '\' then result:=xtpl(result, ['\', delim]);
   end;
 while assigned(f) and (f <> root) and (f <> rootFile) do
@@ -4759,10 +4768,10 @@ var
         // build the full path of this file as it will be in the archive
         if noFolders then
           s:=fi.name
-        else if fIsTemp then
+        else if fIsTemp and not (FA_SOLVED_LNK in fi.flags)then
           s:=copy(fi.resource, ofs, MAXINT) // pathTill won't work this case, because f.parent is an ancestor but not necessarily the parent
         else
-          s:=fi.pathTill(f.parent); // we want the path to include also the current folder
+          s:=fi.pathTill(f.parent); // we want the path to include also f, so stop at f.parent
 
         tar.addFile(fi.resource, s);
         end
@@ -8881,6 +8890,7 @@ procedure TmainFrm.FormShow(Sender: TObject);
 begin
 if trayed then showWindow(application.handle, SW_HIDE);
 updateTrayTip();
+connBox.DoubleBuffered:=true;
 end;
 
 procedure TmainFrm.filesBoxDragOver(Sender, Source: TObject; X, Y: Integer;
