@@ -35,8 +35,8 @@ uses
   HSlib, traylib, monoLib, progFrmLib, classesLib;
 
 const
-  VERSION = '2.3h';
-  VERSION_BUILD = '296';
+  VERSION = '2.3i';
+  VERSION_BUILD = '297';
   VERSION_STABLE = {$IFDEF STABLE } TRUE {$ELSE} FALSE {$ENDIF};
   CURRENT_VFS_FORMAT :integer = 1;
   CRLF = #13#10;
@@ -4334,7 +4334,6 @@ function setTplText(text:string):boolean;
     se: TstringDynArray;
     i: integer;
   begin
-  result:=FALSE;
   // is it default tpl?
   if not ansiStartsText('Welcome! This is the default template for HFS 2.3', text) then
     exit;
@@ -4354,6 +4353,7 @@ function setTplText(text:string):boolean;
   end;//patchIt
 *)
 begin
+result:=FALSE; // mod by mars
 //patch290();
 // if we'd use optUTF8() here, we couldn't make use of tpl.utf8, because text would not be parsed yet
 tpl.fullText:=text;
@@ -4519,7 +4519,12 @@ var
         begin
         data.logLaterInApache:=TRUE;
         if logRequestsChk.Checked then
-          add2log(format('Requested %s %s', [ METHOD2STR[conn.request.method], url_ ]), data);
+          begin
+          s:=subStr(conn.getHeader('Range'), 7);
+          if s > '' then
+            s:=TAB+'['+s+']';
+          add2log(format('Requested %s %s%s', [ METHOD2STR[conn.request.method], url_, s ]), data);
+          end;
         if dumprequestsChk.checked then
           add2log('Request dump'+CRLF+conn.request.full, data);
         end;
@@ -4567,7 +4572,7 @@ var
 
   data.logLaterInApache:=FALSE;
   s:=xtpl(logfile.apacheFormat, [
-    '\t', #9,
+    '\t', TAB,
     '\r', #13,
     '\n', #10,
     '\"', '"',
@@ -4665,7 +4670,7 @@ var
   var
     i: integer;
   begin
-  result:=trim(stripChars(runEventScript(event, table), [#9,#10,#13]));
+  result:=trim(stripChars(runEventScript(event, table), [TAB,#10,#13]));
   // turn illegal chars into underscores
   for i:=1 to length(result) do
     if result[i] in ILLEGAL_FILE_CHARS-[':','\'] then

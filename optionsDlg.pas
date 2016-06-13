@@ -289,10 +289,10 @@ setlength(banlist, i);
 n:=0;
 for i:=0 to length(banlist)-1 do
   begin
-  banlist[i].ip:=trim(bansBox.Cells[0,i+1]);
-  if banlist[i].ip = '' then continue
-  else inc(n);
-  banlist[i].comment:=bansBox.Cells[1,i+1];
+  banlist[n].ip:=trim(bansBox.Cells[0,i+1]); // mod by mars
+  if banlist[n].ip = '' then continue;
+  banlist[n].comment:=bansBox.Cells[1,i+1];
+  inc(n);
   end;
 setlength(banlist, n);
 kickBannedOnes();
@@ -316,6 +316,7 @@ accounts:=tempAccounts;
 purgeVFSaccounts();
 mainfrm.filesBox.repaint();
 // icons
+setlength(iconMasks, 0); // mod by mars
 n:=0;
 for i:=0 to iconMasksBox.Lines.Count-1 do
   begin

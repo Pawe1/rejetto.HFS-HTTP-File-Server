@@ -7,6 +7,16 @@ LEGEND
 -   bug fix
 AV  access violation
 
+ver 2.3i
+propaganda
+   Security fix
+/propaganda
++ Report range for partial downloads in the log http://www.rejetto.com/forum/hfs-~-http-file-server/add-to-log-range-(starting-and-ending-byte)/
+- fixed Remote Command Execution http://www.rejetto.com/forum/bug-reports/execution-exploit/
+- {.add header.} wasn't overwriting existing headers
+- temporary files not deleted
+- incorrect handling of empty rows in ban tables
+
 ver 2.3h
 propaganda
    Bugs fixed

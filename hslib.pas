@@ -1558,24 +1558,25 @@ begin result:=replyHeader_code(HRM2CODE[mode]) end;
 procedure ThttpConn.addHeader(s:string; overwrite:boolean=TRUE);
 var
     i, j: integer;
-    name: string;
+    name, was: string;
 begin
+was:=reply.additionalHeaders; // handy shortcut
 if overwrite then
     begin
     // calculate the matching text
-    i:=pos(':', s); 
+    i:=pos(':', s);
     if i = 0 then
         i:=length(s);
     name:=copy(s, 1, i);
-    // see if it already exists 
-    i:=ipos(name, reply.additionalHeaders);
-    if (i = 1) or (s[i-1] = #10) then // yes it does
+    // see if it already exists
+    i:=ipos(name, was);
+    if (i = 1) or ((i>1) and (was[i-1] = #10)) then // yes it does
         begin
-        j:=posEx(#10, s, i)+1;  
-        delete(s, i, j-i+1); // remove it                          
+        j:=posEx(#10, was, i)+1;
+        delete(was, i, j-i+1); // remove it
         end;
     end;
-reply.additionalHeaders:=reply.additionalHeaders+s+CRLF;
+reply.additionalHeaders:=was+s+CRLF;
 end;
 
 function ThttpConn.getDontFree():boolean;

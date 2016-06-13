@@ -183,7 +183,6 @@ COMMENT with these you can disable some features of the template. Please note th
 		<button id='commentBtn' onclick='setComment.call(this)'>{.!Comment.}</button>
 		.}
 		{.if|{.get|can delete.}|
-		<button id='deleteBtn' onclick='if (confirm("{.!confirm.}")) submit({action:"delete"}, "{.get|url.}")'>{.!Delete.}</button>
 
 		{.if|{.and|{.!option.move.}|{.can move.}.}| <button id='moveBtn' onclick='moveClicked()'>{.!Move.}</button> .}
 		.}
@@ -421,15 +420,17 @@ fieldset { margin-bottom:0.7em; text-align:left; padding:0.6em; }
 {.break|if={.not|{.and|{.can move.}|{.get|can delete.}|{.get|can upload|path={.^dst.}.}/and.}.} |result={.!forbidden.}.}
 {.set|log|{.!Moving items to.} {.^dst.}.}
 {.for each|fn|{.replace|:|{.no pipe||.}|{.force ansi|{.postvar|files.}.}.}|{:
-	{.break|if={.is file protected|var=fn.}|result=forbidden.}
+    {.break|if={.is file protected|var=fn.}|result=forbidden.}
     {.set|x|{.force ansi|%folder%.}{.^fn.}.}
     {.set|y|{.^dst.}/{.^fn.}.}
     {.if not |{.exists|{.^x.}.}|{.^x.}: {.!not found.}|{:
         {.if|{.exists|{.^y.}.}|{.^y.}: {.!already exists.}|{:
-            {.if|{.length|{.move|{.^x.}|{.^y.}.}.} |{: 
-                {.set|log|{.chr|13.}{.^fn.}|mode=append.}
+            {.set|comment| {.get item|{.^x.}|comment.} .}
+            {.set item|{.^x.}|comment=.} {.comment| this must be done before moving, or it will fail.}
+            {.if|{.length|{.move|{.^x.}|{.^y.}.}.} |{:
                 {.move|{.^x.}.md5|{.^y.}.md5.}
-                {.set item|{.^y.}|comment={.get item|{.^x.}|comment.}.}
+                {.set|log|{.chr|13.}{.^fn.}|mode=append.}
+                {.set item|{.^y.}|comment={.^comment.}.}
             :} | {:
                 {.set|log|{.chr|13.}{.^fn.} (failed)|mode=append.}
                 {.maybe utf8|{.^fn.}.}: {.!not moved.}
@@ -460,7 +461,7 @@ can mkdir=and|{.get|can upload.}|{.!option.newfolder.}
 can comment=and|{.get|can upload.}|{.!option.comment.}
 can rename=and|{.get|can delete.}|{.!option.rename.}
 can change pwd=member of|can change password
-can move=or|1
+can move=or|1|1
 escape attr=replace|"|&quot;|$1
 commentNL=if|{.pos|<br|$1.}|$1|{.replace|{.chr|10.}|<br />|$1.}
 add bytes=switch|{.cut|-1||$1.}|,|0,1,2,3,4,5,6,7,8,9|$1 Bytes|K,M,G,T|$1Bytes

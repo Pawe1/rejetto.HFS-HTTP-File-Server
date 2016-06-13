@@ -471,48 +471,47 @@ var
     s: string;
   begin
   if not satisfied(md.cd) then exit;
-  result:=md.cd.conn.request.url;
-  if pars.count < 2 then exit;
-  s:=result;
-  result:=chop('?', s);
-  vars:=TstringList.create();
   try
-    vars.delimiter:='&';
-    vars.quoteChar:=#0;
-    vars.delimitedText:=s;
-    if pars.count > 1 then
-      for i:=1 to pars.count-1 do
-        begin
-        s:=par(i);
-        if s = '' then continue;
-        eq:=pos('=', s);
-        if eq = 0 then
+    result:=md.cd.conn.request.url;
+    if pars.count < 2 then exit;
+    s:=result;
+    result:=chop('?', s);
+    vars:=TstringList.create();
+    try
+      vars.delimiter:='&';
+      vars.quoteChar:=#0;
+      vars.delimitedText:=s;
+      if pars.count > 1 then
+        for i:=1 to pars.count-1 do
           begin
-          if vars.indexOf(s) < 0 then
-            vars.add(pars[i]);
-          continue;
+          s:=par(i);
+          if s = '' then continue;
+          eq:=pos('=', s);
+          if eq = 0 then
+            begin
+            if vars.indexOf(s) < 0 then
+              vars.add(pars[i]);
+            continue;
+            end;
+          ex:=vars.indexOfName(chop(eq,s));
+          if ex < 0 then
+            if s = '' then
+              continue   // the parameter didn't exist, and we are trying to empty it
+            else
+              vars.add(par(i))  // didn't exist, put the whole
+          else
+            if s = '' then
+              vars.delete(ex) //  exists, but we are trying to empty it
+            else
+              vars.valueFromIndex[ex]:=s; // exists, change the value
           end;
-        ex:=vars.indexOfName(chop(eq,s));
-        if ex < 0 then
-          if s = '' then
-            continue   // the parameter didn't exist, and we are trying to empty it
-          else
-            vars.add(par(i))  // didn't exist, put the whole
-        else
-          if s = '' then
-            vars.delete(ex) //  exists, but we are trying to empty it
-          else
-            vars.valueFromIndex[ex]:=s; // exists, change the value
-        end;
-    if vars.count = 0 then exit;
-    for i:=vars.Count-1 downto 0 do
-      if vars[i] = '' then
-        vars.delete(i);
-    result:=result+'?'+vars.delimitedText;
-  finally
-    result:=macroQuote(result);
-    vars.free;
-    end;
+      if vars.count = 0 then exit;
+      for i:=vars.Count-1 downto 0 do
+        if vars[i] = '' then
+          vars.delete(i);
+      result:=result+'?'+vars.delimitedText;
+    finally vars.free end;
+  finally result:=macroQuote(result) end;
   end; // getUri
 
   procedure section(ofs:integer);
@@ -2263,7 +2262,7 @@ try
             url:=trim(substr(p, ':'))
             end
         else
-          md.cd.conn.addHeader(p);
+          md.cd.conn.addHeader(p, isTrue(par('overwrite',true,'1')));
         end;
 
     if name = 'get ini' then
