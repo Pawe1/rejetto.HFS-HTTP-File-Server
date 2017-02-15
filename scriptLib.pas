@@ -604,16 +604,17 @@ var
     end;
   end; // infixOperators
 
-  procedure call(code:string; ofs:integer);
+  procedure call(code:string; ofs:integer=0);
   var
     i: integer;
   begin
   result:=code;
-  // the inverted order is to avoid problems with $10 being replaced as it was '$1'.'0'
-  for i:=40 downto pars.count do
-    result:=xtpl(result, [format('$%d',[i-ofs+1]), '']);
-  for i:=pars.Count-1 downto ofs do
+  if pars.count=0 then
+    exit;
+  for i:=ofs to pars.Count-1 do
     result:=xtpl(result, [format('$%d',[i-ofs+1]), pars[i]]);
+  for i:=pars.count to pars.count+5 do
+    result:=xtpl(result, [format('$%d',[i-ofs+1]), '']);
   end; // call
 
   procedure breadcrumbs();
@@ -1070,7 +1071,7 @@ var
     begin
     path:=uri2disk(chop(lastDelimiter('/\',s)+1, 0, s), md.folder);
     if path > '' then
-      s:=path+'\'+s; // mod by mars
+      s:=path+'\'+trim(s); // mod by mars
     end;
   result:=s;
   end; // uri2diskMaybeFolder
@@ -1804,7 +1805,7 @@ try
         begin
         if not ansiStartsStr(MARKER_OPEN, s) then
           s:=MARKER_OPEN+s+MARKER_CLOSE;
-        call(s, 0);
+        call(s);
         exit;
         end;
       end;
@@ -1971,7 +1972,7 @@ try
 
     if name = 'mkdir' then
       begin
-      s:=uri2diskMaybeFolder(p);
+      s:=trim(uri2diskMaybeFolder(p));
       spaceIf(not directoryExists(s) and forceDirectory(s));
       end;
 
@@ -2262,7 +2263,7 @@ try
             url:=trim(substr(p, ':'))
             end
         else
-          md.cd.conn.addHeader(p, isTrue(par('overwrite',true,'1')));
+          md.cd.conn.addHeader(p);
         end;
 
     if name = 'get ini' then
@@ -2330,7 +2331,8 @@ try
 
     if name = 'rename' then
       begin
-      spaceIf(renameFile(uri2diskMaybe(p), uri2diskMaybeFolder(par(1))));
+      spaceIf( not isExtension(par(1), '.lnk') and // security matters (by mars)
+        renameFile(uri2diskMaybe(p), uri2diskMaybeFolder(par(1))));
       if (result > '') and not stopOnMacroRename then // should we stop recursion?
         try
           // by default, we'll stop after first stacked [on macro rename], but recursive=1 will remove this limit

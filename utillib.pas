@@ -1275,8 +1275,13 @@ var
 begin
 result:=0;
 // 1 to 1 match
-while not (mask^ in [#0,'*']) and (txt^ <> #0)
-and ((ansiUpperCase(mask^) = ansiUpperCase(txt^)) or (mask^ = '?') and not (txt^ in charsNotWildcard)) do
+while not (mask^ in [#0,'*'])
+and (txt^ <> #0)
+and (
+  (ansiUpperCase(mask^) = ansiUpperCase(txt^))
+  or (upCase(mask^) = upCase(txt^))
+  or (mask^ = '?') and not (txt^ in charsNotWildcard)
+) do
   begin
   inc(mask);
   inc(txt);
@@ -1295,6 +1300,7 @@ if mask^ = #0 then // final *, anything matches
   inc(result, strLen(txt));
   exit;
   end;
+
   repeat
   if txt^ in charsNotWildcard then break;
 
@@ -1885,10 +1891,12 @@ end; // dateToHTTP
 function getEtag(filename:string):string;
 var
   sr: TsearchRec;
+  st: TSystemTime;
 begin
 result:='';
 if findFirst(filename, faAnyFile, sr) <> 0 then exit;
-result:=intToStr(sr.Size)+':'+floatToStr(sr.time)+':'+expandFileName(filename);
+FileTimeToSystemTime(sr.FindData.ftLastWriteTime, st);
+result:=intToStr(sr.Size)+':'+floatToStr(SystemTimeToDateTime(st))+':'+expandFileName(filename);
 findClose(sr);
 result:=StrMD5(result);
 end; // getEtag

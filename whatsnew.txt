@@ -7,6 +7,17 @@ LEGEND
 -   bug fix
 AV  access violation
 
+VER 2.3j
+propaganda
+   Security and bug fixes
+/propaganda
+- prevent upload and rename of .lnk files
+- cache system didn't recognize sub-second changes
+- fixed chinese search problem http://www.rejetto.com/forum/bug-reports/can-not-search-chinese-word-in-recent-2-3-beta-version/
+- fixed missing "delete" button
+- fixed {.add header.} http://www.rejetto.com/forum/staff/proposal-of-update-to-correct-the-macro-'add-header'/msg1061397/#msg1061397
+- fixed renaming files with dollar sign http://www.rejetto.com/forum/bug-reports/standard-template-rename-does-funny-things-with-$-before-numbers-in-new-name/
+
 ver 2.3i
 propaganda
    Security fix

@@ -1395,7 +1395,7 @@ and (bytesToSend = 0) then
   state:=HCS_IDLE;
   end;
 
-if not persistent or not (reply.mode in [HRM_REPLY, HRM_REPLY_HEADER]) then
+if not persistent then
   disconnect()
 else
   { we must check the socket state, because a disconnection could happen while
@@ -1557,7 +1557,7 @@ begin result:=replyHeader_code(HRM2CODE[mode]) end;
 
 procedure ThttpConn.addHeader(s:string; overwrite:boolean=TRUE);
 var
-    i, j: integer;
+    i, j, from: integer;
     name, was: string;
 begin
 was:=reply.additionalHeaders; // handy shortcut
@@ -1569,12 +1569,15 @@ if overwrite then
         i:=length(s);
     name:=copy(s, 1, i);
     // see if it already exists
-    i:=ipos(name, was);
-    if (i = 1) or ((i>1) and (was[i-1] = #10)) then // yes it does
-        begin
-        j:=posEx(#10, was, i)+1;
-        delete(was, i, j-i+1); // remove it
-        end;
+    from:=1;
+      repeat
+      i:=ipos(name, was, from);
+      if (i=0) or (i>1) and (was[i-1] <> #10) then break;
+      // yes it does
+      j:=posEx(#10, was, i)+1;
+      delete(was, i, j-i); // remove it
+      from:=i;
+      until false;
     end;
 reply.additionalHeaders:=was+s+CRLF;
 end;
