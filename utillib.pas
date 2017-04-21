@@ -24,9 +24,10 @@ unit utilLib;
 interface
 
 uses
-	main, hslib, regexpr, types, windows, graphics, dialogs, registry, classes, dateUtils, gifimage,
+	main, hslib, regexpr, types, windows, graphics, dialogs, registry, classes, dateUtils,
   shlobj, shellapi, activex, comobj, strutils, forms, stdctrls, controls, psAPI, menus, math,
-  longinputDlg, OverbyteIcsWSocket, OverbyteIcshttpProt, comCtrls, iniFiles, richedit, sysutils, classesLib, fastmm4;
+  longinputDlg, OverbyteIcsWSocket, OverbyteIcshttpProt, comCtrls, iniFiles, richedit, sysutils, classesLib, fastmm4,
+  Vcl.Imaging.GIFImg;
 
 const
   ILLEGAL_FILE_CHARS = [#0..#31,'/','\',':','?','*','"','<','>','|'];

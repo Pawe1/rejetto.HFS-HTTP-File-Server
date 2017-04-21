@@ -30,7 +30,7 @@ uses
   registry, ExtCtrls, shellapi, ImgList, ToolWin, StdCtrls, strutils, AppEvnts, types,
   winsock, clipbrd, shlobj, activex, Buttons, FileCtrl, dateutils, iniFiles, Classes,
   // 3rd part libs. ensure you have all of these, the same version reported in dev-notes.txt
-  OverbyteIcsWSocket, OverbyteIcsHttpProt, OverbyteicsMD5, GIFimage, zlibex, regexpr,
+  OverbyteIcsWSocket, OverbyteIcsHttpProt, OverbyteicsMD5, zlibex, regexpr,
   // rejetto libs
   HSlib, traylib, monoLib, progFrmLib, classesLib, System.ImageList;
 
@@ -1058,7 +1058,8 @@ implementation
 
 uses
   newuserpassDlg, optionsDlg, utilLib, folderKindDlg, shellExtDlg, diffDlg, ipsEverDlg, parserLib, MMsystem,
-  purgeDlg, filepropDlg, runscriptDlg, scriptLib;
+  purgeDlg, filepropDlg, runscriptDlg, scriptLib,
+  Vcl.Imaging.GIFImg;
 
 // global variables
 var
@@ -1928,7 +1929,6 @@ stream:=Tstringstream.create('');
 gif:=TGIFImage.Create();
 
 gif.ColorReduction:=rmQuantize;
-gif.Compression:=gcLZW;
 gif.Assign(bmp);
 gif.SaveToStream(stream);
 result:=stream.DataString;

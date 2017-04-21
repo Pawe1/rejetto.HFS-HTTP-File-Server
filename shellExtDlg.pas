@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, GIFImage, utilLib;
+  Dialogs, ExtCtrls, StdCtrls, utilLib;
 
 type
   TshellExtFrm = class(TForm)
@@ -26,6 +26,9 @@ var
 implementation
 
 {$R *.dfm}
+
+uses
+  Vcl.Imaging.GIFImg;
 
 procedure TshellExtFrm.FormCreate(Sender: TObject);
 var
