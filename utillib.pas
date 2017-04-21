@@ -24,9 +24,11 @@ unit utilLib;
 interface
 
 uses
-	main, hslib, regexpr, types, windows, graphics, dialogs, registry, classes, dateUtils, gifimage,
+	main, hslib, types, windows, graphics, dialogs, registry, classes, dateUtils,
+  gifimg, regexpr,
   shlobj, shellapi, activex, comobj, strutils, forms, stdctrls, controls, psAPI, menus, math,
-  longinputDlg, OverbyteIcsWSocket, OverbyteIcshttpProt, comCtrls, iniFiles, richedit, sysutils, classesLib, fastmm4;
+  longinputDlg, OverbyteIcsWSocket, OverbyteIcshttpProt, comCtrls,
+  iniFiles, richedit, sysutils, classesLib, fastmm4;
 
 const
   ILLEGAL_FILE_CHARS = [#0..#31,'/','\',':','?','*','"','<','>','|'];
@@ -38,7 +40,7 @@ var
   inputQueryLongdlg: TlonginputFrm;
   winVersion: (WV_LOWER, WV_2000, WV_VISTA, WV_SEVEN, WV_HIGHER);
 type
-  TcharSet = set of char;
+  TcharSet = TSysCharSet; //set of char;
   TreCB = procedure(re:TregExpr; var res:string; data:pointer);
   PstringDynArray = ^TstringDynArray;
   TnameExistsFun = function(user:string):boolean;
@@ -51,7 +53,7 @@ procedure fixFontFor(frm:Tform);
 function hostFromURL(s:string):string;
 function hostToIP(name: string):string;
 function allocatedMemory():int64;
-function stringToGif(s:string; gif:TgifImage=NIL):TgifImage;
+function stringToGif(s: RawByteString; gif:TgifImage=NIL):TgifImage;
 function maybeUnixTime(t:Tdatetime):Tdatetime;
 function filetimeToDatetime(ft:TFileTime):Tdatetime;
 function localToGMT(d:Tdatetime):Tdatetime;
@@ -79,7 +81,7 @@ function safeDiv(a,b:real; default:real=0):real; overload;
 function safeDiv(a,b:int64; default:int64=0):int64; overload;
 function safeMod(a,b:int64; default:int64=0):int64;
 function smartsize(size:int64):string;
-function httpGet(url:string; from:int64=0; size:int64=-1):string;
+function httpGet(url:string; from:int64=0; size:int64=-1): RawByteString;
 function httpGetFile(url, filename:string; tryTimes:integer=1; notify:TdocDataEvent=NIL):boolean;
 function httpFileSize(url:string):int64;
 function getIPs():TStringDynArray;
@@ -93,7 +95,7 @@ function exec(cmd:string; pars:string=''; showCmd:integer=SW_SHOW):boolean;
 function execNew(cmd:string):boolean;
 function captureExec(DosApp : string; out output:string; out exitcode:cardinal; timeout:real=0):boolean;
 function openURL(url:string):boolean;
-function getRes(name:pchar; typ:string='TEXT'):string;
+function getRes(name:pchar; typ:string='TEXT'): RawByteString;
 function bmpToHico(bitmap:Tbitmap):hicon;
 function compare_(i1,i2:double):integer; overload;
 function compare_(i1,i2:int64):integer; overload;
@@ -127,7 +129,7 @@ function saveTempFile(data:string):string;
 function fileOrDirExists(fn:string):boolean;
 function sizeOfFile(fn:string):int64; overload;
 function sizeOfFile(fh:Thandle):int64; overload;
-function loadFile(fn:string; from:int64=0; size:int64=-1):ansistring;
+//function loadFile(fn:string; from:int64=0; size:int64=-1):ansistring;  // Use RDFileUtil instead!
 function saveFile(fn:string; data:string; append:boolean=FALSE):boolean; overload;
 function saveFile(var f:file; data:string):boolean; overload;
 function moveFile(src, dst:string; op:UINT=FO_MOVE):boolean;
@@ -180,12 +182,12 @@ function strToCharset(s:string):Tcharset;
 function ipToInt(ip:string):dword;
 function rectToStr(r:Trect):string;
 function strToRect(s:string):Trect;
-function dt_(s:string):Tdatetime;
-function int_(s:string):integer;
-function str_(i:integer):string; overload;
-function str_(fa:TfileAttributes):string; overload;
-function str_(t:Tdatetime):string; overload;
-function str_(b:boolean):string; overload;
+function dt_(s: RawByteString):Tdatetime;
+function int_(s: RawByteString):integer;
+function str_(i:integer): RawByteString; overload;
+function str_(fa:TfileAttributes): RawByteString; overload;
+function str_(t:Tdatetime): RawByteString; overload;
+function str_(b:boolean): RawByteString; overload;
 function strToUInt(s:string):integer;
 function elapsedToStr(t:Tdatetime):string;
 function dateToHTTP(gmtTime:Tdatetime):string; overload;
@@ -196,13 +198,15 @@ function stringToColorEx(s:string; default:Tcolor=clNone):Tcolor;
 procedure excludeTrailingString(var s:string; ss:string);
 function findEOL(s:string; ofs:integer=1; included:boolean=TRUE):integer;
 function getUniqueName(start:string; exists:TnameExistsFun):string;
-function getStr(from,to_:pchar):string;
-function TLV(t:integer; data:string):string;
-function TLV_NOT_EMPTY(t:integer; data:string):string;
-function popTLV(var s,data:string):integer;
-function getCRC(data:string):integer;
+function getStr(from,to_: pAnsichar): RawByteString; OverLoad;
+function getStr(from,to_: pchar): String; OverLoad;
+function TLV(t:integer; data: RawByteString): RawByteString;
+function TLV_NOT_EMPTY(t:integer; data: RawByteString): RawByteString;
+function popTLV(var s,data: RawByteString):integer;
+function getCRC(data: RawByteString):integer;
 function dotted(i:int64):string;
-function xtpl(src:string; table:array of string):string;
+function xtpl(src:string; table:array of string):string; OverLoad;
+function xtpl(src: RawByteString; table:array of RawByteString): RawByteString; OverLoad;
 function validUsername(s:string; acceptEmpty:boolean=FALSE):boolean;
 function anycharIn(chars, s:string):boolean; overload;
 function anycharIn(chars:Tcharset; s:string):boolean; overload;
@@ -212,8 +216,8 @@ function getTill(ss, s:string; included:boolean=FALSE):string; overload;
 function getTill(i:integer; s:string):string; overload;
 function singleLine(s:string):boolean;
 function poss(chars:TcharSet; s:string; ofs:integer=1):integer;
-function optUTF8(bool:boolean; s:string):string; overload;
-function optUTF8(tpl:Ttpl; s:string):string; overload;
+//function optUTF8(bool:boolean; s:string):string; overload;
+//function optUTF8(tpl:Ttpl; s:string):string; overload;
 function optAnsi(bool:boolean; s:string):string;
 function utf8Test(s:string):boolean;
 function jsEncode(s, chars:string):string;
@@ -224,8 +228,8 @@ function first(a,b:pointer):pointer; overload;
 function first(a,b:string):string; overload;
 function first(a:array of string):string; overload;
 function stripChars(s:string; cs:Tcharset; invert:boolean=FALSE):string;
-function isOnlyDigits(s:string):boolean;
 function strAt(s, ss:string; at:integer):boolean; inline;
+function substr(s: RawByteString; start:integer; upTo:integer=0): RawByteString; inline; OverLoad;
 function substr(s:string; start:integer; upTo:integer=0):string; inline; overload;
 function substr(s:string; after:string):string; overload;
 function reduceSpaces(s:string; replacement:string=' '; spaces:TcharSet=[]):string;
@@ -238,7 +242,7 @@ function reMatch(s, exp:string; mods:string='m'; ofs:integer=1; subexp:PstringDy
 function reReplace(subj, exp, repl:string; mods:string='m'):string;
 function reGet(s, exp:string; subexpIdx:integer=1; mods:string='!mi'; ofs:integer=1):string;
 function getSectionAt(p:pchar; out name:string):boolean;
-function isSectionAt(p:pchar):boolean;
+function isSectionAt(p:pChar):boolean;
 function dequote(s:string; quoteChars:TcharSet=['"']):string;
 function quoteIfAnyChar(badChars, s:string; quote:string='"'; unquote:string='"'):string;
 function getKeyFromString(s:string; key:string; def:string=''):string;
@@ -247,12 +251,15 @@ function getFirstChar(s:string):char;
 function escapeNL(s:string):string;
 function unescapeNL(s:string):string;
 function htmlEncode(s:string):string;
-procedure enforceNUL(var s:string);
+procedure enforceNUL(var s: string); OverLoad;
+procedure enforceNUL(var s: RawbyteString); OverLoad;
 
 implementation
 
 uses
-  clipbrd, AnsiStringReplaceJOHIA32Unit13, JclNTFS, JclWin32, parserLib, newuserpassDlg, winsock, OverbyteicsMD5;
+  RDUtils, clipbrd, AnsiStringReplaceJOHIA32Unit13, //JclNTFS, JclWin32,
+  HFSJclNTFS, hfsJclOthers,
+  parserLib, newuserpassDlg, winsock, AnsiClasses, OverbyteicsMD5;
 
 var
   ipToInt_cache: ThashedStringList;
@@ -330,18 +337,23 @@ var
     end;
   BytesReturned: DWORD;
 begin
-Result := False;
-if not NtfsFileHasReparsePoint(Source) then exit;
-handle := CreateFile(PChar(Source), GENERIC_READ, 0, nil, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS or FILE_FLAG_OPEN_REPARSE_POINT, 0);
-if handle = INVALID_HANDLE_VALUE then exit;
-try
-  BytesReturned := 0;
-  if not DeviceIoControl(Handle, FSCTL_GET_REPARSE_POINT, nil, 0, @ReparseData, MAXIMUM_REPARSE_DATA_BUFFER_SIZE, BytesReturned, nil) then exit;
-  if BytesReturned < DWORD(ReparseData.Reparse.SubstituteNameLength + SizeOf(WideChar)) then exit;
-  SetLength(Destination, (ReparseData.Reparse.SubstituteNameLength div SizeOf(WideChar)));
-  Move(ReparseData.Reparse.PathBuffer[0], Destination[1], ReparseData.Reparse.SubstituteNameLength);
-  Result := True;
-finally CloseHandle(Handle) end
+  Result := False;
+  if not NtfsFileHasReparsePoint(Source) then
+    exit;
+  handle := CreateFile(PChar(Source), GENERIC_READ, 0, nil, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS or FILE_FLAG_OPEN_REPARSE_POINT, 0);
+  if handle = INVALID_HANDLE_VALUE then exit;
+  try
+    BytesReturned := 0;
+    if not DeviceIoControl(Handle, FSCTL_GET_REPARSE_POINT, nil, 0, @ReparseData, MAXIMUM_REPARSE_DATA_BUFFER_SIZE, BytesReturned, nil) then
+      exit;
+    if BytesReturned < DWORD(ReparseData.Reparse.SubstituteNameLength + SizeOf(WideChar)) then
+      exit;
+    SetLength(Destination, (ReparseData.Reparse.SubstituteNameLength div SizeOf(WideChar)));
+    Move(ReparseData.Reparse.PathBuffer[0], Destination[1], ReparseData.Reparse.SubstituteNameLength);
+    Result := True;
+   finally
+    CloseHandle(Handle)
+  end
 end; // NtfsGetJunctionPointDestination
 
 function getDrive(fn:string):string;
@@ -534,33 +546,33 @@ result:=re.replace(subj, repl, TRUE);
 end; // reReplace
 
 // converts from integer to string[4]
-function str_(i:integer):string; overload;
+function str_(i:integer): RawByteString; overload;
 begin
-setlength(result, 4 div sizeOf(char));
-move(i, result[1], 4 div sizeOf(char));
+  setlength(result, 4 div sizeOf(AnsiChar));
+  move(i, result[1], 4 div sizeOf(AnsiChar));
 end; // str_
 
 // converts from boolean to string[1]
-function str_(b:boolean):string; overload;
-begin result:=char(b) end;
+function str_(b:boolean):RawByteString; overload;
+begin result:= Ansichar(b) end;
 
 // converts from TfileAttributes to string[4]
-function str_(fa:TfileAttributes):string; overload;
+function str_(fa:TfileAttributes): RawByteString; overload;
 begin result:=str_(integer(fa)) end;
 
 // converts from Tdatetime to string[8]
-function str_(t:Tdatetime):string; overload;
+function str_(t:Tdatetime): RawByteString; overload;
 begin
-setlength(result, 8 div sizeOf(char));
-move(t, result[1], 8 div sizeOf(char));
+  setlength(result, 8 div sizeOf(AnsiChar));
+  move(t, result[1], 8 div sizeOf(AnsiChar));
 end; // str_
 
 // converts from string[4] to integer
-function int_(s:string):integer;
+function int_(s: RawByteString):integer;
 begin result:=Pinteger(@s[1])^ end;
 
 // converts from string[8] to datetime
-function dt_(s:string):Tdatetime;
+function dt_(s: RawByteString):Tdatetime;
 begin result:=Pdatetime(@s[1])^ end;
 
 function strToUInt(s:string):integer;
@@ -728,36 +740,41 @@ result:=intToStr(i);
 i:=length(result)-2;
 while i > 1 do
   begin
-  insert(ThousandSeparator, result, i);
+  insert(FormatSettings.ThousandSeparator, result, i);
   dec(i,3);
   end;
 end; // dotted
 
-function getRes(name:pchar; typ:string='TEXT'):string;
+function getRes(name:pchar; typ:string='TEXT'): RawByteString;
 var
   h1, h2: Thandle;
-  p: pchar;
+  p: pByte;
   l: integer;
-  ansi: ansiString;
+  ansi: RawByteString;
 begin
-result:='';
-h1:=FindResource(HInstance, name, pchar(typ));
-h2:=LoadResource(HInstance, h1);
-if h2=0 then exit;
-l:=SizeOfResource(HInstance, h1);
-p:=LockResource(h2);
-setLength(ansi, l);
-move(p^, ansi[1], l);
-UnlockResource(h2);
-FreeResource(h2);
-result:=ansi;
+  result:='';
+  h1:=FindResource(HInstance, name, pchar(typ));
+  h2:=LoadResource(HInstance, h1);
+  if h2=0 then
+    exit;
+  l:=SizeOfResource(HInstance, h1);
+  p := LockResource(h2);
+  setLength(ansi, l);
+  move(p^, ansi[1], l);
+  UnlockResource(h2);
+  FreeResource(h2);
+  result := ansi;
 end; // getRes
 
 function compare_(i1,i2:int64):integer; overload;
 begin
-if i1 < i2 then result:=-1 else
-if i1 > i2 then result:=1 else
-  result:=0
+  if i1 < i2 then
+    result:=-1
+   else
+    if i1 > i2 then
+      result:=1
+     else
+      result:=0
 end; // compare_
 
 function compare_(i1,i2:integer):integer; overload;
@@ -785,14 +802,14 @@ result.right:=strToInt(chop(',',s));
 result.bottom:=strToInt(chop(',',s));
 end; // strToRect
 
-function TLV(t:integer; data:string):string;
+function TLV(t:integer; data: RawByteString): RawByteString;
 begin result:=str_(t)+str_(length(data))+data end;
 
-function TLV_NOT_EMPTY(t:integer; data:string):string;
+function TLV_NOT_EMPTY(t:integer; data: RawByteString): RawByteString;
 begin if data > '' then result:=TLV(t,data) else result:='' end;
 
 // for heavy jobs you are supposed to use class Ttlv
-function popTLV(var s,data:string):integer;
+function popTLV(var s,data: RawByteString):integer;
 begin
 result:=-1;
 if length(s) < 8 then exit;
@@ -801,7 +818,7 @@ data:=copy(s,9,Pinteger(@s[5])^);
 delete(s,1,8+length(data));
 end; // popTLV
 
-function getCRC(data:string):integer;
+function getCRC(data: RawByteString):integer;
 var
   i:integer;
   p:Pinteger;
@@ -925,7 +942,7 @@ result:=(fn > '')
   and (poss([#0..#31,'?','*','"','<','>','|'], fn) = 0)
   and (length(fn) <= 255+if_(withUnit, 2));
 end;
-
+{
 function loadFile(fn:string; from:int64=0; size:int64=-1):ansistring;
 var
   f:file;
@@ -951,7 +968,7 @@ finally
   filemode:=bak;
   end;
 end; // loadFile
-
+}
 function saveFile(var f:file; data:string):boolean; overload;
 begin
 blockWrite(f, data[1], length(data));
@@ -1029,8 +1046,8 @@ end; // getTempFilename
 
 function saveTempFile(data:string):string;
 begin
-result:=getTempFilename();
-if result > '' then saveFile(result, data);
+  result:=getTempFilename();
+  if result > '' then saveFile(result, data);
 end; // saveTempFile
 
 function loadregistry(key,value:string; root:HKEY=0):string;
@@ -1597,17 +1614,17 @@ result:=inputQueryLongdlg.ShowModal() = mrOk;
 if result then value:=inputQueryLongdlg.inputBox.Text;
 end; // inputQueryLong
 
-function httpGet(url:string; from:int64=0; size:int64=-1):string;
+function httpGet(url:string; from:int64=0; size:int64=-1): RawByteString;
 var
   http: THttpCli;
-  reply: Tstringstream;
+  reply: TAnsiStringStream;
 begin
 if size = 0 then
   begin
   result:='';
   exit;
   end;
-reply:=TStringStream.Create('');
+reply:=TAnsiStringStream.Create('');
 try
   http:=Thttpcli.create(NIL);
   try
@@ -1989,7 +2006,23 @@ try clipboard().AsText:=s
 except result:=FALSE end;
 end; // setClip
 
-function getStr(from, to_:pchar):string;
+function getStr(from, to_:pAnsichar): RawByteString;
+var
+  l: integer;
+begin
+result:='';
+if (from = NIL) or assigned(to_) and (from > to_) then exit;
+if to_ = NIL then
+  begin
+  to_:=strEnd(from);
+  dec(to_);
+  end;
+l:=to_-from+1;
+setLength(result, l);
+if l > 0 then strLcopy(@result[1], from, l);
+end; // getStr
+
+function getStr(from, to_:pchar): String;
 var
   l: integer;
 begin
@@ -2027,13 +2060,26 @@ begin
 setLength(result, 1000);
 setLength(result, getTempPath(length(result), @result[1]));
 end; // getTempDir
+{
+function optUTF8(bool:boolean; s: AnsiString): RawByteString;
+begin
+ if bool then
+   result:=ansiToUtf8(s)
+  else
+   result:=s
+end;
 
-function optUTF8(bool:boolean; s:string):string;
-begin if bool then result:=ansiToUtf8(s) else result:=s end;
+function optUTF8(bool:boolean; s:string): RawByteString;
+begin
+ if bool then
+   result:=ansiToUtf8(s)
+  else
+   result:=s
+end;
 
 function optUTF8(tpl:Ttpl; s:string):string; inline;
 begin result:=optUTF8(assigned(tpl) and tpl.utf8, s) end;
-
+}
 function optAnsi(bool:boolean; s:string):string;
 begin if bool then result:=UTF8toAnsi(s) else result:=s end;
 
@@ -2075,7 +2121,7 @@ function holdingKey(key:integer):boolean;
 begin result:=getAsyncKeyState(key) and $8000 <> 0 end;
 
 function utf8Test(s:string):boolean;
-begin result:=ansiContainsText(s, 'charset=UTF-8') end;
+begin result := ansiContainsText(s, 'charset=UTF-8') end;
 
 // concat pre+s+post only if s is non empty
 function nonEmptyConcat(pre, s:string; post:string=''):string;
@@ -2234,17 +2280,6 @@ setLength(s, l-ofs);
 result:=s;
 end; // stripChars
 
-function isOnlyDigits(s:string):boolean;
-var
-  i: integer;
-begin
-result:=FALSE;
-for i:=length(s) downto 1 do
-  if not (s[i] in ['0'..'9']) then
-    exit;
-result:=TRUE;
-end; // isOnlyDigits
-
 function openURL(url:string):boolean;
 begin
 result:=exec(url);
@@ -2276,13 +2311,15 @@ function replace(var s:string; ss:string; start,upTo:integer):integer;
 var
   common, oldL, surplus: integer;
 begin
-oldL:=upTo-start+1;
-common:=min(length(ss), oldL);
-move(ss[1], s[start], common*SizeOf(char));
-surplus:=oldL-length(ss);
-if surplus > 0 then delete(s, start+length(ss), surplus)
-else insert(copy(ss, common+1, -surplus), s, start+common);
-result:=-surplus;
+  oldL := upTo-start+1;
+  common := min(length(ss), oldL);
+  MoveChars(ss[1], s[start], common);
+  surplus := oldL-length(ss);
+  if surplus > 0 then
+    delete(s, start+length(ss), surplus)
+   else
+    insert(copy(ss, common+1, -surplus), s, start+common);
+  result := -surplus;
 end; // replace
 
 function substr(s:string; start:integer; upTo:integer=0):string; inline;
@@ -2294,6 +2331,21 @@ if start = 0 then inc(start)
 else if start < 0 then start:=l+start+1;
 if upTo <= 0 then upTo:=l+upTo;
 result:=copy(s, start, upTo-start+1)
+end; // substr
+
+function substr(s: RawByteString; start:integer; upTo:integer=0): RawByteString; inline;
+var
+  l: integer;
+begin
+  l := length(s);
+  if start = 0 then
+    inc(start)
+   else
+    if start < 0 then
+      start := l+start+1;
+  if upTo <= 0 then
+    upTo := l+upTo;
+  result := copy(s, start, upTo-start+1)
 end; // substr
 
 function substr(s:string; after:string):string;
@@ -2308,6 +2360,19 @@ end; // substr
 function xtpl(src:string; table:array of string):string;
 var
   i:integer;
+begin
+i:=0;
+while i < length(table) do
+  begin
+  src := SysUtils.StringReplace(src,table[i],table[i+1],[rfReplaceAll,rfIgnoreCase]);
+  inc(i, 2);
+  end;
+result:=src;
+end; // xtpl
+
+function xtpl(src: RawByteString; table:array of RawByteString): RawByteString;
+var
+  i: integer;
 begin
 i:=0;
 while i < length(table) do
@@ -2413,7 +2478,7 @@ while i <= l do
 end; // urlToStrings
 
 // extract at p the section name of a text, if any
-function getSectionAt(p:pchar; out name:string):boolean;
+function getSectionAt(p: pchar; out name:string): boolean;
 var
  eos, eol: pchar;
 begin
@@ -2439,7 +2504,7 @@ function isSectionAt(p:pchar):boolean;
 var
   trash: string;
 begin
-result:=getSectionAt(p, trash);
+  result:=getSectionAt(p, trash);
 end; // isSectionAt
 
 procedure doNothing();
@@ -2730,7 +2795,7 @@ result:=def;
 includeTrailingString(key, '=');
 i:=1;
   repeat
-  i:=ipos(key, s, i);
+  i:= HSLib.ipos(key, s, i);
   if i = 0 then exit; // not found
   until (i = 1) or (s[i-1] in [#13,#10]); // ensure we are at the very beginning of the line
 inc(i, length(key));
@@ -2752,7 +2817,7 @@ else if val = '' then
   end;
 // now key has a trailing '='. Let's find where it is.
 i:=0;
-  repeat i:=ipos(key, s, i+1);
+  repeat i:= HSLib.ipos(key, s, i+1);
   until (i <= 1) or (s[i-1] in [#13,#10]); // we accept cases 0,1 as they are. Other cases must comply with being at start of line.
 if i = 0 then // missing, then add
   begin
@@ -2822,11 +2887,11 @@ finally
   end;
 end; // deltree
 
-function stringToGif(s:string; gif:TgifImage=NIL):TgifImage;
+function stringToGif(s: RawByteString; gif: TgifImage=NIL):TgifImage;
 var
-  ss: Tstringstream;
+  ss: TAnsiStringStream;
 begin
-ss:=Tstringstream.create(s);
+  ss := TAnsiStringStream.create(s);
 try
   if gif = NIL then
     gif:=TGIFImage.Create();
@@ -2852,11 +2917,13 @@ end; // allocatedMemory
 }
 
 function allocatedMemory():int64;
-var
+{var
   mm: TMemoryManagerUsageSummary;
 begin
-getMemoryManagerUsageSummary(mm);
-result:=mm.allocatedBytes;
+  getMemoryManagerUsageSummary(mm);
+  result:=mm.allocatedBytes;}
+begin
+ result := -1;
 end; // allocatedMemory
 
 function removeStartingStr(ss,s:string):string;
@@ -3061,15 +3128,23 @@ end; // htmlEncode
 
 procedure enforceNUL(var s:string);
 begin
-if s>'' then
-  setLength(s, strLen(@s[1]))
+  if s>'' then
+    setLength(s, strLen(PWideChar(@s[1])))
 end; // enforceNUL
+
+procedure enforceNUL(var s:RawByteString);
+begin
+  if s>'' then
+    setLength(s, strLen(PAnsiChar(@s[1])))
+end; // enforceNUL
+
 
 var
   TZinfo:TTimeZoneInformation;
 
 INITIALIZATION
-sysutils.DecimalSeparator:='.'; // standardize
+//  sysutils.DecimalSeparator:='.'; // standardize
+  sysutils.FormatSettings.DecimalSeparator:='.'; // standardize
 
 ipToInt_cache:=THashedStringList.Create;
 ipToInt_cache.Sorted:=TRUE;
@@ -3101,7 +3176,7 @@ trayMsg:='%ip%'
   +trayNL+'Uptime: %uptime%'
   +trayNL+'Downloads: %downloads%';
 
-fastmm4.SuppressMessageBoxes:=TRUE;
+//fastmm4.SuppressMessageBoxes:=TRUE;
 
 FINALIZATION
 freeAndNIL(ipToInt_cache);

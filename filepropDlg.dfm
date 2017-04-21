@@ -380,7 +380,6 @@ object filepropFrm: TfilepropFrm
         Height = 22
         ItemsEx = <>
         Style = csExDropDownList
-        ItemHeight = 16
         TabOrder = 1
         Images = mainFrm.images
       end

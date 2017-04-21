@@ -30,12 +30,16 @@ uses
   registry, ExtCtrls, shellapi, ImgList, ToolWin, StdCtrls, strutils, AppEvnts, types,
   winsock, clipbrd, shlobj, activex, Buttons, FileCtrl, dateutils, iniFiles, Classes,
   // 3rd part libs. ensure you have all of these, the same version reported in dev-notes.txt
-  OverbyteIcsWSocket, OverbyteIcsHttpProt, OverbyteicsMD5, GIFimage, zlibex, regexpr,
+  OverbyteIcsWSocket, OverbyteIcsHttpProt, OverbyteicsMD5,// GIFimage, zlibex,
+  regexpr,
+  gifImg, RnQzip, //RegularExpressions,
+  rnqtraylib,
+  OverbyteIcsZLibHigh,
   // rejetto libs
-  HSlib, traylib, monoLib, progFrmLib, classesLib;
+  HSlib, monoLib, progFrmLib, classesLib, System.ImageList;
 
 const
-  VERSION = '2.3i';
+  VERSION = '2.3i RD';
   VERSION_BUILD = '297';
   VERSION_STABLE = {$IFDEF STABLE } TRUE {$ELSE} FALSE {$ENDIF};
   CURRENT_VFS_FORMAT :integer = 1;
@@ -88,7 +92,7 @@ const
   BG_ERROR = $BBBBFF;
   ENCODED_TABLE_HEADER = 'this is an encoded table'+CRLF;
 
-  DEFAULT_MIME_TYPES: array [0..21] of string = (
+  DEFAULT_MIME_TYPES: array [0..23] of string = (
     '*.htm;*.html', 'text/html',
     '*.jpg;*.jpeg;*.jpe', 'image/jpeg',
     '*.gif', 'image/gif',
@@ -99,7 +103,8 @@ const
     '*.avi', 'video/x-msvideo',
     '*.txt', 'text/plain',
     '*.css', 'text/css',
-    '*.js',  'text/javascript'
+    '*.js',  'text/javascript',
+    '*.webp', 'image/webp'
   );
 
   ICONMENU_NEW = 1;
@@ -274,6 +279,8 @@ type
     size: int64;
     end;
 
+  TmyTrayicon = TTrayicon;
+
   TconnData = class  // data associated to a client connection
   private
     FlastFile: Tfile;
@@ -336,9 +343,9 @@ type
     property lastFile:Tfile read FlastFile write setLastFile;
     constructor create(conn:ThttpConn);
     destructor Destroy; override;
-    function sessionGet(k:string):string;
-    procedure sessionSet(k, v:string);
-    procedure disconnect(reason:string);
+    function sessionGet(const k: string): string;
+    procedure sessionSet(const k, v: string);
+    procedure disconnect(const reason: string);
     end; // Tconndata
 
   Tautosave = record
@@ -903,7 +910,7 @@ type
     procedure updateBtnClick(Sender: TObject);
   private
     function searchLog(dir:integer):boolean;
-    function  getGraphPic(cd:TconnData=NIL): string;
+    function  getGraphPic(cd:TconnData=NIL): RawByteString;
     procedure WMDropFiles(var msg:TWMDropFiles);
       message WM_DROPFILES;
     procedure WMQueryEndSession(var msg:TWMQueryEndSession);
@@ -912,14 +919,14 @@ type
       message WM_ENDSESSION;
     procedure WMNCLButtonDown(var msg:TWMNCLButtonDown);
       message WM_NCLBUTTONDOWN;
-    procedure trayEvent(sender:Tobject; ev:TtrayEvent);
+    procedure trayEvent(sender:Tobject; ev: TtrayEvent);
     procedure downloadtrayEvent(sender:Tobject; ev:TtrayEvent);
     procedure httpEvent(event:ThttpEvent; conn:ThttpConn);
     function  addFileRecur(f:Tfile; parent:Ttreenode=NIL):Tfile;
     function  pointedFile(strict:boolean=TRUE):Tfile;
     function  pointedConnection():TconnData;
     procedure updateSbar();
-    function  getFolderPage(folder:Tfile; cd:TconnData; otpl:Tobject):string;
+    function  getFolderPage(folder: Tfile; cd: TconnData; otpl: Tobject):string;
     procedure getPage(sectionName:string; data:TconnData; f:Tfile=NIL; tpl2use:Ttpl=NIL);
     function  selectedConnection():TconnData;
     function  sendPic(cd:TconnData; idx:integer=-1):boolean;
@@ -933,7 +940,7 @@ type
     procedure addTray();
     procedure refreshConn(conn:TconnData);
     function  getVFS(node:Ttreenode=NIL):string;
-    procedure setVFS(vfs:string; node:Ttreenode=NIL);
+    procedure setVFS2(vfs: RawByteString; node: Ttreenode=NIL); OverLoad;
     procedure setnoDownloadTimeout(v:integer);
 		procedure addDropFiles(hnd:Thandle; under:Ttreenode);
     procedure pasteFiles();
@@ -961,7 +968,7 @@ type
     function  getCfg(exclude:string=''):string;
     function  saveCFG():boolean;
     function  addFile(f:Tfile; parent:Ttreenode=NIL; skipComment:boolean=FALSE):Tfile;
-    procedure add2log(lines:string; cd:TconnData=NIL; clr:Tcolor=clDefault);
+    procedure add2log(lines:string; cd:TconnData=NIL; clr:Tcolor= Graphics.clDefault);
     function  findFilebyURL(url:string; parent:Tfile=NIL; allowTemp:boolean=TRUE):Tfile;
     function  ipPointedInLog():string;
     procedure saveVFS(fn:string='');
@@ -1054,9 +1061,10 @@ function deleteAccount(name:string):boolean;
 implementation
 
 {$R *.dfm}
-{$R data.res}
+{ $R data.res }
 
 uses
+  RDFileUtil, RDUtils, RnQNet.Uploads, Base64,
   newuserpassDlg, optionsDlg, utilLib, folderKindDlg, shellExtDlg, diffDlg, ipsEverDlg, parserLib, MMsystem,
   purgeDlg, filepropDlg, runscriptDlg, scriptLib;
 
@@ -1311,8 +1319,8 @@ end; // hasRightAttributes
 function hasRightAttributes(fn:string):boolean; overload;
 begin result:=hasRightAttributes(GetFileAttributesA(pAnsiChar(ansiString(fn)))) end;
 
-function isAnyMacroIn(s:string):boolean; inline;
-begin result:=pos(MARKER_OPEN, s) > 0 end;
+function isAnyMacroIn(s:RawByteString):boolean; inline;
+begin result := pos(MARKER_OPEN, s) > 0 end;
 
 function loadDescriptionFile(fn:string):string;
 begin
@@ -1916,28 +1924,33 @@ end;
 function idx_label(i:integer):string;
 begin result:=intToStr(idx_img2ico(i)) end;
 
-function bmp2str(bmp:Tbitmap):string;
+function bmp2str(bmp:Tbitmap): RawByteString;
 var
-  stream: Tstringstream;
+//  stream: Tstringstream;
+  str: TMemorystream;
 	gif: TGIFImage;
 begin
 { the gif component has a GDI object leak while reducing colors of
 { transparent images. this seems to be not a big problem since the
 { icon cache system was introduced, but a real fix would be nice. }
-stream:=Tstringstream.create('');
+//stream:=Tstringstream.create('');
+  str := TMemorystream.Create;
 gif:=TGIFImage.Create();
 
 gif.ColorReduction:=rmQuantize;
-gif.Compression:=gcLZW;
+//gif.Compression:=gcLZW;
 gif.Assign(bmp);
-gif.SaveToStream(stream);
-result:=stream.DataString;
-
+gif.SaveToStream(str);
 gif.free;
-stream.free;
+  SetLength(Result, str.Size);
+  str.Position := 0;
+  CopyMemory(@result[1], str.Memory, Length(Result));
+//result:=stream.DataString;
+
+str.free;
 end; // bmp2str
 
-function pic2str(idx:integer):string;
+function pic2str(idx:integer): RawByteString;
 var
   pic, pic2: Tbitmap;
 begin
@@ -1966,18 +1979,21 @@ pic.free;
 imagescache[idx]:=result;
 end; // pic2str
 
-function str2pic(s:string):integer;
+function str2pic(s: RawByteString):integer;
 var
 	gif: TGIFImage;
 begin
-for result:=0 to mainfrm.images.count-1 do
-  if pic2str(result) = s then exit;
+  for result:=0 to mainfrm.images.count-1 do
+    if pic2str(result) = s then
+      exit;
 // in case the pic was not found, it automatically adds it to the pool
-gif:=stringToGif(s);
-try
-  result:=mainfrm.images.addMasked(gif.bitmap, gif.Bitmap.TransparentColor);
-  mtimes.values['icon.'+intToStr(result)] := dateToHTTP(now());
-finally gif.free end;
+  gif := stringToGif(s);
+  try
+    result := mainfrm.images.addMasked(gif.bitmap, gif.Bitmap.TransparentColor);
+    mtimes.values['icon.'+intToStr(result)] := dateToHTTP(now());
+   finally
+    gif.free
+  end;
 end; // str2pic
 
 function getImageIndexForFile(fn:string):integer;
@@ -2268,26 +2284,32 @@ if assigned(f) then
 inherited destroy;
 end; // destructor
 
-procedure Tconndata.disconnect(reason:string);
+procedure Tconndata.disconnect(const reason: string);
 begin
 disconnectReason:=reason;
 conn.disconnect();
 end; // disconnect
 
-function Tconndata.sessionGet(k:string):string;
+function Tconndata.sessionGet(const k: string): string;
 begin
-try result:=session.values[k];
-except result:='' end;
+  if Assigned(session) then
+    try
+      result := session.values[k];
+     except
+      result := ''
+    end
+   else
+    result := ''
 end; // sessionGet
 
-procedure Tconndata.sessionSet(k, v:string);
+procedure Tconndata.sessionSet(const k, v: string);
 begin
-if session = NIL then
-  begin
-  session:=THashedStringList.create;
-  sessions.addObject(sessionID, session);
-  end;
-session.values[k]:=v;
+  if session = NIL then
+    begin
+    session := THashedStringList.create;
+    sessions.addObject(sessionID, session);
+    end;
+  session.values[k] := v;
 end; // sessionSet
 
 // we'll automatically free and previous temporary object
@@ -2297,7 +2319,7 @@ freeIfTemp(FlastFile);
 FlastFile:=f;
 end;
 
-constructor Tfile.create(fullpath:string);
+constructor Tfile.create(fullpath: string);
 begin
 fullpath:=ExcludeTrailingPathDelimiter(fullpath);
 icon:=-1;
@@ -2859,34 +2881,34 @@ while (i > 1) and (result[i] <> '/') do dec(i);
 setlength(result,i);
 end; // parentURL
 
-function Tfile.getSystemIcon():integer;
+function Tfile.getSystemIcon(): integer;
 var
   ic: PcachedIcon;
   i: integer;
 begin
-result:=icon;
-if result >= 0 then exit;
-if isFile() then
-  for i:=0 to length(iconMasks)-1 do
-    if fileMatch(iconMasks[i].str, name) then
-      begin
-      result:=iconMasks[i].int;
-      exit;
-      end;
-ic:=iconsCache.get(resource);
-if ic = NIL then
-  begin
-  result:=getImageIndexForFile(resource);
-  iconsCache.put(resource, result, mtime);
-  exit;
-  end;
-if mtime <= ic.time then result:=ic.idx
-else
-  begin
-  result:=getImageIndexForFile(resource);
-  ic.time:=mtime;
-  ic.idx:=result;
-  end;
+  result := icon;
+  if result >= 0 then exit;
+  if isFile() then
+    for i:=0 to length(iconMasks)-1 do
+      if fileMatch(iconMasks[i].str, name) then
+        begin
+        result:=iconMasks[i].int;
+        exit;
+        end;
+  ic:=iconsCache.get(resource);
+  if ic = NIL then
+    begin
+    result:=getImageIndexForFile(resource);
+    iconsCache.put(resource, result, mtime);
+    exit;
+    end;
+  if mtime <= ic.time then result:=ic.idx
+  else
+    begin
+    result:=getImageIndexForFile(resource);
+    ic.time:=mtime;
+    ic.idx:=result;
+    end;
 end; // getSystemIcon
 
 procedure Tfile.lock();
@@ -3179,8 +3201,8 @@ var
   end; // workDots
 
 begin
-result:=NIL;
-if (url = '') or anycharIn(#0, url) then exit;
+  result := NIL;
+  if (url = '') or anycharIn(#0, url) then exit;
 if parent = NIL then
   parent:=rootFile;
 url:=xtpl(url, ['//', '/']);
@@ -3371,12 +3393,12 @@ var
   idx:=0;
   p:=1;
     repeat
-    p:=ipos(PATTERN, result, p);
+    p:= HSLib.ipos(PATTERN, result, p);
     if p = 0 then exit;
     inc(idx);
     idxS:=intToStr(idx);
     delete(result, p, length(PATTERN)-length(idxS));
-    move(idxS[1], result[p], length(idxS));
+    MoveChars(idxS[1], result[p], length(idxS));
     until false;
   end; // applySequential
 
@@ -3385,9 +3407,11 @@ var
     type_, s, url, fingerprint, itemFolder: string;
     nonPerc: TStringDynArray;
   begin
-  if not f.isLink and ansiContainsStr(f.resource, '?') then exit; // unicode filename?   //mod by mars
+    if not f.isLink and ansiContainsStr(f.resource, '?') then
+      exit; // unicode filename?   //mod by mars
 
-  if f.size > 0 then inc(totalBytes, f.size);
+    if f.size > 0 then
+      inc(totalBytes, f.size);
 
   // build up the symbols table
   md.table:=NIL;
@@ -3402,7 +3426,7 @@ var
       addArray(nonPerc, ['~img_file', '~img'+intToStr(f.getSystemIcon())]);
 
   if recur or (itemFolder = '') then
-    itemFolder:=optUTF8(diffTpl, f.getFolder());
+    itemFolder:= f.getFolder();
   if recur then
     url:=substr(itemFolder, ofsRelItemUrl)
   else
@@ -3429,8 +3453,10 @@ var
   if fingerprintsChk.checked and f.isFile() then
     begin
     s:=loadMD5for(f.resource);
-    if s = '' then s:=hasher.getHashFor(f.resource);
-    if s > '' then fingerprint:='#!md5!'+s;
+    if s = '' then
+      s:=hasher.getHashFor(f.resource);
+    if s > '' then
+      fingerprint:='#!md5!'+s;
     end;
   if f.isLink() then
     begin
@@ -3480,7 +3506,7 @@ var
     end
   else
     begin
-    s:=diffTpl.getTxtByExt(ExtractFileExt(f.name));
+    s := diffTpl.getTxtByExt(ExtractFileExt(f.name));
     if s = '' then s:=fileTpl;
     inc(numberFiles);
     type_:='file';
@@ -3499,34 +3525,35 @@ var
 var
   i: integer;
 begin
-result:='';
-if (folder = NIL) or not folder.isFolder() then exit;
+  result := '';
+  if (folder = NIL) or not folder.isFolder() then
+    exit;
 
-if macrosLogChk.checked and not appendmacroslog1.checked then
-  resetLog();
-diffTpl:=Ttpl.create();
-folder.lock();
+  if macrosLogChk.checked and not appendmacroslog1.checked then
+    resetLog();
+  diffTpl := Ttpl.create();
+  folder.lock();
 try
-  buildTime:=now();
+  buildTime := now();
   cd.conn.addHeader('Cache-Control: no-cache, no-store, must-revalidate, max-age=-1');
-  recur:=shouldRecur(cd);
-  baseurl:=protoColon()+getSafeHost(cd)+folder.url(TRUE);
+  recur := shouldRecur(cd);
+  baseurl := protoColon()+getSafeHost(cd)+folder.url(TRUE);
 
   if cd.tpl = NIL then
-    diffTpl.over:=otpl as Ttpl
+    diffTpl.over := otpl as Ttpl
   else
     begin
-    diffTpl.over:=cd.tpl;
-    cd.tpl.over:=otpl as Ttpl;
+    diffTpl.over := cd.tpl;
+    cd.tpl.over := otpl as Ttpl;
     end;
 
   if otpl <> filelistTpl then
-    diffTpl.fullText:=optUTF8(diffTpl.over, folder.getRecursiveDiffTplAsStr());
+    diffTpl.fullTextS := folder.getRecursiveDiffTplAsStr();
 
   isDMbrowser:= otpl = dmBrowserTpl;
   fullEncode:=not isDMbrowser;
   ofsRelUrl:=length(folder.url(fullEncode))+1;
-  ofsRelItemUrl:=length(optUTF8(diffTpl, folder.pathTill()))+1;
+  ofsRelItemUrl:=length(folder.pathTill())+1;
   // pathTill() is '/' for root, and 'just/folder', so we must accordingly consider a starting and trailing '/' for the latter case (bugfix by mars)
   if not folder.isRoot() then
     inc(ofsRelItemUrl, 2);
@@ -3564,7 +3591,8 @@ try
     for i:=0 to length(listing.dir)-1 do
       begin
       application.ProcessMessages();
-      if cd.conn.state = HCS_DISCONNECTED then exit;
+      if cd.conn.state = HCS_DISCONNECTED then
+        exit;
       cd.lastActivityTime:=now();
       handleItem(listing.dir[i])
       end;
@@ -3575,14 +3603,15 @@ try
     hasher.free;
     end;
 
-  if cd.conn.state = HCS_DISCONNECTED then exit;
+  if cd.conn.state = HCS_DISCONNECTED then
+    exit;
 
   // build final page
   if not oneAccessible then md.archiveAvailable:=FALSE;
   md.table:=toSA([
     '%upload-link%', if_(accountAllowed(FA_UPLOAD, cd, folder), diffTpl['upload-link']),
     '%files%', if_(list='', diffTpl['nofiles'], diffTpl['files']),
-    '%list%',list,
+    '%list%', list,
     '%number%', intToStr(numberFiles+numberFolders+numberLinks),
     '%number-files%', intToStr(numberFiles),
     '%number-folders%', intToStr(numberFolders),
@@ -3615,7 +3644,7 @@ else result:='-'
 end; // getETA
 
 function tplFromFile(f:Tfile):Ttpl;
-begin result:=Ttpl.create(optUTF8(tpl, f.getRecursiveDiffTplAsStr()), tpl) end;
+begin result:=Ttpl.create(f.getRecursiveDiffTplAsStr(), tpl) end;
 
 procedure setDefaultIP(v:string);
 var
@@ -3689,7 +3718,7 @@ var
       begin
       if d.conn.reply.bodymode <> RBM_FILE then continue;
       t:=tpl2use['progress-download-file'];
-      fn:=optUTF8(tpl2use, d.lastFN);
+      fn:= d.lastFN;
       bytes:=d.conn.bytesSentLastItem;
       total:=d.conn.bytesPartial;
       end;
@@ -3739,12 +3768,12 @@ var
   for i:=0 to length(data.uploadResults)-1 do
     with data.uploadResults[i] do
       files:=files+xtpl(tpl2use[ if_(reason='','upload-success','upload-failed') ],[
-        '%item-name%', htmlEncode(macroQuote(optUTF8(tpl2use, fn))),
+        '%item-name%', htmlEncode(macroQuote(fn)),
         '%item-url%', macroQuote(encodeURL(fn)),
         '%item-size%', smartsize(size),
         '%item-resource%', f.resource+'\'+fn,
         '%idx%', intToStr(i+1),
-        '%reason%', optUTF8(tpl2use, reason),
+        '%reason%', reason,
         '%speed%', intToStr(speed div 1000), // legacy
         '%smart-speed%', smartsize(speed)
       ]);
@@ -3772,7 +3801,7 @@ if assigned(data.tpl) then
 try
   data.conn.reply.mode:=HRM_REPLY;
   data.conn.reply.bodyMode:=RBM_STRING;
-  data.conn.reply.body:='';
+  data.conn.reply.bodyB := '';
 except end;
 
 section:=tpl2use.getSection(sectionName);
@@ -3785,7 +3814,7 @@ try
   addUploadResultsSymbols();
   if data = NIL then s:=''
   else s:=first(data.banReason, data.disconnectReason);
-  addArray(md.table, ['%reason%', optUTF8(tpl2use, s)]);
+  addArray(md.table, ['%reason%', s]);
 
   data.conn.reply.contentType:=name2mimetype(sectionName, 'text/html');
   if sectionName = 'ban' then data.conn.reply.mode:=HRM_DENY;
@@ -3814,7 +3843,7 @@ try
 
   tryApplyMacrosAndSymbols(s, md);
 
-  data.conn.reply.body:=xtpl(s, [
+  data.conn.reply.bodyB := xtpl(s, [
     '%build-time%', floatToStrF((now()-buildTime)*SECONDS, ffFixed, 7,3)
   ]);
   if section.nolog then data.dontLog:=TRUE;
@@ -3849,7 +3878,7 @@ var
   s, url: string;
   special: (no, graph);
 begin
-url:=decodeURL(cd.conn.request.url);
+  url := decodeURL(cd.conn.request.url);
 result:=FALSE;
 special:=no;
 if idx < 0 then
@@ -3869,8 +3898,8 @@ if idx < 0 then
 if (special = no) and ((idx < 0) or (idx >= images.count)) then exit;
 
 case special of
-  no: cd.conn.reply.body:=pic2str(idx);
-  graph: cd.conn.reply.body:=getGraphPic(cd);
+  no: cd.conn.reply.bodyB := pic2str(idx);
+  graph: cd.conn.reply.bodyB := getGraphPic(cd);
   end;
 
 result:=TRUE;
@@ -3967,10 +3996,10 @@ if not data.countAsDownload then exit;
 
 if data.tray = NIL then
   begin
-  data.tray:=TmyTrayIcon.create(mainfrm);
-  data.tray.data:=data;
-  data.tray_ico:=Ticon.create();
-  data.tray.onEvent:=mainfrm.downloadTrayEvent;
+  data.tray:= TmyTrayicon.create(mainfrm.handle);
+  data.tray.UsrData := data;
+  data.tray_ico := Ticon.create();
+  data.tray.onEvent := mainfrm.downloadTrayEvent;
   end;
 if mainfrm.trayfordownloadChk.checked and isSendingFile(data) then
   paintIcon()
@@ -3997,11 +4026,13 @@ end; // getDynLogFilename
 
 procedure applyISOdateFormat();
 begin
-if mainfrm.useISOdateChk.checked then ShortDateFormat:='yyyy-mm-dd'
-else ShortDateFormat:=GetLocaleStr(LOCALE_USER_DEFAULT, LOCALE_SSHORTDATE,'');
+  if mainfrm.useISOdateChk.checked then
+    FormatSettings.ShortDateFormat:='yyyy-mm-dd'
+   else
+     FormatSettings.ShortDateFormat:=GetLocaleStr(LOCALE_USER_DEFAULT, LOCALE_SSHORTDATE,'');
 end;
 
-procedure Tmainfrm.add2log(lines:string; cd:TconnData=NIL; clr:Tcolor=clDefault);
+procedure Tmainfrm.add2log(lines:string; cd:TconnData=NIL; clr:Tcolor= Graphics.clDefault);
 var
   s, ts, first, rest, addr: string;
 begin
@@ -4009,7 +4040,7 @@ if not logOnVideoChk.checked
 and ((logFile.filename = '') or (logFile.apacheFormat > '')) then
   exit;
 
-if clr = clDefault then
+if clr = Graphics.clDefault then
   clr:=clBlack;
 
 if logDateChk.checked then
@@ -4623,12 +4654,13 @@ var
     s: string;
     i: integer;
   begin
-  s:=url;
-  url:=chop('?',s);
-  data.urlvars.clear();
-  if s > '' then extractStrings(['&'], [], @s[1], data.urlvars);
-  for i:=0 to data.urlvars.count-1 do
-    data.urlvars[i]:=decodeURL(xtpl(data.urlvars[i],['+',' ']));
+    s:=url;
+    url:=chop('?',s);
+    data.urlvars.clear();
+    if s > '' then
+      extractStrings(['&'], [], @s[1], data.urlvars);
+    for i:=0 to data.urlvars.count-1 do
+      data.urlvars[i]:=decodeURL(xtpl(data.urlvars[i],['+',' ']));
   end; // extractParams
 
   procedure closeUploadingFile();
@@ -4831,9 +4863,9 @@ var
   noFolders:=not stringExists(data.postVars.values['nofolders'], ['','0','false']);
   itsAsearch:=data.urlvars.values['search'] > '';
 
-  tar:=TtarStream.create(); // this is freed by ThttpSrv
+  tar := TtarStream.create(); // this is freed by ThttpSrv
   try
-    tar.fileNamesOEM:=oemTarChk.checked;
+    tar.fileNamesOEM := oemTarChk.checked;
     addSelection();
     if not selection then
       addFolder(f);
@@ -4940,7 +4972,7 @@ var
       conn.reply.contentType:=if_(trim(getTill('<', s))='', 'text/html', 'text/plain');
     conn.reply.mode:=HRM_REPLY;
     conn.reply.bodyMode:=RBM_STRING;
-    conn.reply.body:=s;
+    conn.reply.bodyB := UTF8Encode(s);
     compressReply(data);
     end; // replyWithString
 
@@ -5079,11 +5111,12 @@ var
     end;
   inc(hitsLogged);
 
-  if data.preReply <> PR_NONE then exit;
+  if data.preReply <> PR_NONE then
+    exit;
 
-  url:=conn.request.url;
+  url := conn.request.url;
   extractParams();
-  url:=decodeURL(url);
+  url := decodeURL(url, True);
 
   data.lastFN:=extractFileName( xtpl(url,['/','\']) );
   data.agent:=getAgentID(conn);
@@ -5139,8 +5172,8 @@ var
     end;
 
   // this is better to be refresh, because a user may be deleted meantime
-  data.account:=getAccount(data.usr);
-  conn.ignoreSpeedLimit:=noLimitsFor(data.account);
+  data.account := getAccount(data.usr);
+  conn.ignoreSpeedLimit := noLimitsFor(data.account);
 
   // all URIs must begin with /
   if (url = '') or (url[1] <> '/') then
@@ -5203,7 +5236,7 @@ var
     begin
     if sameText(url, '/robots.txt') and stopSpidersChk.checked then
       replyWithString('User-agent: *'+CRLF+'Disallow: /')
-    else
+     else
       getPage('not found', data);
     exit;
     end;
@@ -5364,13 +5397,13 @@ var
     if DMbrowserTplChk.Checked and isDownloadManagerBrowser() then
       s:=getFolderPage(f, data, dmBrowserTpl)
     else
-      s:=getFolderPage(f, data, tpl);
+      s := getFolderPage(f, data, tpl);
     if conn.reply.mode <> HRM_REDIRECT then
       replyWithString(s);
     exit;
     end;
 
-  httpDate:=dateToHTTP(getMtimeUTC(f.resource));
+  httpDate := dateToHTTP(getMtimeUTC(f.resource));
 
   data.countAsDownload:=f.shouldCountAsDownload();
   if data.countAsDownload and limitsExceededOnDownload() then
@@ -5383,8 +5416,8 @@ var
   data.eta.idx:=0;
   conn.reply.contentType:=name2mimetype(f.name, DEFAULT_MIME);
   conn.reply.bodyMode:=RBM_FILE;
-  conn.reply.body:=f.resource;
-  data.downloadingWhat:=DW_FILE;
+  conn.reply.bodyB := UTF8Encode(f.resource);
+  data.downloadingWhat := DW_FILE;
   { I guess this would not help in any way for files since we are already handling the 'if-modified-since' field
   try
     conn.addHeader('ETag: '+getEtag(f.resource));
@@ -6195,18 +6228,18 @@ end; // changePort
 
 function TmainFrm.getCfg(exclude:string=''):string;
 type
-  Tencoding=(E_PLAIN,E_B64,E_ZIP);
+  Tencoding=(E_PLAIN, E_B64, E_ZIP);
 
-  function encode(s:string; encoding:Tencoding):string;
+  function encode(s:string; encoding: Tencoding): RawByteString;
   begin
   case encoding of
     E_PLAIN: result:=s;
-    E_B64: result:=base64encode(s);
+    E_B64: result:= Base64EncodeString(s);
     E_ZIP:
       begin
-      result:=zCompressStr(s, zcMax);
+      result := zCompressStr(s);
       if length(result) > round(0.95*length(s)) then result:=s;
-      result:=base64encode(result);
+      result := Base64EncodeString(result);
       end;
     end;
   end;
@@ -6330,7 +6363,7 @@ result:='HFS '+VERSION+' - Build #'+VERSION_BUILD+CRLF
 +'custom-ip='+join(';',customIPs)+CRLF
 +'listen-on='+listenOn+CRLF
 +'external-ip-server='+customIPservice+CRLF
-+'dynamic-dns-updater='+base64encode(dyndns.url)+CRLF
++'dynamic-dns-updater='+Base64EncodeString(dyndns.url)+CRLF
 +'dynamic-dns-user='+dyndns.user+CRLF
 +'dynamic-dns-host='+dyndns.host+CRLF
 +'search-better-ip='+yesno[searchbetteripChk.checked]+CRLF
@@ -6521,11 +6554,26 @@ var
     end;
   end; // loadBanlist
 
-  function unzip(s:string):string;
+  function unzipS(s:string): string;
+  var
+    sa: RawByteString;
   begin
-  result:=base64decode(s);
-  try result:=ZDecompressStr(result);
-  except end;
+    sa := Base64DecodeString(s);
+    try
+      result := UTF8ToString(ZDecompressStr(sa));
+     except
+    end;
+  end; // unzip
+
+  function unzipA(s: String): RawByteString;
+  var
+    sa: RawByteString;
+  begin
+    sa := Base64DecodeString(s);
+    try
+      result := ZDecompressStr(sa);
+     except
+    end;
   end; // unzip
 
   procedure strToAccounts();
@@ -6553,7 +6601,7 @@ var
       if p = 'login' then
       	begin
         if not anycharIn(':', t) then
-  	      t:=base64decode(t);
+  	      t:= Base64DecodeString(t);
   	    a.user:=chop(':',t);
 	      a.pwd:=t;
         end;
@@ -6562,7 +6610,7 @@ var
       if p = 'group' then a.group:=yes(t);
       if p = 'redir' then a.redir:=t;
       if p = 'link' then a.link:=split(':',t);
-      if p = 'notes' then a.notes:=unzip(t);
+      if p = 'notes' then a.notes := unzipS(t);
       end;
     end;
   end; // strToAccounts
@@ -6584,11 +6632,11 @@ var
   var
     i, iFrom, iTo: integer;
   begin
-  userIconOfs:=images.Count;
-  while l > '' do
+  userIconOfs := images.Count;
+    while l > '' do
     begin
     iFrom:=strTointDef(chop(':', l), -1);
-    iTo:=str2pic(unzip(chop('|', l)));
+    iTo:=str2pic(unzipA(chop('|', l)));
     for i:=0 to length(iconMasks)-1 do
       if iconMasks[i].int = iFrom then
         iconMasks[i].int:=iTo;
@@ -6669,7 +6717,7 @@ while cfg > '' do
     if h = 'ip' then savedip:=l;
     if h = 'custom-ip' then customIPs:=split(';',l);
     if h = 'listen-on' then listenOn:=l;
-    if h = 'dynamic-dns-updater' then dyndns.url:=base64decode(l);
+    if h = 'dynamic-dns-updater' then dyndns.url := UnUTF( Base64DecodeString(l));
     if h = 'dynamic-dns-user' then dyndns.user:=l;
     if h = 'dynamic-dns-host' then dyndns.host:=l;
     if h = 'login-realm' then loginRealm:=l;
@@ -7587,7 +7635,7 @@ var
     data: TconnData;
   begin
   // this is a already done in utilLib initialization, but it's a workaround to http://www.rejetto.com/forum/?topic=7724
-  decimalSeparator:='.';
+    FormatSettings.decimalSeparator:='.';
   // check if the window is outside the visible screen area
   outside:=left;
   if assigned(monitor) then  // checking here because the following line once thrown this AV http://www.rejetto.com/forum/?topic=5568
@@ -8748,7 +8796,7 @@ begin
 if userInteraction.disabled then exit;
 
 for i:=connBox.items.count-1 downto 0 do
-    if conn2data(i) = (sender as TmyTrayIcon).data then
+    if conn2data(i) = (sender as TmyTrayicon).usrData then
       connBox.itemIndex:=i;
 
 case ev of
@@ -9031,7 +9079,7 @@ f:=nodeToFile(node);
 commonFields:=TLV(FK_FLAGS, str_(f.flags))
     +TLV_NOT_EMPTY(FK_RESOURCE, f.resource)
     +TLV_NOT_EMPTY(FK_COMMENT, f.comment)
-    +if_(f.user>'', TLV(FK_USERPWD, base64encode(f.user+':'+f.pwd)))
+    +if_(f.user>'', TLV(FK_USERPWD, Base64EncodeString(f.user+':'+f.pwd)))
     +TLV_NOT_EMPTY(FK_ACCOUNTS, join(';',f.accounts[FA_ACCESS]) )
     +TLV_NOT_EMPTY(FK_UPLOADACCOUNTS, join(';',f.accounts[FA_UPLOAD]))
     +TLV_NOT_EMPTY(FK_DELETEACCOUNTS, join(';',f.accounts[FA_DELETE]))
@@ -9066,7 +9114,7 @@ result:=TLV(FK_NODE, commonFields
 );
 end; // getVFS
 
-procedure Tmainfrm.setVFS(vfs:string; node:Ttreenode=NIL);
+procedure Tmainfrm.setVFS2(vfs: RawByteString; node:Ttreenode=NIL);
 const
   MSG_BETTERSTOP = #13'Going on may lead to problems.'
     +#13'It is adviced to stop loading.'
@@ -9077,7 +9125,7 @@ const
   MSG_BAKAVAILABLE = 'This file is corrupted but a backup is available.'#13'Continue with backup?';
 
 var
-  data: string;
+  data2: RawByteString;
   f: Tfile;
   after: record
     resetLetBrowse: boolean;
@@ -9085,9 +9133,10 @@ var
   act: TfileACtion;
   tlv: Ttlv;
 
-  procedure parseAutoupdatedFiles(data:string);
+  procedure parseAutoupdatedFiles(data: string);
   var
-    s, fn: string;
+    fn: string;
+    s: RawByteString;
   begin
   autoupdatedFiles.Clear();
   tlv.down();
@@ -9096,7 +9145,7 @@ var
     tlv.down();
     while not tlv.isOver() do
       case tlv.pop(s) of
-        FK_NAME: fn:=s;
+        FK_NAME: fn:= UnUTF(s);
         FK_DLCOUNT: autoupdatedFiles.setInt(fn, int_(s));
         end;
     tlv.up();
@@ -9120,10 +9169,10 @@ f.node:=node;
 tlv:=Ttlv.create;
 tlv.parse(vfs);
 while not tlv.isOver() do
-  case tlv.pop(data) of
+  case tlv.pop(data2) of
     FK_ROOT:
       begin
-      setVFS(data, rootNode );
+      setVFS2(data2, rootNode );
       if loadingVFS.build < '109' then
         include(f.flags, FA_ARCHIVABLE);
       end;
@@ -9135,7 +9184,7 @@ while not tlv.isOver() do
         progFrm.progress:= tlv.getPerc();
         application.ProcessMessages();
         end;
-      setVFS(data, addFile(Tfile.create(''), node, TRUE).node );
+      setVFS2(data2, addFile(Tfile.create(''), node, TRUE).node );
       end;
     FK_COMPRESSED_ZLIB:
       { Explanation for the #0 workaround.
@@ -9144,23 +9193,25 @@ while not tlv.isOver() do
       { containing a trailing #0. You know, being using a zlib wrapper there is some underlying C code.
       { I was unable to reproduce the bug, but i found that correct data doesn't complain if i add an extra #0. }
       try
-        data:=ZDecompressStr2(data+#0, 31);
-        if isAnyMacroIn(data) then loadingVFS.macrosFound:=TRUE;
-        setVFS(data, node);
+//        data := ZDecompressStr2(data+#0, 31);
+        data2 := ZDecompressStr3(data2+#0, zsGZip);
+        if isAnyMacroIn(data2) then
+          loadingVFS.macrosFound:=TRUE;
+        setVFS2(data2, node);
       except msgDlg(MSG_ZLIB, MB_ICONERROR) end;
     FK_FORMAT_VER:
       begin
-      if length(data) < 4 then // early versions: '1.0', '1.1'
+      if length(data2) < 4 then // early versions: '1.0', '1.1'
         begin
         loadingVFS.resetLetBrowse:=TRUE;
         after.resetLetBrowse:=TRUE;
         end;
-      if (int_(data) > CURRENT_VFS_FORMAT)
+      if (int_(data2) > CURRENT_VFS_FORMAT)
       and (msgDlg(MSG_NEWER+MSG_BETTERSTOP, MB_ICONERROR+MB_YESNO) = IDYES) then
         exit;
       end;
   	FK_CRC:
-      if str_(getCRC(tlv.getTheRest())) <> data then
+      if str_(getCRC(tlv.getTheRest())) <> data2 then
         begin
         if loadingVFS.bakAvailable then
           if msgDlg(MSG_BAKAVAILABLE, MB_ICONWARNING+MB_YESNO) = IDYES then
@@ -9171,37 +9222,37 @@ while not tlv.isOver() do
         if msgDlg(MSG_BADCRC+MSG_BETTERSTOP,MB_ICONERROR+MB_YESNO) = IDYES then
         	exit;
         end;
-    FK_RESOURCE: f.resource:=data;
+    FK_RESOURCE: f.resource := UnUTF(data2);
     FK_NAME:
       begin
-      f.name:=data;
-      node.text:=data;
+      f.name:= data2;
+      node.text := data2;
       end;
-    FK_FLAGS: move(data[1], f.flags, length(data));
-  	FK_ADDEDTIME: f.atime:=dt_(data);
-    FK_COMMENT: f.comment:=data;
+    FK_FLAGS: move(data2[1], f.flags, min(length(data2), SizeOf(f.flags)));
+  	FK_ADDEDTIME: f.atime:=dt_(data2);
+    FK_COMMENT: f.comment:=data2;
     FK_USERPWD:
     	begin
-      data:=base64decode(data);
-      f.user:=chop(':',data);
-      f.pwd:=data;
+      data2 := Base64DecodeString(data2);
+      f.user := UnUTF(chop(':', data2));
+      f.pwd := UnUTF(data2);
       usersInVFS.track(f.user, f.pwd);
       end;
-    FK_DLCOUNT: f.DLcount:=int_(data);
-    FK_ACCOUNTS: f.accounts[FA_ACCESS]:=split(';',data);
-    FK_UPLOADACCOUNTS: f.accounts[FA_UPLOAD]:=split(';',data);
-    FK_DELETEACCOUNTS: f.accounts[FA_DELETE]:=split(';',data);
-    FK_FILESFILTER: f.filesfilter:=data;
-    FK_FOLDERSFILTER: f.foldersfilter:=data;
-    FK_UPLOADFILTER: f.uploadFilterMask:=data;
-    FK_REALM: f.realm:=data;
-    FK_DEFAULTMASK: f.defaultFileMask:=data;
-    FK_DIFF_TPL: f.diffTpl:=data;
-    FK_DONTCOUNTASDOWNLOADMASK: f.dontCountAsDownloadMask:=data;
-    FK_DONTCOUNTASDOWNLOAD: if boolean(data[1]) then include(f.flags, FA_DONT_COUNT_AS_DL);  // legacy, now moved into flags
-    FK_ICON_GIF: if data > '' then f.setupImage(str2pic(data));
-    FK_AUTOUPDATED_FILES: parseAutoupdatedFiles(data);
-    FK_HFS_BUILD: loadingVFS.build:=data;
+    FK_DLCOUNT: f.DLcount:=int_(data2);
+    FK_ACCOUNTS: f.accounts[FA_ACCESS]:= split(';', data2);
+    FK_UPLOADACCOUNTS: f.accounts[FA_UPLOAD]:=split(';',data2);
+    FK_DELETEACCOUNTS: f.accounts[FA_DELETE]:=split(';',data2);
+    FK_FILESFILTER: f.filesfilter:=data2;
+    FK_FOLDERSFILTER: f.foldersfilter:=data2;
+    FK_UPLOADFILTER: f.uploadFilterMask:=data2;
+    FK_REALM: f.realm:=data2;
+    FK_DEFAULTMASK: f.defaultFileMask:=data2;
+    FK_DIFF_TPL: f.diffTpl := data2;
+    FK_DONTCOUNTASDOWNLOADMASK: f.dontCountAsDownloadMask := data2;
+    FK_DONTCOUNTASDOWNLOAD: if boolean(data2[1]) then include(f.flags, FA_DONT_COUNT_AS_DL);  // legacy, now moved into flags
+    FK_ICON_GIF: if data2 > '' then f.setupImage(str2pic(data2));
+    FK_AUTOUPDATED_FILES: parseAutoupdatedFiles(data2);
+    FK_HFS_BUILD: loadingVFS.build:= data2;
     FK_HEAD, FK_HFS_VER: ; // recognize these fields, but do nothing
     else loadingVFS.unkFK:=TRUE;
     end;
@@ -9238,7 +9289,8 @@ function addVFSheader(vfsdata:string):string;
 begin
 if length(vfsdata) > COMPRESSION_THRESHOLD then
   vfsdata:=TLV(FK_COMPRESSED_ZLIB,
-    ZcompressStr2(vfsdata, zcFastest, 31,8, zsDefault) );
+//    ZcompressStr2(vfsdata, zcFastest, 31,8, zsDefault) );
+    ZcompressStr(vfsdata, clFastest, zsGZip) );
 result:= TLV(FK_HEAD, VFS_FILE_IDENTIFIER)
   +TLV(FK_FORMAT_VER, str_(CURRENT_VFS_FORMAT))
   +TLV(FK_HFS_VER, VERSION)
@@ -9320,7 +9372,7 @@ var
 
   function getColor(idx:integer; def:Tcolor):Tcolor;
   begin
-  if (length(colors) <= idx) or (colors[idx] = clDefault) then result:=def
+  if (length(colors) <= idx) or (colors[idx] = graphics.clDefault) then result:=def
   else result:=colors[idx]
   end; // getColor
 
@@ -9380,7 +9432,7 @@ graphBox.canvas.CopyRect(r,bmp.canvas,r);
 bmp.free;
 end;
 
-function Tmainfrm.getGraphPic(cd:TconnData=NIL):string;
+function Tmainfrm.getGraphPic(cd:TconnData=NIL): RawByteString;
 var
   bmp: Tbitmap;
   refresh: string;
@@ -9398,7 +9450,7 @@ var
   end; // addColor
 
 begin
-options:=copy(decodeURL(cd.conn.request.url), 12, MAXINT);
+  options := copy(decodeURL(cd.conn.request.url), 12, MAXINT);
 delete(options, pos('?',options), MAXINT);
 bmp:=Tbitmap.create();
 bmp.Width:=graphBox.Width;
@@ -9420,7 +9472,7 @@ else
       bmp.height:=min(i, 300000 div max(1,bmp.width));
     refresh:=chop('x',options);
     for i:=1 to 5 do
-      addColor(stringToColorEx(chop('x',options), clDefault));
+      addColor(stringToColorEx(chop('x',options), graphics.clDefault));
   except
     end;
 drawGraphOn(bmp.canvas, colors);
@@ -9731,7 +9783,7 @@ if f.hasRecursive([FA_HIDDEN, FA_HIDDENTREE], TRUE) then
   	style:=style+[fsItalic];
 a:=f.accounts[FA_ACCESS];
 onlyAnon:= onlyString(USER_ANONYMOUS, a);
-node.stateIndex:=ifThen((f.user > '') or (assigned(a) and not onlyAnon), ICON_LOCK, -1);
+node.stateIndex := RDUtils.ifThen((f.user > '') or (assigned(a) and not onlyAnon), ICON_LOCK, -1);
 end;
 
 function Tmainfrm.fileAttributeInSelection(fa:TfileAttribute):boolean;
@@ -9854,7 +9906,7 @@ const
     +#13#13'Trust this file?';
 var
   took: Tdatetime;
-  data: string;
+  data2: RawByteString;
 
   function anyAutosavingFeatureEnabled():boolean;
   begin  result:=(autosaveVFS.every > 0) or autosaveVFSchk.checked end;
@@ -9865,7 +9917,7 @@ var
     and (not fileExists(fn) or renameFile(fn, fn+CORRUPTED_EXT))
     and renameFile(fn+BAK_EXT, fn);
   if result then
-    data:=loadfile(fn);
+    data2 := loadfile(fn);
   end; // restoreBak
 
 begin
@@ -9876,22 +9928,22 @@ disableUserInteraction();
 try
   fillchar(loadingVFS, sizeof(loadingVFS), 0);
   took:=now();
-  data:=loadfile(fn);
+  data2 := loadfile(fn);
   loadingVfs.bakAvailable:=fileExists(fn+BAK_EXT);
-  if not ansiStartsStr(TLV(FK_HEAD, VFS_FILE_IDENTIFIER), data)
+  if not ansiStartsStr(TLV(FK_HEAD, VFS_FILE_IDENTIFIER), data2)
   and not restoreBak() then
     begin
-    if data = '' then
+    if data2 = '' then
     msgDlg(MSG_CORRUPTED, MB_ICONERROR);
     exit;
     end;
   try
     initVFS();
-    setVFS(data);
+    setVFS2(data2);
     if loadingVFS.useBackup and restoreBak() then
       begin
       initVFS();
-      setVFS(loadfile(fn));
+      setVFS2(loadfile(fn));
       end;
     took:=now()-took;
   finally
@@ -10634,22 +10686,27 @@ procedure Tmainfrm.compressReply(cd:TconnData);
 const
   BAD_IE_THRESHOLD = 2000; // under this size (few bytes less, really) old IE versions will go nuts with UTF-8 pages
 var
-  s: string;
+  s: RawByteString;
 begin
-if not compressedbrowsingChk.checked then exit;
-s:=cd.conn.reply.body;
-if s = '' then exit;
-if ipos('gzip', cd.conn.getHeader('Accept-Encoding')) = 0 then exit;
+  if not compressedbrowsingChk.checked then
+    exit;
+  s := cd.conn.reply.bodyB;
+  if s = '' then
+    exit;
+  if ipos('gzip', cd.conn.getHeader('Accept-Encoding')) = 0 then
+    exit;
 // workaround for IE6 pre-SP2 bug
 if (cd.workaroundForIEutf8  = toDetect) and (cd.agent > '') then
   if reMatch(cd.agent, '^MSIE [4-6]\.', '!') > 0 then // version 6 and before
     cd.workaroundForIEutf8:=yes
   else
     cd.workaroundForIEutf8:=no;
-s:=ZcompressStr2(s, zcFastest, 31,8,zsDefault);
-if (cd.workaroundForIEutf8  = yes) and (length(s) < BAD_IE_THRESHOLD) then exit;
+//s:=ZcompressStr2(s, zcFastest, 31,8,zsDefault);
+s := ZcompressStr(s, clFastest, zsGZip);
+if (cd.workaroundForIEutf8  = yes) and (length(s) < BAD_IE_THRESHOLD) then
+  exit;
 cd.conn.addHeader('Content-Encoding: gzip');
-cd.conn.reply.body:=s;
+cd.conn.reply.bodyB:=s;
 end; // compressReply
 
 procedure TmainFrm.Flagfilesaddedrecently1Click(Sender: TObject);
@@ -11530,7 +11587,7 @@ srv.autoFreeDisconnectedClients:=FALSE;
 srv.limiters.add(globalLimiter);
 srv.onEvent:=httpEvent;
 tray_ico:=Ticon.create();
-tray:=TmyTrayicon.create(self);
+tray:=TmyTrayicon.create(self.Handle);
 DragAcceptFiles(handle, true);
 caption:=format('HFS ~ HTTP File Server %s%sBuild %s',
   [VERSION, stringOfChar(' ',80), VERSION_BUILD]);
@@ -11910,7 +11967,7 @@ while current > '' do
   if defV = v then continue;
   if k = 'dynamic-dns-updater' then
     begin // remove login data
-    v:=base64decode(v);
+    v:=Base64DecodeString(v);
     chop('//',v);
     v:=chop('/',v);
     if ansiContainsStr(v, '@') then chop('@',v);
@@ -12147,10 +12204,10 @@ else tmpPath:=getTempDir();
 lastUpdateCheckFN:=tmpPath+'HFS last update check.tmp';
 setCurrentDir(exePath); // sometimes people mess with the working directory, so we force it to the exe path
 if fileExists('default.tpl') then
-  defaultTpl:=loadfile('default.tpl')
+  defaultTpl:= loadfile('default.tpl')
 else
   defaultTpl:=getRes('defaultTpl');
-tpl_help:=getRes('tplHlp');
+tpl_help := UnUTF(getRes('tplHlp'));
 tpl:=Ttpl.create();
 defSorting:='name';
 dmBrowserTpl:=Ttpl.create(getRes('dmBrowserTpl'));
@@ -12167,7 +12224,7 @@ logMaxLines:=2000;
 trayShows:='downloads';
 flashOn:='download';
 forwardedMask:='127.0.0.1';
-runningOnRemovable:=DRIVE_REMOVABLE = GetDriveTypeA(PansiChar(exePath[1]+':\'));
+runningOnRemovable:=DRIVE_REMOVABLE = GetDriveType(PChar(exePath[1]+':\'));
 mtimes.values['exe']:=dateToHTTP(getMtimeUTC(paramStr(0)));
 
 dll:=GetModuleHandle('kernel32.dll');

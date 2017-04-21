@@ -21,16 +21,19 @@ This file is part of HFS ~ HTTP File Server.
 {$SetPEOptFlags $100 } //IMAGE_DLLCHARACTERISTICS_NX_COMPAT
 program hfs;
 
+{$R 'data.res' 'res\data.rc'}
+
 uses
-  FastMM4,
-{$IFDEF EX_DEBUG}
+//  FastMM4,
+  {$IFDEF EX_DEBUG}
   ftmExceptionForm,
-{$ENDIF}
+  {$ENDIF }
   monoLib,
   Forms,
   windows,
   types,
   hslib,
+  RDUtils,
   sysUtils,
   main in 'main.pas' {mainFrm},
   newuserpassDlg in 'newuserpassDlg.pas' {newuserpassFrm},
@@ -47,7 +50,8 @@ uses
   listSelectDlg in 'listSelectDlg.pas' {listSelectFrm},
   filepropDlg in 'filepropDlg.pas' {filepropFrm},
   runscriptDlg in 'runscriptDlg.pas' {runScriptFrm},
-  scriptLib in 'scriptLib.pas';
+  scriptLib in 'scriptLib.pas',
+  hfsJclOthers in 'hfsJclOthers.pas';
 
 {$R *.res}
 

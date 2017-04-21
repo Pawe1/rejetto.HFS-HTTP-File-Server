@@ -76,7 +76,8 @@ var
 
 implementation
 
-uses optionsDlg;
+uses
+  optionsDlg, RDUtils;
 
 {$R *.dfm}
 
@@ -482,7 +483,7 @@ procedure TfilepropFrm.textinputEnter(Sender: TObject);
     l: string;
   begin
   l:=s;
-  repeat s:=chop(#0, l)
+  repeat s:= chop(#0, l)
   until (s > '') or (l = '');
   result:=TRUE;
   end; // chooseValue

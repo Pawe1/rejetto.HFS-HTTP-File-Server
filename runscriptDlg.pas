@@ -28,7 +28,7 @@ implementation
 {$R *.dfm}
 
 uses
-  main, utilLib, classesLib, scriptLib;
+  main, utilLib, classesLib, scriptLib, RDFileUtil;
 
 procedure TrunScriptFrm.runBtnClick(Sender: TObject);
 var

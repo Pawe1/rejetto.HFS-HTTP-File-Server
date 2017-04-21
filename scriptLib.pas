@@ -47,7 +47,10 @@ procedure resetLog();
 
 implementation
 
-uses windows, utilLib, trayLib, parserLib, graphics, classes, sysutils, StrUtils, hslib, comctrls, math, controls, forms, clipbrd, MMsystem;
+uses
+  windows, utilLib, parserLib, graphics, classes, sysutils, StrUtils,
+  hslib, comctrls, math, controls, forms, clipbrd, MMsystem,
+  RnQtrayLib, RDFileUtil, RDUtils;
 
 const
   HEADER = '<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><style>'
@@ -124,8 +127,8 @@ function noMacrosAllowed(s:string):string;
 var
   i: integer;
 begin
-i:=1;
-enforceNUL(s);
+  i:=1;
+  enforceNUL(s);
   repeat
   i:=findMacroMarker(s, i);
   if i = 0 then break;
@@ -188,24 +191,26 @@ var
   var
     i: integer;
   begin
-  result:='';
-  if name > '' then
-    begin
-    i:=pars.IndexOfName(name);
-    if i >= 0 then
+    result:='';
+    if name > '' then
       begin
-      result:=pars.valueFromIndex[i];
-      if doTrim then result:=trim(result);
-      exit;
+      i:=pars.IndexOfName(name);
+      if i >= 0 then
+        begin
+        result:=pars.valueFromIndex[i];
+        if doTrim then
+          result:=trim(result);
+        exit;
+        end;
       end;
-    end;
-  if (idx < 0) // no numeric index accept
-  or (idx >= pars.count) // invalid index
-  or (name > '') and (pars.names[idx] > '') and not anycharIn(' '#13#10, pars.names[idx]) // this numerical index was already taken by a valid mnemonic name
-  then
-    raise Exception.create('invalid parameter index');
-  result:=pars[idx];
-  if doTrim then result:=trim(result);
+    if (idx < 0) // no numeric index accept
+    or (idx >= pars.count) // invalid index
+    or (name > '') and (pars.names[idx] > '') and not anycharIn(' '#13#10, pars.names[idx]) // this numerical index was already taken by a valid mnemonic name
+    then
+      raise Exception.create('invalid parameter index');
+    result:=pars[idx];
+    if doTrim then
+      result:=trim(result);
   end; // parEx
 
   function parEx(name:string; doTrim:boolean=TRUE):string; overload;
@@ -213,8 +218,13 @@ var
 
   function par(idx:integer; name:string=''; doTrim:boolean=TRUE):string; overload;
   begin
-  try result:=parEx(idx, name, doTrim)
-  except result:='' end
+    if ((idx < 0) or (idx >= pars.count)) and (name = '') then
+      Exit('');
+    try
+      result:=parEx(idx, name, doTrim)
+     except
+      result:=''
+    end
   end;
 
   function par(name:string=''; doTrim:boolean=TRUE; defval:string=''):string; overload;
@@ -327,8 +337,10 @@ var
   // we wrap pos() to switch between case sensitivity
   function pos_(caseSensitive:boolean; ss, s:string; ofs:integer=1):integer;
   begin
-  if caseSensitive then result:=posEx(ss,s,ofs)
-  else result:=ipos(ss,s,ofs)
+    if caseSensitive then
+      result:=posEx(ss,s,ofs)
+     else
+      result:= HSLib.ipos(ss,s, ofs)
   end; // pos_
 
   procedure allLogic(isAnd:boolean); // when not "isAnd", then it isOr ;-)
@@ -539,7 +551,7 @@ var
 
   t:=Ttpl.create;
   try
-    t.fullText:=loadFile(par(ofs, 'file'));
+    t.fullText := loadFile(par(ofs, 'file'));
     result:=t[p];
   finally t.free end;
   // templates outside hfs folder get quoted for security reasons
@@ -555,7 +567,7 @@ var
   s:=md.cd.urlvars.values[k];
   if (s = '') and (md.cd.urlvars.indexOf(k) >= 0) then s:='1';
   try
-    result:=noMacrosAllowed(optUTF8(md.tpl, s));
+    result := noMacrosAllowed(s);
     setVar(parEx('var'), result); // if no var is specified, it will break here, and result will have the value
     result:='';
   except end;
@@ -646,7 +658,7 @@ var
 
   if not satisfied(fld) then exit;
   e:=htmlEncode(encodeMarkers(fld.url(TRUE)));
-  d:=htmlEncode(encodeMarkers(optUTF8(md.tpl, fld.getFolder()+fld.name+'/')));
+  d:=htmlEncode(encodeMarkers(fld.getFolder()+fld.name+'/'));
   ae:=split('/', e);
   ad:=split('/', d);
   p:=macroDequote(p);
@@ -1407,21 +1419,24 @@ var
   procedure actionAllowed(action:TfileAction);
   var
     f: Tfile;
+    s: String;
     local: boolean;
   begin // note: "delete" is meant for files inside the folder bearing the permission
-  local:=FALSE;
-  result:='';
-  try
-    f:=mainfrm.findFileByURL(parEx('path'), md.folder);
-    if f = NIL then exit;
-    local:=TRUE;
-  except
-    if action = FA_ACCESS then f:=md.f
-    else f:=md.folder;
-    end;
-  trueIf(accountAllowed(action, md.cd, f));
-  if local then
-    freeIfTemp(f);
+    local := FALSE;
+    result := '';
+    try
+      s := parEx('path');
+      f := mainfrm.findFileByURL(s, md.folder);
+      if f = NIL then
+        exit;
+      local:=TRUE;
+    except
+      if action = FA_ACCESS then f:=md.f
+      else f:=md.folder;
+      end;
+    trueIf(accountAllowed(action, md.cd, f));
+    if local then
+      freeIfTemp(f);
   end; // actionAllowed
 
   procedure cookie();
@@ -1588,11 +1603,11 @@ var
   else if name = '%style%' then
     result:=tpl['style']
   else if name = '%timestamp%' then
-    result:=optUTF8(tpl, dateTimeToStr(now()))
+    result:= dateTimeToStr(now())
   else if name = '%date%' then
-    result:=optUTF8(tpl, dateToStr(now()))
+    result:= dateToStr(now())
   else if name = '%time%' then
-    result:=optUTF8(tpl, timeToStr(now()))
+    result:= timeToStr(now())
   else if name = '%now%' then
     result:=floatToStr(now())
   else if name = '%version%' then
@@ -1600,7 +1615,7 @@ var
   else if name = '%build%' then
     result:=VERSION_BUILD
   else if name = '%uptime%' then
-    result:=optUTF8(tpl, uptimestr())
+    result:= uptimestr()
   else if name = '%speed-out%' then
     result:=floatToStrF(srv.speedOut/1000, ffFixed, 7,2)
   else if name = '%speed-in%' then
@@ -1644,7 +1659,7 @@ var
     else if name = '%url%' then
       result:=macroQuote(md.cd.conn.request.url)
     else if name = '%user%' then
-      result:=optUTF8(md.tpl, macroQuote(usr))
+      result:= macroQuote(usr)
     else if name = '%password%' then
       result:=macroQuote(md.cd.conn.request.pwd)
     else if name = '%loggedin%' then
@@ -1663,12 +1678,12 @@ var
 
   if assigned(md.folder) then
     if name = '%folder-item-comment%' then
-      result:=optUTF8(md.tpl, md.folder.getDynamicComment())
+      result:= md.folder.getDynamicComment()
     else if name = '%folder-comment%' then
       begin
       result:=md.folder.getDynamicComment();
       if result > '' then
-        result:=optUTF8(md.tpl, xtpl(tpl['folder-comment'], [ '%item-comment%', result ]));
+        result:= xtpl(tpl['folder-comment'], [ '%item-comment%', result ]);
       end
     else if name = '%diskfree%' then
       result:=smartSize(diskSpaceAt(md.folder.resource)-minDiskSpace*MEGA)
@@ -1679,11 +1694,12 @@ var
     else if name = '%parent-folder%' then
       result:=md.folder.parentURL()
     else if name = '%folder-name%' then
-      result:=optUTF8(md.tpl, md.folder.name)
+      result:= md.folder.name
     else if name = '%folder-resource%' then
       result:=md.folder.resource
     else if name = '%folder%' then
-      with md.folder do result:=optUTF8(md.tpl, if_(isRoot(), '/', getFolder()+name+'/'))
+      with md.folder do
+        result:= if_(isRoot(), '/', getFolder()+name+'/')
   ;
 
   if assigned(md.f) then
@@ -1692,7 +1708,7 @@ var
       s:=md.f.name;
       if md.hideExt and md.f.isFile() then
         setLength(s, length(s)-length(extractFileExt(s)) );
-      result:=htmlEncode(macroQuote(optUTF8(md.tpl, s)))
+      result:=htmlEncode(macroQuote(s))
       end
     else if name = '%item-size-b%' then
       result:=intToStr(md.f.size)
@@ -1703,20 +1719,20 @@ var
     else if name = '%item-resource%' then
       result:=macroQuote(md.f.resource)
     else if name = '%item-ext%' then
-      result:=macroQuote(optUTF8(md.tpl, copy(extractFileExt(md.f.name), 2, MAXINT)))
+      result:=macroQuote(copy(extractFileExt(md.f.name), 2, MAXINT))
     else if name = '%item-added-dt%' then
       result:=floatToStr(md.f.atime)
     else if name = '%item-modified-dt%' then
       result:=floatToStr(md.f.mtime)
     // these twos are actually redundant, {.time||when=%item-added-dt%.}
     else if name = '%item-added%' then
-      result:=optUTF8(md.tpl, datetimeToStr(md.f.atime))
+      result:= datetimeToStr(md.f.atime)
     else if name = '%item-modified%' then
-      result:=if_(md.f.mtime=0, 'error', optUTF8(md.tpl, datetimeToStr(md.f.mtime)))
+      result:=if_(md.f.mtime=0, 'error', datetimeToStr(md.f.mtime))
     else if name = '%item-comment%' then
-      result:=optUTF8(md.tpl, md.f.getDynamicComment(TRUE))
+      result:= md.f.getDynamicComment(TRUE)
     else if name = '%item-url%' then
-      result:=macroQuote(optUTF8(md.tpl, md.f.url()))
+      result:=macroQuote(md.f.url())
   ;
 
   if assigned(md.f) and assigned(md.tpl) then
@@ -1734,6 +1750,7 @@ var
     result:=macroQuote(result);
   end; // handleSymbol
 
+{ Commented by Rapid D
   function stringTotrayMessageType(s:string):TtrayMessageType;
   begin
   if compareText(s,'warning') = 0 then
@@ -1744,6 +1761,18 @@ var
     result:=TM_INFO
   else
     result:=TM_NONE
+  end; // stringTotrayMessageType
+}
+  function stringTotrayMessageType(s:string): TBalloonIconType;
+  begin
+  if compareText(s,'warning') = 0 then
+    result:= bitWarning
+  else if compareText(s,'error') = 0 then
+    result:= bitError
+  else if compareText(s,'info') = 0 then
+    result:= bitInfo
+  else
+    result:= bitNone
   end; // stringTotrayMessageType
 
 var
@@ -1848,11 +1877,12 @@ try
 
     if name = 'time' then
       begin
-      s:=par(0,'format');
-      r:=parF('when',now())+parF('offset',0);
-      if s = 'y' then result:=floatToStr(r)
-      else datetimeToString(result, first(s,'c'), r );
-      result:=optUTF8(md.tpl, result); // we may have special chars from datetimeToString()
+        s:=par(0,'format');
+        r:=parF('when',now())+parF('offset',0);
+        if s = 'y' then
+          result:=floatToStr(r)
+         else
+          datetimeToString(result, first(s,'c'), r );
       end;
 
     if name = 'disconnect' then
@@ -1986,7 +2016,7 @@ try
       encodeuri();
 
     if name = 'decodeuri' then
-      result:=decodeURL(p);
+      result := decodeURL(p);
 
     if name = 'dialog' then
       dialog();
@@ -2011,7 +2041,7 @@ try
 
     if name = 'maybe utf8' then
       if satisfied(md.tpl) then
-        result:=optUTF8(md.tpl.utf8, p);
+        result:= p;
 
     if name = 'after the list' then
       if md.afterTheList then

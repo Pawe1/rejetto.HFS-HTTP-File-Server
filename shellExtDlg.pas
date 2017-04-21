@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, GIFImage, utilLib;
+  Dialogs, ExtCtrls, StdCtrls, GIFImg, utilLib;
 
 type
   TshellExtFrm = class(TForm)

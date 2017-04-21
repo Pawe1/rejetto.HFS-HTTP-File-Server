@@ -242,7 +242,7 @@ object mainFrm: TmainFrm
         Width = 467
         Height = 174
         Align = alClient
-        Font.Charset = ANSI_CHARSET
+        Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
         Font.Name = 'Tahoma'
@@ -254,6 +254,7 @@ object mainFrm: TmainFrm
         ScrollBars = ssBoth
         TabOrder = 0
         WordWrap = False
+        Zoom = 100
         OnChange = logBoxChange
         OnMouseDown = logBoxMouseDown
       end
@@ -803,7 +804,7 @@ object mainFrm: TmainFrm
     Left = 208
     Top = 112
     Bitmap = {
-      494C010129002C00100010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010129002C00240010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000B0000000010020000000000000B0
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -3187,7 +3188,6 @@ object mainFrm: TmainFrm
     Top = 112
   end
   object appEvents: TApplicationEvents
-    OnHelp = appEventsHelp
     OnMinimize = appEventsMinimize
     OnRestore = appEventsRestore
     OnShowHint = appEventsShowHint
@@ -3389,7 +3389,7 @@ object mainFrm: TmainFrm
     Left = 216
     Top = 152
     Bitmap = {
-      494C01010B000E00100004000600FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01010B000E00240004000600FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000100000001200000001002000000000008004
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

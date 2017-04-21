@@ -101,7 +101,7 @@ type
       RBM_STRING,       // variable body specifies byte content
       RBM_STREAM        // refer to bodyStream
     );
-    body: string;    // specifies reply body according to bodyMode
+    bodyB: RawByteString;    // specifies reply body according to bodyMode
     bodyStream: Tstream;   // note: the stream is automatically freed 
     firstByte, lastByte: int64;  // body interval for partial replies (206)
     realm: string;   // this will appear in the authentication dialog
@@ -292,24 +292,12 @@ const
     'Ignore', 'Unallowed method', 'Redirect', 'Overload', 'Request too large',
     'Moved permanently', 'Not Modified');
 
-{ split S in position where SS is found, the first part is returned
-  the second part following SS is left in S }
-function chop(ss:string; var s:string):string; overload;
-// same as before, but separator is I
-function chop(i:integer; var s:string):string; overload;
-// same as before, but specifying separator length
-function chop(i, l:integer; var s:string):string; overload;
-// same as chop(lineterminator, s)
-function chopLine(var s:string):string; overload;
 // decode/decode url
 function decodeURL(url:string; utf8:boolean=TRUE):string;
 function encodeURL(url:string; nonascii:boolean=TRUE; spaces:boolean=TRUE;
   unicode:boolean=FALSE):string;
 // returns true if address is not suitable for the internet
 function isLocalIP(ip:string):boolean;
-// base64 encoding
-function base64encode(s:string):string;
-function base64decode(s:string):string;
 // an ip address where we are listening
 function getIP():string;
 // ensure a string ends with a specific string
@@ -324,13 +312,14 @@ function ipos(ss, s:string; ofs:integer=1):integer; overload;
 implementation
 
 uses
-  Windows;
+  Windows, AnsiStrings, AnsiClasses, RDUtils, Base64;
+
 const
   CRLF = #13#10;
   MAX_REQUEST_LENGTH = 16*1024;
   MAX_INPUT_BUFFER_LENGTH = 256*1024;
   // used as body content when the user did not specify any
-  HRM2BODY: array [ThttpReplyMode] of string = (
+  HRM2BODY: array [ThttpReplyMode] of AnsiString = (
   	'200 - OK',
     '200 - OK (header only)',
     '403 - You are not allowed to access this file',
@@ -367,9 +356,6 @@ result:=(r.a in [0,10,23,127])
   or (r.a = 172) and (r.b in [16..31])
 end; // isLocalIP
 
-function ifThen(c:boolean; a:integer; b:integer=0):integer; overload;
-begin if c then result:=a else result:=b end;
-
 function min(a,b:integer):integer;
 begin if a < b then result:=a else result:=b end;
 
@@ -381,12 +367,14 @@ function ipos(ss, s: string; ofs:integer=1):integer; overload;
   procedure initTab();
   var
     i: char;
+    ia: AnsiChar;
     tmp: string;
   begin
-  for i:=#0 to #255 do
+  for ia:=#0 to #255 do
     begin
-    tmp:=ansiUppercase(i);
-    upcaseTab[i]:=tmp[1];
+      i := Char(ia);
+      tmp:=ansiUppercase(i);
+      upcaseTab[i]:=tmp[1];
     end;
   end;
 
@@ -394,7 +382,8 @@ var
   rss, rs, rss1, p: pchar;
   l: integer;
 begin
-if upcaseTab[#1] = #0 then initTab();
+  if upcaseTab[#1] = #0 then
+    initTab();
 result:=0;
 l:=length(s);
 if (l < ofs) or (l = 0) or (ss = '') then exit;
@@ -436,81 +425,52 @@ begin
   until false;
 end; // nonQuotedPos
 
-function base64encode(s:string):string;
-const
-  TABLE='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-type
-  Ttriple=array [0..2] of byte;
-var
-  p: ^Ttriple;
-  i: integer;
-begin
-result:='';
-p:=@s[1];
-for i:=1 to length(s) div 3 do
-  begin
-  result:=result+TABLE[1+p[0] shr 2]
-  	+TABLE[1+(p[0] and 3) shl 4+p[1] shr 4]
-    +TABLE[1+(p[1] and 15) shl 2+p[2] shr 6]
-    +TABLE[1+(p[2] and 63)];
-  inc(p);
-  end;
-if length(s) mod 3 > 0 then
-	result:=result+TABLE[1+p[0] shr 2]+TABLE[1+(p[0] and 3) shl 4+p[1] shr 4]
-    +ifThen(length(s) mod 3=1,'==',TABLE[1+(p[1] and 15) shl 2+p[2] shr 6]+'=');
-end; // base64encode
-
-function base64decode(s:string):string;
-const
-  TABLE:array[#43..#122] of byte=(
-  	62,0,0,0,63,52,53,54,55,56,57,58,59,60,61,0,0,0,0,0,0,0,0,1,2,3,4,5,6,7,
-    8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,0,0,0,0,0,26,27,28,
-    29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51);
-var
-  i: integer;
-begin
-result:='';
-i:=1;
-while i <= length(s) do
-  begin
-	result:=result
-  	+chr(TABLE[s[i]] shl 2+TABLE[s[i+1]] shr 4)
-    +ifThen(s[i+2]<>'=', chr(TABLE[s[i+1]] shl 4+TABLE[s[i+2]] shr 2))
-    +ifThen(s[i+3]<>'=', chr(TABLE[s[i+2]] shl 6+TABLE[s[i+3]]));
-  inc(i,4);
-  end;
-end; // base64decode
-
-function decodeURL(url:string; utf8:boolean=TRUE):string;
+function decodeURL(url: string; utf8: boolean=TRUE):string;
 var
   i, l: integer;
   c: char;
+  resA: RawByteString;
+  ca: AnsiChar;
 begin
-setLength(result, length(url));
-l:=0;
-i:=1;
+  setLength(result, length(url));
+  setLength(resA, length(url));
+  l := 0;
+  i := 1;
 while i<=length(url) do
   begin
   if (url[i] = '%') and (i+2 <= length(url)) then
     try
-      c:=char(strToInt( '$'+url[i+1]+url[i+2] ));
+      if utf8 then
+        ca := AnsiChar(strToInt( '$'+url[i+1]+url[i+2] ))
+       else
+        c:=char(strToInt( '$'+url[i+1]+url[i+2] ));
       inc(i,2); // three chars for one
-    except c:=url[i]
+    except
+      if utf8 then
+        ca := AnsiChar(url[i])
+       else
+        c := url[i];
     end
   else
-    c:=url[i];
+      if utf8 then
+        ca := AnsiChar(url[i])
+       else
+        c := url[i];
 
   inc(i);
   inc(l);
-  result[l]:=c;
+      if utf8 then
+        resA[l] := ca
+       else
+        result[l] := c;
   end;
-setLength(result, l);
-if utf8 then
-  begin
-  url:=utf8ToAnsi(result);
-  // if the string is not UTF8 compliant, the result is empty
-  if url > '' then result:=url;
-  end;
+  if utf8 then
+    begin
+     setLength(resA, l);
+     Result := UnUTF(resA);
+    end
+   else
+    setLength(result, l);
 end; // decodeURL
 
 function encodeURL(url:string; nonascii:boolean=TRUE; spaces:boolean=TRUE;
@@ -567,31 +527,6 @@ begin
 result:='';
 if str > '' then result:=name+': '+str+CRLF;
 end;
-
-function chop(i, l:integer; var s:string):string; overload;
-begin
-if i=0 then
-  begin
-  result:=s;
-  s:='';
-  exit;
-  end;
-result:=copy(s,1,i-1);
-delete(s,1,i-1+l);
-end; // chop
-
-function chop(ss:string; var s:string):string;
-begin result:=chop(pos(ss,s),length(ss),s) end;
-
-function chop(i:integer; var s:string):string;
-begin result:=chop(i,1,s) end;
-
-function chopLine(var s:string):string;
-begin
-result:=chop(#10,s);
-if (result>'') and (result[length(result)]=#13) then
-  setlength(result, length(result)-1);
-end; // chopline
 
 /////// SERVER
 
@@ -998,7 +933,7 @@ procedure ThttpConn.clearReply();
 begin
 reply.header:='';
 reply.bodyMode:=RBM_STRING;
-reply.body:='';
+reply.bodyB := '';
 reply.additionalHeaders:='';
 reply.mode:=HRM_IGNORE;
 reply.firstByte:=request.firstByte;
@@ -1061,7 +996,9 @@ procedure ThttpConn.processInputBuffer();
   if AnsiStartsText('Basic',s) then
     begin
     delete(s,1,6);
-    s:=base64decode(s);
+//    s:= base64decode(s);
+    s:= Base64DecodeString(s);
+
     request.user:=trim(chop(':',s));
     request.pwd:=s;
     end;
@@ -1335,7 +1272,7 @@ notify(HE_GOT);
 processInputBuffer();
 end; // dataavailable
 
-procedure ThttpConn.senddata(sender:Tobject; bytes:integer);
+procedure ThttpConn.senddata(sender: Tobject; bytes: integer);
 begin
 if bytes <= 0 then exit;
 inc(bsent, bytes);
@@ -1375,9 +1312,9 @@ if (state = HCS_REPLYING_HEADER) and (reply.mode <> HRM_REPLY_HEADER) then
   if ((stream = NIL) or (stream.size = 0)) and (reply.mode <> HRM_REPLY) then
     begin
     reply.bodyMode:=RBM_STRING;
-    reply.body:=HRM2BODY[reply.mode];
+    reply.bodyB := HRM2BODY[reply.mode];
     if reply.mode in [HRM_REDIRECT, HRM_MOVED] then
-      reply.body:=stringReplace(reply.body, '%url%', reply.url, [rfReplaceAll]);
+      reply.bodyB := stringReplace(reply.bodyB, '%url%', reply.url, [rfReplaceAll]);
     initInputStream();
     end;
   end;
@@ -1440,17 +1377,20 @@ end; // partialBodySize
 function ThttpConn.initInputStream():boolean;
 var
   i: integer;
+  s: String;
 begin
 result:=FALSE;
 FreeAndNil(stream);
 try
   case reply.bodyMode of
-    RBM_STRING: stream:=TStringStream.create(reply.body);
+    RBM_STRING: stream := TAnsiStringStream.create(reply.bodyB);
     RBM_FILE:
       begin
-      i:=fileopen(reply.body, fmOpenRead+fmShareDenyNone);
-      if i = -1 then exit;
-      stream:=TFileStream.Create(i);
+        s := UnUTF(reply.bodyB);
+        i := fileopen(s, fmOpenRead+fmShareDenyNone);
+        if i = -1 then
+          exit;
+        stream := TFileStream.Create(i);
       end;
     RBM_STREAM: stream:=reply.bodyStream;
     end;
@@ -1479,25 +1419,35 @@ end; // initInputStream
 function ThttpConn.sendNextChunk(max:integer=MAXINT):integer;
 var
   n: int64;
-  buf: string;
+  buf: RawByteString;
 begin
-result:=0;
-if stream = NIL then exit;
-n:=trunc(speedOut*1.5);
-// the following line helps fast networks to reach max speed sooner.
-// in a test, a 3MB file has been downloaded locally at doubled speed.
-if (n = 0) or (bytesSentLastItem = 0) then n:=max;
-if n > MAXIMUM_CHUNK_SIZE then n:=MAXIMUM_CHUNK_SIZE;
-if n < MINIMUM_CHUNK_SIZE then n:=MINIMUM_CHUNK_SIZE;
-if n > max then n:=max;
-if n > bytesToSend then n:=bytesToSend;
-if n = 0 then exit;
-setLength(buf, n);
-n:=stream.read(buf[1], n);
-setLength(buf, n);
-try result:=sock.SendStr(buf)
-except end; // the socket may be accidentally closed
-if result < n then stream.Seek(n-result, soCurrent);
+  result := 0;
+  if stream = NIL then
+    exit;
+  n := trunc(speedOut*1.5);
+  // the following line helps fast networks to reach max speed sooner.
+  // in a test, a 3MB file has been downloaded locally at doubled speed.
+  if (n = 0) or (bytesSentLastItem = 0) then
+    n := max;
+  if n > MAXIMUM_CHUNK_SIZE then
+    n := MAXIMUM_CHUNK_SIZE;
+  if n < MINIMUM_CHUNK_SIZE then
+    n := MINIMUM_CHUNK_SIZE;
+  if n > max then
+    n := max;
+  if n > bytesToSend then
+    n := bytesToSend;
+  if n = 0 then
+    exit;
+  setLength(buf, n);
+  n := stream.read(buf[1], n);
+  setLength(buf, n);
+  try
+    result:=sock.SendStr(buf)
+   except
+  end; // the socket may be accidentally closed
+  if result < n then
+    stream.Seek(n-result, soCurrent);
 end; // sendNextChunk
 
 function ThttpConn.getBytesToSend():int64;
