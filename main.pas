@@ -32,7 +32,7 @@ uses
   // 3rd part libs. ensure you have all of these, the same version reported in dev-notes.txt
   OverbyteIcsWSocket, OverbyteIcsHttpProt, OverbyteicsMD5, GIFimage, zlibex, regexpr,
   // rejetto libs
-  HSlib, traylib, monoLib, progFrmLib, classesLib;
+  HSlib, traylib, monoLib, progFrmLib, classesLib, System.ImageList;
 
 const
   VERSION = '2.3j';
@@ -4013,8 +4013,8 @@ end; // getDynLogFilename
 
 procedure applyISOdateFormat();
 begin
-if mainfrm.useISOdateChk.checked then ShortDateFormat:='yyyy-mm-dd'
-else ShortDateFormat:=GetLocaleStr(LOCALE_USER_DEFAULT, LOCALE_SSHORTDATE,'');
+if mainfrm.useISOdateChk.checked then FormatSettings.ShortDateFormat:='yyyy-mm-dd'
+else FormatSettings.ShortDateFormat:=GetLocaleStr(LOCALE_USER_DEFAULT, LOCALE_SSHORTDATE,'');
 end;
 
 procedure Tmainfrm.add2log(lines:string; cd:TconnData=NIL; clr:Tcolor=clDefault);
@@ -7602,7 +7602,7 @@ var
     data: TconnData;
   begin
   // this is a already done in utilLib initialization, but it's a workaround to http://www.rejetto.com/forum/?topic=7724
-  decimalSeparator:='.';
+  FormatSettings.decimalSeparator:='.';
   // check if the window is outside the visible screen area
   outside:=left;
   if assigned(monitor) then  // checking here because the following line once thrown this AV http://www.rejetto.com/forum/?topic=5568

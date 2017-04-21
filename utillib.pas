@@ -728,7 +728,7 @@ result:=intToStr(i);
 i:=length(result)-2;
 while i > 1 do
   begin
-  insert(ThousandSeparator, result, i);
+  insert(FormatSettings.ThousandSeparator, result, i);
   dec(i,3);
   end;
 end; // dotted
@@ -3077,7 +3077,7 @@ var
   TZinfo:TTimeZoneInformation;
 
 INITIALIZATION
-sysutils.DecimalSeparator:='.'; // standardize
+  FormatSettings.DecimalSeparator := '.'; // standardize
 
 ipToInt_cache:=THashedStringList.Create;
 ipToInt_cache.Sorted:=TRUE;
