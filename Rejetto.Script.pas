@@ -29,7 +29,7 @@ uses
 type
   TmacroData = record
     cd: TconnData;
-    tpl: Ttpl;
+    tpl: TTpl;
     folder, f: Tfile;
     afterTheList, archiveAvailable, hideExt, breaking: boolean;
     aliases, tempVars: THashedStringList;
@@ -40,13 +40,13 @@ type
 var
   defaultAlias: THashedStringList;
   staticVars : THashedStringList; // these scripting variables are held for the whole run-time
-  eventScripts: Ttpl;
+  eventScripts: TTpl;
 
 function tryApplyMacrosAndSymbols(var txt: string; var md: TmacroData;
   removeQuotings: boolean = true): boolean;
 function macroQuote(s: string): string;
 function runScript(script: string; table: TStringDynArray = NIL;
-  tpl_: Ttpl = NIL; f: Tfile = NIL; folder: Tfile = NIL;
+  tpl_: TTpl = NIL; f: Tfile = NIL; folder: Tfile = NIL;
   cd: TconnData = NIL): string;
 function runEventScript(event: string; table: TStringDynArray = NIL;
   cd: TconnData = NIL): string;
@@ -69,7 +69,7 @@ const
 
 var
   stopOnMacroRename: boolean; // this ugly global var is used to avoid endless recursion on a renaming rename event. this method won't work on a multithreaded system, but i opted for it because otherwise the changes would have been big.
-  cachedTpls: TcachedTpls;
+  cachedTpls: TCachedTpls;
   flog: ^file;
 
 function macrosLog(textIn, textOut: string; ts: boolean = FALSE): boolean;
@@ -621,7 +621,7 @@ var
 
   procedure section(ofs: integer);
   var
-    t: Ttpl;
+    t: TTpl;
     s: string;
   begin
     if not satisfied(md.tpl) then
@@ -647,7 +647,7 @@ var
     end;
     // template in other file
 
-    t := Ttpl.create;
+    t := TTpl.create;
     try
       t.fullText := loadFile(par(ofs, 'file'));
       result := t[p];
@@ -2868,7 +2868,7 @@ begin
       applyMacrosAndSymbols(txt, cbMacros, @md, removeQuotings);
       result := true;
     except
-      on e: EtplError do
+      on e: ETplError do
         mainfrm.setStatusBarText(format('Template error at %d,%d: %s: %s ...',
           [e.row, e.col, e.message, e.code]), 1000);
       on Exception do
@@ -2882,7 +2882,7 @@ begin
 end; // tryApplyMacrosAndSymbols
 
 function runScript(script: string; table: TStringDynArray = NIL;
-  tpl_: Ttpl = NIL; f: Tfile = NIL; folder: Tfile = NIL;
+  tpl_: TTpl = NIL; f: Tfile = NIL; folder: Tfile = NIL;
   cd: TconnData = NIL): string;
 var
   md: TmacroData;
@@ -2907,8 +2907,8 @@ begin
 end; // runEventScript
 
 initialization
-  cachedTpls := TcachedTpls.create();
-  eventScripts := Ttpl.create();
+  cachedTpls := TCachedTpls.create();
+  eventScripts := TTpl.create();
   defaultAlias := THashedStringList.create();
   defaultAlias.caseSensitive := FALSE;
   defaultAlias.text := getRes('alias');

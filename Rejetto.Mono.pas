@@ -20,91 +20,94 @@ This lib ensures only one instance of the software does run
 }
 unit Rejetto.Mono;
 
+{$SCOPEDENUMS ON}
+
 interface
 
 uses
-  windows, messages, forms, classes, sysUtils;
+  Winapi.Windows, Winapi.Messages, Vcl.Forms, System.Classes, System.SysUtils;
 
 type
-  Tmono = class
+  TMono = class
   private
-    msgID: Thandle;
-    Fmaster: boolean;
-    Ferror: string;
-    Fworking: boolean;
-    function hook(var msg:TMessage):boolean;
+    FMsgID: Thandle;
+    FMaster: boolean;
+    FError: string;
+    FWorking: boolean;
+    function hook(var msg: TMessage): boolean;
   public
-    onSlaveParams: procedure(params:string);
-    property error:string read Ferror;
-    property master:boolean read Fmaster;
-    property working:boolean read Fworking;
-
-    function init(id:string):boolean; // FALSE on error
+    onSlaveParams: procedure(params: string);
+    function init(id: string): boolean; // FALSE on error
     procedure sendParams();
-    end;
+
+    property error: string read FError;
+    property master: boolean read FMaster;
+    property working: boolean read FWorking;
+  end;
 
 var
-  mono: Tmono;
+  Mono: TMono;
   initialPath: string;
-  
+
 implementation
 
 const
-  //MSG_WHEREAREYOU = 1;
+  // MSG_WHEREAREYOU = 1;
   //MSG_HEREIAM = 2;
   MSG_PARAMS = 3;
 
-function atomToStr(atom:Tatom):string;
+function atomToStr(atom: Tatom): string;
 begin
-setlength(result, 5000);
-setlength(result, globalGetAtomName(atom, @result[1], length(result)));
-end; // atomToStr
+  setlength(result, 5000);
+  setlength(result, globalGetAtomName(atom, @result[1], length(result)));
+end;
 
-function Tmono.hook(var msg:TMessage):boolean;
+function TMono.hook(var msg: TMessage): boolean;
 begin
-result:=master and (msg.msg = msgID) and (msg.wparam = MSG_PARAMS);
-if not result or not assigned(onSlaveParams) then exit;
-msg.Result:=1;
-onSlaveParams(atomToStr(msg.lparam));
-GlobalDeleteAtom(msg.LParam);
-end; // hook
+  result := master and (msg.msg = FMsgID) and (msg.wparam = MSG_PARAMS);
+  if not result or not assigned(onSlaveParams) then
+    exit;
+  msg.result := 1;
+  onSlaveParams(atomToStr(msg.lparam));
+  GlobalDeleteAtom(msg.lparam);
+end;
 
-function Tmono.init(id:string):boolean;
+function TMono.init(id: string): boolean;
 begin
-result:=FALSE;
-msgID:=registerWindowMessage(pchar(id));
-application.HookMainWindow(hook);
-// the mutex is auto-released when the application terminates
-if createMutex(nil, True, pchar(id)) = 0 then
+  result := FALSE;
+  FMsgID := registerWindowMessage(pchar(id));
+  application.HookMainWindow(hook);
+  // the mutex is auto-released when the application terminates
+  if createMutex(nil, True, pchar(id)) = 0 then
   begin
-  setlength(Ferror,1000);
-  setlength(Ferror, FormatMessage(
-    FORMAT_MESSAGE_FROM_SYSTEM+FORMAT_MESSAGE_IGNORE_INSERTS, NIL,
-    GetLastError(), 0, @Ferror[1], length(Ferror), NIL) );
-  exit;
+    setlength(FError, 1000);
+    setlength(FError, FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM +
+      FORMAT_MESSAGE_IGNORE_INSERTS, NIL, GetLastError(), 0, @FError[1],
+      length(FError), NIL));
+    exit;
   end;
-Fmaster:= GetLastError() <> ERROR_ALREADY_EXISTS;
-Fworking:=TRUE;
-result:=TRUE;
-end; // init
+  FMaster := GetLastError() <> ERROR_ALREADY_EXISTS;
+  FWorking := True;
+  result := True;
+end;
 
-procedure Tmono.sendParams();
+procedure TMono.sendParams();
 var
   s: string;
   i: integer;
 begin
-s:=initialPath+#13+paramStr(0);
-for i:=1 to paramCount() do
-  s:=s+#13+paramStr(i);
-// the master will delete the atom
-postMessage(HWND_BROADCAST, msgId, MSG_PARAMS, globalAddAtom(pchar(s)));
-end; // sendParams
+  s := initialPath + #13 + paramStr(0);
+  for i := 1 to paramCount() do
+    s := s + #13 + paramStr(i);
+  // the master will delete the atom
+  postMessage(HWND_BROADCAST, FMsgID, MSG_PARAMS, globalAddAtom(pchar(s)));
+end;
 
 initialization
-initialPath:=getCurrentDir();
-mono:=Tmono.create;
+  initialPath := getCurrentDir();
+  Mono := TMono.create;
 
 finalization
-mono.free;
+  Mono.free;
 
 end.

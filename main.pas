@@ -328,7 +328,7 @@ type
     usr, pwd: string;
     acceptedCredentials: boolean;
     limiter: TspeedLimiter;
-    tpl: Ttpl;
+    tpl: TTpl;
     deleting: boolean;      // don't use, this item is about to be discarded
     nextDloadScreenUpdate: Tdatetime; // avoid too fast updating during download
     disconnectReason: string;
@@ -944,7 +944,7 @@ type
     procedure updateSbar();
     function getFolderPage(folder: Tfile; cd: TconnData; otpl: Tobject): string;
     procedure getPage(sectionName: string; data: TconnData; f: Tfile = NIL;
-      tpl2use: Ttpl = NIL);
+      tpl2use: TTpl = NIL);
     function selectedConnection(): TconnData;
     function sendPic(cd: TconnData; idx: integer = -1): boolean;
     procedure ipmenuclick(sender: Tobject);
@@ -1017,7 +1017,7 @@ const
 var
   mainFrm: TmainFrm;
   srv: ThttpSrv;
-  tpl: Ttpl; // template for generated pages
+  tpl: TTpl; // template for generated pages
   customIPs: TStringDynArray; // user customized IP addresses
   iconMasks: TstringIntPairs;
   ipsEverConnected: THashedStringList;
@@ -1145,7 +1145,7 @@ var
   defaultTpl: string;
   tpl_help: string;
   lastWindowRect: Trect;
-  dmBrowserTpl, filelistTpl: Ttpl;
+  dmBrowserTpl, filelistTpl: TTpl;
   tplEditor: string;
   tplLast: Tdatetime;
   tplImport: boolean;
@@ -3702,7 +3702,7 @@ var
   fast: TfastStringAppend;
   buildTime: Tdatetime;
   listing: TfileListing;
-  diffTpl: Ttpl;
+  diffTpl: TTpl;
   isDMbrowser: boolean;
   hasher: Thasher;
   fullEncode, recur, oneAccessible: boolean;
@@ -3851,7 +3851,7 @@ begin
 
   if macrosLogChk.checked and not appendmacroslog1.checked then
     resetLog();
-  diffTpl := Ttpl.create();
+  diffTpl := TTpl.create();
   folder.lock();
   try
     buildTime := now();
@@ -3861,11 +3861,11 @@ begin
     baseurl := protoColon() + getSafeHost(cd) + folder.url(TRUE);
 
     if cd.tpl = NIL then
-      diffTpl.over := otpl as Ttpl
+      diffTpl.over := otpl as TTpl
     else
     begin
       diffTpl.over := cd.tpl;
-      cd.tpl.over := otpl as Ttpl;
+      cd.tpl.over := otpl as TTpl;
     end;
 
     if otpl <> filelistTpl then
@@ -3971,9 +3971,9 @@ begin
     result := '-'
 end; // getETA
 
-function tplFromFile(f: Tfile): Ttpl;
+function tplFromFile(f: Tfile): TTpl;
 begin
-  result := Ttpl.create(optUTF8(tpl, f.getRecursiveDiffTplAsStr()), tpl)
+  result := TTpl.create(optUTF8(tpl, f.getRecursiveDiffTplAsStr()), tpl)
 end;
 
 procedure setDefaultIP(v: string);
@@ -4021,7 +4021,7 @@ begin
 end; // name2mimetype
 
 procedure Tmainfrm.getPage(sectionName: string; data: TconnData; f: Tfile = NIL;
-  tpl2use: Ttpl = NIL);
+  tpl2use: TTpl = NIL);
 var
   md: TmacroData;
 
@@ -4121,7 +4121,7 @@ var
 
 var
   s: string;
-  section: PtplSection;
+  section: PTplSection;
   buildTime: Tdatetime;
   externalTpl: boolean;
 begin
@@ -5574,7 +5574,7 @@ var
     b: boolean;
     s: string;
     i: integer;
-    section: PtplSection;
+    section: PTplSection;
   begin
     // eventually override the address
     if addressMatch(forwardedMask, conn.address) then
@@ -8266,7 +8266,7 @@ begin
   result := TRUE;
 end; // promptForUpdating
 
-function downloadUpdateInfo(): Ttpl;
+function downloadUpdateInfo(): TTpl;
 const
   url = 'http://www.rejetto.com/hfs/hfs.updateinfo.txt';
   ON_DISK = 'hfs.updateinfo.txt';
@@ -8299,13 +8299,13 @@ begin
   end;
   if pos('[EOF]', s) = 0 then
     exit;
-  result := Ttpl.create();
+  result := TTpl.create();
   result.fullText := s;
 end; // downloadUpdateInfo
 
 procedure Tmainfrm.autoCheckUpdates();
 var
-  info: Ttpl;
+  info: TTpl;
   updateURL, ver, build: string;
 
   function thereSnew(kind: string): boolean;
@@ -11309,7 +11309,7 @@ const
   MSG_NEWER = 'There''s a new version available online: %s';
 var
   updateURL: string;
-  info: Ttpl;
+  info: TTpl;
 begin
   progFrm.show('Searching for updates...');
   try
@@ -13729,10 +13729,10 @@ INITIALIZATION
   else
     defaultTpl := getRes('defaultTpl');
   tpl_help := getRes('tplHlp');
-  Tpl := Ttpl.create();
+  Tpl := TTpl.create();
   defSorting := 'name';
-  dmBrowserTpl := Ttpl.create(getRes('dmBrowserTpl'));
-  filelistTpl := Ttpl.create(getRes('filelistTpl'));
+  dmBrowserTpl := TTpl.create(getRes('dmBrowserTpl'));
+  filelistTpl := TTpl.create(getRes('filelistTpl'));
   globalLimiter := TspeedLimiter.create();
   ip2obj := THashedStringList.create();
   etags := THashedStringList.create();

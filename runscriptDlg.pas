@@ -33,9 +33,9 @@ uses
 
 procedure TrunScriptFrm.runBtnClick(Sender: TObject);
 var
-  tpl: Ttpl;
+  tpl: TTpl;
 begin
-  tpl := Ttpl.create;
+  tpl := TTpl.create;
   try
     try
       tpl.fullText := loadFile(tempScriptFilename);

@@ -1,5 +1,7 @@
 unit diffDlg;
 
+{$SCOPEDENUMS ON}
+
 interface
 
 uses

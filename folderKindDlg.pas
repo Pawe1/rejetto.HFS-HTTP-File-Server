@@ -1,5 +1,7 @@
 unit folderKindDlg;
 
+{$SCOPEDENUMS ON}
+
 interface
 
 uses

@@ -1,5 +1,7 @@
 unit filepropDlg;
 
+{$SCOPEDENUMS ON}
+
 interface
 
 uses

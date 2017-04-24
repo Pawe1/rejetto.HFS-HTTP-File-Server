@@ -243,7 +243,7 @@ function getTill(i: integer; s: string): string; overload;
 function singleLine(s: string): boolean;
 function poss(chars: TcharSet; s: string; ofs: integer = 1): integer;
 function optUTF8(bool: boolean; s: string): string; overload;
-function optUTF8(tpl: Ttpl; s: string): string; overload;
+function optUTF8(tpl: TTpl; s: string): string; overload;
 function optAnsi(bool: boolean; s: string): string;
 function utf8Test(s: string): boolean;
 function jsEncode(s, chars: string): string;
@@ -2399,7 +2399,7 @@ begin
     result := s
 end;
 
-function optUTF8(tpl: Ttpl; s: string): string; inline;
+function optUTF8(tpl: TTpl; s: string): string; inline;
 begin
   result := optUTF8(assigned(tpl) and tpl.utf8, s)
 end;

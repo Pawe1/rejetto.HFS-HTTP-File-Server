@@ -12,7 +12,7 @@ type
   TmacroCB = function(fullMacro: string; pars: Tstrings;
     cbData: pointer): string;
 
-  EtplError = class(Exception)
+  ETplError = class(Exception)
     pos, row, col: integer;
     code: string;
     constructor Create(const msg, code: string; row, col: integer);
@@ -40,7 +40,7 @@ const
 type
   TparserIdsStack = array [1 .. MAX_RECUR_LEVEL] of string;
 
-constructor EtplError.Create(const msg, code: string; row, col: integer);
+constructor ETplError.Create(const msg, code: string; row, col: integer);
 begin
   inherited Create(msg);
   self.row := row;
@@ -234,7 +234,7 @@ const
             CLOSE_ID:
               begin
                 if Nstack = 0 then
-                  raise EtplError.Create('unmatched marker', copy(txt, i, 30),
+                  raise ETplError.Create('unmatched marker', copy(txt, i, 30),
                     row, i - lastNL);
                 if (Nstack > 0) and stack[Nstack - 1].quote then
                   continue; // don't consider quoted CLOSE markers
@@ -257,7 +257,7 @@ const
     end;
     if Nstack > 0 then
       with stack[Nstack - 1] do
-        raise EtplError.Create('unmatched marker', copy(txt, pos, 30), row, col)
+        raise ETplError.Create('unmatched marker', copy(txt, pos, 30), row, col)
   end; // handleMacros
 
 begin

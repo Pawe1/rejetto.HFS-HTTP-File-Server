@@ -1,5 +1,7 @@
 unit ipsEverDlg;
 
+{$SCOPEDENUMS ON}
+
 interface
 
 uses

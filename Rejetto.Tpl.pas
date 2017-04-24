@@ -1,5 +1,7 @@
 unit Rejetto.Tpl;
 
+{$SCOPEDENUMS ON}
+
 interface
 
 uses
@@ -7,13 +9,13 @@ uses
   Rejetto.HS;
 
 type
-  TtplSection = record
+  TTplSection = record
     name, txt: string;
     nolog, nourl: boolean;
   end;
-  PtplSection = ^TtplSection;
+  PTplSection = ^TTplSection;
 
-  Ttpl = class
+  TTpl = class
   strict private
     type
       TLast = record
@@ -27,41 +29,41 @@ type
     fileExts: TStringDynArray;
     strTable: THashedStringList;
     fUTF8: boolean;
-    fOver: Ttpl;
+    fOver: TTpl;
     function getIdx(section: string): integer;
     function getTxt(section: string): string;
-    function newSection(section: string): PtplSection;
+    function newSection(section: string): PTplSection;
     procedure fromString(txt: string);
-    procedure setOver(v: Ttpl);
+    procedure setOver(v: TTpl);
     procedure updateUTF8();
   public
     onChange: TNotifyEvent;
-    sections: array of TtplSection;
-    constructor create(txt: string = ''; over: Ttpl = NIL);
+    sections: array of TTplSection;
+    constructor create(txt: string = ''; over: TTpl = NIL);
     destructor Destroy; override;
     property txt[section: string]: string read getTxt; default;
     property fullText: string read src write fromString;
     property utf8: boolean read fUTF8;
-    property over: Ttpl read fOver write setOver;
+    property over: TTpl read fOver write setOver;
     function sectionExist(section: string): boolean;
     function getTxtByExt(fileExt: string): string;
-    function getSection(section: string): PtplSection;
+    function getSection(section: string): PTplSection;
     function getSections(): TStringDynArray;
     procedure appendString(txt: string);
     function getStrByID(id: string): string;
-    function me(): Ttpl;
-  end; // Ttpl
-
-  TcachedTplObj = class
-    ts: Tdatetime;
-    Tpl: Ttpl;
+    function me(): TTpl;
   end;
 
-  TcachedTpls = class(THashedStringList)
+  TCachedTplObj = class
+    ts: Tdatetime;
+    Tpl: TTpl;
+  end;
+
+  TCachedTpls = class(THashedStringList)
   public
-    function getTplFor(fn: string): Ttpl;
+    function getTplFor(fn: string): TTpl;
     destructor Destroy; override;
-  end; // TcachedTpls
+  end;
 
 implementation
 
@@ -72,7 +74,7 @@ uses
 
 /// ///////// TcachedTpls
 
-destructor TcachedTpls.Destroy;
+destructor TCachedTpls.Destroy;
 var
   i: integer;
 begin
@@ -80,19 +82,19 @@ begin
     objects[i].free;
 end;
 
-function TcachedTpls.getTplFor(fn: string): Ttpl;
+function TCachedTpls.getTplFor(fn: string): TTpl;
 var
   i: integer;
-  o: TcachedTplObj;
+  o: TCachedTplObj;
   s: string;
 begin
   fn := trim(lowercase(fn));
   i := indexOf(fn);
   if i >= 0 then
-    o := objects[i] as TcachedTplObj
+    o := objects[i] as TCachedTplObj
   else
   begin
-    o := TcachedTplObj.create();
+    o := TCachedTplObj.create();
     if addObject(fn, o) > 100 then
       delete(0);
   end;
@@ -103,7 +105,7 @@ begin
   s := loadFile(fn);
   if o.tpl = NIL then
   begin
-    result := Ttpl.create();
+    result := TTpl.create();
     o.tpl := result;
   end;
   o.tpl.fromString(s);
@@ -111,19 +113,19 @@ end; // getTplFor
 
 /// ///////// Ttpl
 
-constructor Ttpl.create(txt: string = ''; over: Ttpl = NIL);
+constructor TTpl.create(txt: string = ''; over: TTpl = NIL);
 begin
   fullText := txt;
   self.over := over;
 end;
 
-destructor Ttpl.Destroy;
+destructor TTpl.Destroy;
 begin
   freeAndNIL(strTable);
   inherited;
 end; // destroy
 
-function Ttpl.getStrByID(id: string): string;
+function TTpl.getStrByID(id: string): string;
 begin
   if strTable = NIL then
   begin
@@ -135,7 +137,7 @@ begin
     result := over.getStrByID(id)
 end; // getStrByID
 
-function Ttpl.getIdx(section: string): integer;
+function TTpl.getIdx(section: string): integer;
 begin
   if section <> last.section then
   begin
@@ -151,7 +153,7 @@ begin
   result := last.idx
 end; // getIdx
 
-function Ttpl.newSection(section: string): PtplSection;
+function TTpl.newSection(section: string): PTplSection;
 var
   i: integer;
 begin
@@ -175,14 +177,14 @@ begin
   lastExt.idx := last.idx;
 end; // newSection
 
-function Ttpl.sectionExist(section: string): boolean;
+function TTpl.sectionExist(section: string): boolean;
 begin
   result := getIdx(section) >= 0;
   if not result and assigned(over) then
     result := over.sectionExist(section);
 end;
 
-function Ttpl.getSection(section: string): PtplSection;
+function TTpl.getSection(section: string): PTplSection;
 var
   i: integer;
 begin
@@ -194,7 +196,7 @@ begin
     result := over.getSection(section);
 end; // getSection
 
-function Ttpl.getTxt(section: string): string;
+function TTpl.getTxt(section: string): string;
 var
   i: integer;
 begin
@@ -207,7 +209,7 @@ begin
     result := ''
 end; // getTxt
 
-function Ttpl.getTxtByExt(fileExt: string): string;
+function TTpl.getTxtByExt(fileExt: string): string;
 var
   i: integer;
 begin
@@ -234,7 +236,7 @@ begin
   result := sections[i].txt;
 end; // getTxtByExt
 
-procedure Ttpl.fromString(txt: string);
+procedure TTpl.fromString(txt: string);
 begin
   src := '';
   sections := NIL;
@@ -246,7 +248,7 @@ begin
   appendString(txt);
 end; // fromString
 
-procedure Ttpl.appendString(txt: string);
+procedure TTpl.appendString(txt: string);
 var
   ptxt, bos: Pchar;
   cur_section, next_section: string;
@@ -287,10 +289,10 @@ var
     ss: TstringDynArray;
     s: string;
     i, si: integer;
-    base: TtplSection;
+    base: TTplSection;
     till: Pchar;
     append: boolean;
-    sect, from: PtplSection;
+    sect, from: PTplSection;
   begin
     till := pred(bos);
     if till = NIL then
@@ -376,18 +378,18 @@ begin
     onChange(self);
 end; // appendString
 
-procedure Ttpl.setOver(v: Ttpl);
+procedure TTpl.setOver(v: TTpl);
 begin
   fOver := v;
   updateUTF8();
 end; // setOver
 
-procedure Ttpl.updateUTF8();
+procedure TTpl.updateUTF8();
 begin
   fUTF8 := assigned(over) and over.utf8 or utf8test(fullText)
 end;
 
-function Ttpl.getSections(): TstringDynArray;
+function TTpl.getSections(): TstringDynArray;
 var
   i: integer;
 begin
@@ -397,7 +399,7 @@ begin
     result[i] := sections[i].name;
 end;
 
-function Ttpl.me(): Ttpl;
+function TTpl.me(): TTpl;
 begin
   result := self
 end;
