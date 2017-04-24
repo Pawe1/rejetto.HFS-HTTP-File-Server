@@ -26,12 +26,12 @@ uses
 {$IFDEF EX_DEBUG}
   ftmExceptionForm,
 {$ENDIF}
-  monoLib,
-  Forms,
-  windows,
-  types,
-  hslib,
-  sysUtils,
+  monoLib in 'monoLib.pas',
+  Vcl.Forms,
+  Winapi.Windows,
+  System.Types,
+  hslib in 'hslib.pas',
+  System.SysUtils,
   main in 'main.pas' {mainFrm},
   newuserpassDlg in 'newuserpassDlg.pas' {newuserpassFrm},
   optionsDlg in 'optionsDlg.pas' {optionsFrm},
@@ -51,50 +51,55 @@ uses
 
 {$R *.res}
 
-  procedure processSlaveParams(params:string);
-  var
-    ss: TStringDynArray;
-  begin
-  if mainfrm = NIL then exit;
-  ss:=split(#13,params);
+procedure processSlaveParams(params: string);
+var
+  ss: TStringDynArray;
+begin
+  if mainfrm = NIL then
+    exit;
+  ss := split(#13, params);
   processParams_before(ss);
   mainfrm.processParams_after(ss);
-  end;
+end;
 
-  function isSingleInstance():boolean;
-  var
-    params:TStringDynArray;
-    ini, tpl:string;
-  begin
-  result:=FALSE;
+function isSingleInstance(): boolean;
+var
+  params: TStringDynArray;
+  ini, tpl: string;
+begin
+  result := FALSE;
   // the -i parameter affects loadCfg()
-  params:=paramsAsArray();
+  params := paramsAsArray();
   processParams_before(params, 'i');
   loadCfg(ini, tpl);
   chop('only-1-instance=', ini);
-  if ini = '' then exit;
-  ini:=chopLine(ini);
-  result:=sameText(ini, 'yes');
-  end; // isSingleInstance
+  if ini = '' then
+    exit;
+  ini := chopLine(ini);
+  result := sameText(ini, 'yes');
+end;
 
 begin
-  mono.onSlaveParams:=processSlaveParams;
+  mono.onSlaveParams := processSlaveParams;
   if not holdingKey(VK_CONTROL) then
-    begin
+  begin
     if not mono.init('HttpFileServer') then
-      begin
-      msgDlg('monoLib error: '+mono.error, MB_ICONERROR+MB_OK);
+    begin
+      msgDlg('monoLib error: ' + mono.error, MB_ICONERROR + MB_OK);
       halt(1);
-      end;
+    end;
     if not mono.master and isSingleInstance() then
-      begin
+    begin
       mono.sendParams();
       exit;
-      end;
     end;
-  {$IFDEF EX_DEBUG}initErrorHandler(format('HFS %s (%s)', [VERSION, VERSION_BUILD]));{$ENDIF}
+  end;
+
+{$IFDEF EX_DEBUG}
+  initErrorHandler(format('HFS %s (%s)', [VERSION, VERSION_BUILD]));
+{$ENDIF}
   Application.Initialize();
-  Application.CreateForm(TmainFrm, mainFrm);
+  Application.CreateForm(TmainFrm, mainfrm);
   Application.CreateForm(TnewuserpassFrm, newuserpassFrm);
   Application.CreateForm(ToptionsFrm, optionsFrm);
   Application.CreateForm(TdiffFrm, diffFrm);
@@ -102,5 +107,7 @@ begin
   Application.CreateForm(TrunScriptFrm, runScriptFrm);
   mainfrm.finalInit();
   Application.Run;
-  {$IFDEF EX_DEBUG}closeErrorHandler();{$ENDIF}
+{$IFDEF EX_DEBUG}
+  closeErrorHandler();
+{$ENDIF}
 end.

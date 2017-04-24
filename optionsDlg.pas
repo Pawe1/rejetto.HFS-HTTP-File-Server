@@ -22,8 +22,9 @@ unit optionsDlg;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Math,
-  Dialogs, ExtCtrls, StdCtrls, Grids, ComCtrls, ValEdit, types, main, CheckLst;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls,
+  Vcl.ExtCtrls, Vcl.Grids, Vcl.ValEdit;
 
 type
   ToptionsFrm = class(TForm)
@@ -161,6 +162,7 @@ implementation
 {$R *.dfm}
 
 uses
+  types, main, CheckLst,
   utilLib, HSlib, strUtils, classesLib, listSelectDlg;
 
 var
@@ -169,299 +171,321 @@ var
   tempIcons: array of integer;
   renamingAccount: boolean;
 
-procedure ToptionsFrm.selectAccount(i:integer; saveBefore:boolean=TRUE);
+procedure ToptionsFrm.selectAccount(i: Integer; saveBefore: Boolean = TRUE);
 begin
-if saveBefore then saveAccountProperties();
-accountsBox.itemIndex:=i;
-accountsBox.ItemFocused:=accountsBox.Selected;
-loadAccountProperties();
-end; // selectAccount
+  if saveBefore then
+    saveAccountProperties();
+  accountsBox.itemIndex := i;
+  accountsBox.ItemFocused := accountsBox.Selected;
+  loadAccountProperties();
+end;
 
 procedure ToptionsFrm.loadValues();
 var
-  i:integer;
+  i: Integer;
 begin
-// bans
-noreplybanChk.checked:=noReplyBan;
-bansBox.Strings.Clear();
-for i:=0 to length(banList)-1 do
-	bansBox.strings.Add(banList[i].ip+'='+banlist[i].comment);
-// mime types
-inBrowserIfMIMEchk.Checked:=inBrowserIfMIME;
-mimeBox.Strings.Clear();
-for i:=0 to length(mimeTypes) div 2-1 do
-	mimeBox.strings.add(mimeTypes[i*2]+'='+mimeTypes[i*2+1]);
-for i:=0 to length(DEFAULT_MIME_TYPES) div 2-1 do
-  if not stringExists(DEFAULT_MIME_TYPES[i*2], mimeTypes) then
-  	mimeBox.strings.add(DEFAULT_MIME_TYPES[i*2]+'='+DEFAULT_MIME_TYPES[i*2+1]);
-// address2name
-a2nBox.Strings.clear();
-for i:=0 to length(address2name) div 2-1 do
-	a2nBox.strings.Add(address2name[i*2]+'='+address2name[i*2+1]);
-// tray message
-traymsgBox.Text:=xtpl(trayMsg,[#13,CRLF]);
-// accounts
-tempAccounts:=accounts;
-setLength(tempAccounts, length(tempAccounts)); // unlink from the source
-accountsBox.items.count:=length(accounts);
-lastAccountSelected:=-1;
-loadAccountProperties();
-// remember original name for tracking possible later renaming
-for i:=0 to length(accounts)-1 do
-  with accounts[i] do
-    wasUser:=user;
-// icons
-updateIconsBox();
-i:=length(iconMasks);
-setLength(tempIcons, i+1);
-iconMasksBox.Text:='';
-for i:=0 to i-1 do
+  // bans
+  noreplybanChk.checked := noReplyBan;
+  bansBox.Strings.Clear();
+  for i := 0 to length(banList) - 1 do
+    bansBox.Strings.Add(banList[i].ip + '=' + banList[i].comment);
+  // mime types
+  inBrowserIfMIMEchk.checked := inBrowserIfMIME;
+  mimeBox.Strings.Clear();
+  for i := 0 to length(mimeTypes) div 2 - 1 do
+    mimeBox.Strings.Add(mimeTypes[i * 2] + '=' + mimeTypes[i * 2 + 1]);
+  for i := 0 to length(DEFAULT_MIME_TYPES) div 2 - 1 do
+    if not stringExists(DEFAULT_MIME_TYPES[i * 2], mimeTypes) then
+      mimeBox.Strings.Add(DEFAULT_MIME_TYPES[i * 2] + '=' + DEFAULT_MIME_TYPES
+        [i * 2 + 1]);
+  // address2name
+  a2nBox.Strings.Clear();
+  for i := 0 to length(address2name) div 2 - 1 do
+    a2nBox.Strings.Add(address2name[i * 2] + '=' + address2name[i * 2 + 1]);
+  // tray message
+  traymsgBox.Text := xtpl(trayMsg, [#13, CRLF]);
+  // accounts
+  tempAccounts := accounts;
+  setLength(tempAccounts, length(tempAccounts)); // unlink from the source
+  accountsBox.items.count := length(accounts);
+  lastAccountSelected := -1;
+  loadAccountProperties();
+  // remember original name for tracking possible later renaming
+  for i := 0 to length(accounts) - 1 do
+    with accounts[i] do
+      wasUser := user;
+  // icons
+  updateIconsBox();
+  i := length(iconMasks);
+  setLength(tempIcons, i + 1);
+  iconMasksBox.Text := '';
+  for i := 0 to i - 1 do
   begin
-  iconMasksBox.lines.Add(iconMasks[i].str);
-  tempIcons[i]:=iconMasks[i].int;
+    iconMasksBox.lines.Add(iconMasks[i].str);
+    tempIcons[i] := iconMasks[i].int;
   end;
-iconMasksBox.SelStart:=0;
-end; // loadValues
+  iconMasksBox.SelStart := 0;
+end;
 
 procedure ToptionsFrm.notesWrapChkClick(Sender: TObject);
 begin
-notesBox.WordWrap:=notesWrapChk.checked;
-if notesBox.WordWrap then
-  notesBox.ScrollBars:=ssVertical
-else
-  notesBox.ScrollBars:=ssBoth
+  notesBox.WordWrap := notesWrapChk.checked;
+  if notesBox.WordWrap then
+    notesBox.ScrollBars := ssVertical
+  else
+    notesBox.ScrollBars := ssBoth
 end;
 
-function ToptionsFrm.checkValues():string;
+function ToptionsFrm.checkValues(): string;
 var
-  i: integer;
-  s: string;
+  i: Integer;
+  S: string;
 begin
-for i:=bansBox.Strings.count downto 1 do
+  for i := bansBox.Strings.count downto 1 do
   begin
-  bansbox.cells[0,i]:=trim(bansbox.cells[0,i]);
-  s:=bansbox.cells[0,i];
-  if s = '' then continue;
-  if bansBox.strings.indexOfName(s)+1 < i then
+    bansBox.cells[0, i] := trim(bansBox.cells[0, i]);
+    S := bansBox.cells[0, i];
+    if S = '' then
+      continue;
+    if bansBox.Strings.indexOfName(S) + 1 < i then
     begin
-    result:=format('Bans: "%s" is duplicated', [s]);
-    exit;
-    end;
-  if not checkAddressSyntax(s) then
-    begin
-    result:=format('Bans: syntax error for "%s"', [s]);
-    exit;
-    end;
-  end;
-for i:=a2nBox.Strings.count downto 1 do
-  begin
-  s:=trim(a2nBox.cells[1,i]);
-  if trim(s+a2nBox.cells[0,i]) = '' then
-    a2nBox.DeleteRow(i)
-  else
-    if (s>'') and not checkAddressSyntax(s) then
-      begin
-      result:=format('Address2name: syntax error for "%s"', [s]);
+      result := format('Bans: "%s" is duplicated', [S]);
       exit;
-      end;
+    end;
+    if not checkAddressSyntax(S) then
+    begin
+      result := format('Bans: syntax error for "%s"', [S]);
+      exit;
+    end;
   end;
-result:='';
-end; // checkValues
+  for i := a2nBox.Strings.count downto 1 do
+  begin
+    S := trim(a2nBox.cells[1, i]);
+    if trim(S + a2nBox.cells[0, i]) = '' then
+      a2nBox.DeleteRow(i)
+    else if (S > '') and not checkAddressSyntax(S) then
+    begin
+      result := format('Address2name: syntax error for "%s"', [S]);
+      exit;
+    end;
+  end;
+  result := '';
+end;
 
-function ToptionsFrm.saveValues():boolean;
+function ToptionsFrm.saveValues(): Boolean;
 var
-  i, n: integer;
-  s: string;
+  i, n: Integer;
+  S: string;
 begin
-result:=FALSE;
-s:=checkValues();
-if s > '' then
+  result := FALSE;
+  S := checkValues();
+  if S > '' then
   begin
-  msgDlg(s, MB_ICONERROR);
-  exit;
+    msgDlg(S, MB_ICONERROR);
+    exit;
   end;
-if not saveAccountProperties() then exit;
-// bans
-noReplyBan:=noreplybanChk.checked;
-i:=bansbox.Strings.Count;
-if bansbox.Cells[0,i] = '' then dec(i);
-setlength(banlist, i);
-n:=0;
-for i:=0 to length(banlist)-1 do
+  if not saveAccountProperties() then
+    exit;
+  // bans
+  noReplyBan := noreplybanChk.checked;
+  i := bansBox.Strings.count;
+  if bansBox.cells[0, i] = '' then
+    dec(i);
+  setLength(banList, i);
+  n := 0;
+  for i := 0 to length(banList) - 1 do
   begin
-  banlist[n].ip:=trim(bansBox.Cells[0,i+1]); // mod by mars
-  if banlist[n].ip = '' then continue;
-  banlist[n].comment:=bansBox.Cells[1,i+1];
-  inc(n);
+    banList[n].ip := trim(bansBox.cells[0, i + 1]); // mod by mars
+    if banList[n].ip = '' then
+      continue;
+    banList[n].comment := bansBox.cells[1, i + 1];
+    inc(n);
   end;
-setlength(banlist, n);
-kickBannedOnes();
-// mime types
-inBrowserIfMIME:=inBrowserIfMIMEchk.checked;
-mimeTypes:=NIL;
-for i:=1 to mimebox.rowCount-1 do
-  addArray(mimeTypes, [mimeBox.cells[0,i], mimeBox.cells[1,i]]);
+  setLength(banList, n);
+  kickBannedOnes();
+  // mime types
+  inBrowserIfMIME := inBrowserIfMIMEchk.checked;
+  mimeTypes := NIL;
+  for i := 1 to mimeBox.rowCount - 1 do
+    addArray(mimeTypes, [mimeBox.cells[0, i], mimeBox.cells[1, i]]);
 
-// address2name
-address2name:=NIL;
-for i:=1 to a2nBox.RowCount-1 do
+  // address2name
+  address2name := NIL;
+  for i := 1 to a2nBox.rowCount - 1 do
   begin
-  s:=trim(a2nBox.Cells[1,i]);
-  if s > '' then addArray(address2name, [a2nBox.Cells[0,i], s]);
+    S := trim(a2nBox.cells[1, i]);
+    if S > '' then
+      addArray(address2name, [a2nBox.cells[0, i], S]);
   end;
-// tray message
-trayMsg:=xtpl(traymsgBox.Text, [#10,'']);
-// accounts
-accounts:=tempAccounts;
-purgeVFSaccounts();
-mainfrm.filesBox.repaint();
-// icons
-setlength(iconMasks, 0); // mod by mars
-n:=0;
-for i:=0 to iconMasksBox.Lines.Count-1 do
+  // tray message
+  trayMsg := xtpl(traymsgBox.Text, [#10, '']);
+  // accounts
+  accounts := tempAccounts;
+  purgeVFSaccounts();
+  mainfrm.filesBox.repaint();
+  // icons
+  setLength(iconMasks, 0); // mod by mars
+  n := 0;
+  for i := 0 to iconMasksBox.lines.count - 1 do
   begin
-  s:=iconMasksBox.Lines[i];
-  if trim(s) = '' then continue;
-  inc(n);
-  setlength(iconMasks, n);
-  iconMasks[n-1].str:=s;
-  iconMasks[n-1].int:=tempIcons[i];
+    S := iconMasksBox.lines[i];
+    if trim(S) = '' then
+      continue;
+    inc(n);
+    setLength(iconMasks, n);
+    iconMasks[n - 1].str := S;
+    iconMasks[n - 1].int := tempIcons[i];
   end;
-result:=TRUE;
-end; // saveValues
+  result := TRUE;
+end;
 
 function ipListComp(list: TStringList; index1, index2: integer):integer;
 
-  function extract(s:string; var o:integer):string;
+  function extract(S: string; var o: Integer): string;
   var
-    i: integer;
+    i: Integer;
   begin
-  i:=posEx('.',s,o);
-  if i = 0 then i:=length(s)+1;
-  result:=substr(s,o,i-1);
-  o:=i+1;
+    i := posEx('.', S, o);
+    if i = 0 then
+      i := length(S) + 1;
+    result := substr(S, o, i - 1);
+    o := i + 1;
   end; // extract
 
-  function compare(a,b:string):integer;
+  function compare(a, b: string): Integer;
   begin
-  try result:=compare_(strToInt(a), strToInt(b));
-  except
-    result:=compare_(length(a), length(b));
-    if result = 0 then
-      result:=ansiCompareStr(a,b);
+    try
+      result := compare_(strToInt(a), strToInt(b));
+    except
+      result := compare_(length(a), length(b));
+      if result = 0 then
+        result := ansiCompareStr(a, b);
     end;
   end; // compare
 
 var
-  o1, o2: integer;
+  o1, o2: Integer;
   s1, s2: string;
 begin
-s1:=getTill('=', list[index1]);
-s2:=getTill('=', list[index2]);
-o1:=1;
-o2:=1;
+  s1 := getTill('=', list[index1]);
+  s2 := getTill('=', list[index2]);
+  o1 := 1;
+  o2 := 1;
   repeat
-  result:=compare(extract(s1,o1), extract(s2,o2));
+    result := compare(extract(s1, o1), extract(s2, o2));
   until (result <> 0) or (o1 > length(s1)) and (o2 > length(s2));
-end; // ipListComp
+end;
 
 procedure ToptionsFrm.sortBanBtnClick(Sender: TObject);
 begin
-(bansbox.strings as TstringList).customSort(ipListComp);
+  (bansBox.Strings as TStringList).customSort(ipListComp);
 end;
 
 procedure ToptionsFrm.sortBtnClick(Sender: TObject);
 
-  function sortIt(reverse:boolean=FALSE):boolean;
+  function sortIt(reverse: Boolean = FALSE): Boolean;
   var
-    s, i, j, l: integer;
+    S, i, j, l: Integer;
   begin
-  result:=FALSE;
-  s:=accountsBox.ItemIndex;
-  l:=length(tempAccounts);
-  for i:=0 to l-2 do
-    for j:=i+1 to l-1 do
-      if reverse XOR (compareText(tempAccounts[i].user, tempAccounts[j].user) > 0) then
+    result := FALSE;
+    S := accountsBox.itemIndex;
+    l := length(tempAccounts);
+    for i := 0 to l - 2 do
+      for j := i + 1 to l - 1 do
+        if reverse XOR (compareText(tempAccounts[i].user,
+          tempAccounts[j].user) > 0) then
         begin
-        swapMem(tempAccounts[i], tempAccounts[j], sizeof(tempAccounts[0]));
-        if i = s then
-          s:=j
-        else if j = s then
-          s:=i;
-        result:=TRUE;
+          swapMem(tempAccounts[i], tempAccounts[j], sizeof(tempAccounts[0]));
+          if i = S then
+            S := j
+          else if j = S then
+            S := i;
+          result := TRUE;
         end;
-  accountsBox.ItemIndex:=s;
+    accountsBox.itemIndex := S;
   end; // sortIt
 
 begin
-lastAccountSelected:=-1;
-if not sortIt(FALSE) then sortIt(TRUE);
-accountsBox.invalidate();
+  lastAccountSelected := -1;
+  if not sortIt(FALSE) then
+    sortIt(TRUE);
+  accountsBox.invalidate();
 end;
 
 procedure ToptionsFrm.traymsgBoxChange(Sender: TObject);
-begin traypreviewBox.text:=mainfrm.getTrayTipMsg(traymsgBox.text) end;
+begin
+  traypreviewBox.Text := mainfrm.getTrayTipMsg(traymsgBox.Text)
+end;
 
 procedure ToptionsFrm.FormShow(Sender: TObject);
 var
-  i: integer;
-  s: string;
+  i: Integer;
+  S: string;
 begin
-// if we do this, any hint window will bring focus to the main form
-//setwindowlong(handle, GWL_HWNDPARENT, 0); // get a taskbar button
-loadValues();
-if pageCtrl.activePage <> a2nPage then exit;
-s:=mainfrm.ipPointedInLog();
-if s = '' then exit;
-// select row or insert new one
-i:=length(address2name)-1;
-while (i > 0) and not addressmatch(address2name[i], s) do
-  dec(i, 2);
-if i <= 0 then a2nBox.row:=a2nBox.insertRow('',s,TRUE)
-else
-  try a2nBox.Row:=i
-  except end; // this should not happen, but in case (it was reported once) just skip selecting
+  // if we do this, any hint window will bring focus to the main form
+  // setwindowlong(handle, GWL_HWNDPARENT, 0); // get a taskbar button
+  loadValues();
+  if pageCtrl.activePage <> a2nPage then
+    exit;
+  S := mainfrm.ipPointedInLog();
+  if S = '' then
+    exit;
+  // select row or insert new one
+  i := length(address2name) - 1;
+  while (i > 0) and not addressmatch(address2name[i], S) do
+    dec(i, 2);
+  if i <= 0 then
+    a2nBox.row := a2nBox.insertRow('', S, TRUE)
+  else
+    try
+      a2nBox.row := i
+    except
+    end; // this should not happen, but in case (it was reported once) just skip selecting
 
-a2nBox.SetFocus();
-a2nBox.EditorMode:=TRUE;
+  a2nBox.SetFocus();
+  a2nBox.EditorMode := TRUE;
 end;
 
 procedure ToptionsFrm.groupChkClick(Sender: TObject);
 begin
-pwdBox.visible:=not groupChk.checked;
-accountsBox.invalidate();
+  pwdBox.visible := not groupChk.checked;
+  accountsBox.invalidate();
 end;
 
 procedure ToptionsFrm.FormActivate(Sender: TObject);
-begin traymsgBoxChange(NIL) end;
+begin
+  traymsgBoxChange(NIL)
+end;
 
 procedure ToptionsFrm.FormCreate(Sender: TObject);
 begin
-notesWrapChk.Checked:=TRUE;
+  notesWrapChk.checked := TRUE;
 end;
 
 procedure ToptionsFrm.FormResize(Sender: TObject);
-begin bansBox.ColWidths[1]:=bansBox.ClientWidth-bansBox.colWidths[0]-2 end;
-
-procedure setEnabledRecur(c:Tcontrol; v:boolean);
-var
-  i: integer;
 begin
-c.enabled:=v;
-if c is TTreeView then
-  (c as TTreeView).items.clear();
-if c is TLabeledEdit then
-  (c as TLabeledEdit).text:='';
-if c is Tmemo then
-  (c as Tmemo).text:='';
-if c is Tcheckbox then
-  (c as Tcheckbox).checked:=FALSE;
+  bansBox.ColWidths[1] := bansBox.ClientWidth - bansBox.ColWidths[0] - 2
+end;
 
-if c is Twincontrol then
-  with c as Twincontrol do
-    for i:=0 to controlCount-1 do
-    	setEnabledRecur(controls[i], v);
-end; // setEnabledRecur
+procedure setEnabledRecur(c: Tcontrol; v: Boolean);
+var
+  i: Integer;
+begin
+  c.enabled := v;
+  if c is TTreeView then
+    (c as TTreeView).items.Clear();
+  if c is TLabeledEdit then
+    (c as TLabeledEdit).Text := '';
+  if c is TMemo then
+    (c as TMemo).Text := '';
+  if c is TCheckBox then
+    (c as TCheckBox).checked := FALSE;
+
+  if c is TWinControl then
+    with c as TWinControl do
+      for i := 0 to controlCount - 1 do
+        setEnabledRecur(Controls[i], v);
+end;
 
 procedure ToptionsFrm.updateAccessBox();
 var
@@ -469,486 +493,555 @@ var
   f: Tfile;
   props: TstringDynArray;
   act: TfileAction;
-  s: string;
+  S: string;
   a, other: Paccount;
 begin
-accountAccessBox.items.clear();
-if lastAccountSelected < 0 then exit;
-a:=@tempAccounts[lastAccountSelected];
-n:=rootNode;
-while n <> NIL do
+  accountAccessBox.items.Clear();
+  if lastAccountSelected < 0 then
+    exit;
+  a := @tempAccounts[lastAccountSelected];
+  n := rootNode;
+  while n <> NIL do
   begin
-  f:=Tfile(n.data);
-  n:=n.getNext();
-  if f =  NIL then continue;
+    f := Tfile(n.data);
+    n := n.getNext();
+    if f = NIL then
+      continue;
 
-  props:=NIL;
-  for act:=low(TfileAction) to high(TfileAction) do
+    props := NIL;
+    for act := low(TfileAction) to high(TfileAction) do
     begin
-    s:=FILEACTION2STR[act];
-    // any_account will suffice, otherwise our username (or a linked one) must be there explicitly, otherwise the resource is not protected or we have no access and thus must not be listed
-    if not stringExists(USER_ANY_ACCOUNT, f.accounts[act]) then
+      S := FILEACTION2STR[act];
+      // any_account will suffice, otherwise our username (or a linked one) must be there explicitly, otherwise the resource is not protected or we have no access and thus must not be listed
+      if not stringExists(USER_ANY_ACCOUNT, f.accounts[act]) then
       begin
-      other:=findEnabledLinkedAccount(a, f.accounts[act]);
-      if other = NIL then continue;
-      if other <> a then
-        s:=s+' via '+other.user;
+        other := findEnabledLinkedAccount(a, f.accounts[act]);
+        if other = NIL then
+          continue;
+        if other <> a then
+          S := S + ' via ' + other.user;
       end;
-    addString(s, props);
+      addString(S, props);
     end;
-  if props = NIL then continue;
+    if props = NIL then
+      continue;
 
-  with accountAccessBox.items.addObject(NIL, f.name+' ['+join(', ',props)+']', f.node) do
+    with accountAccessBox.items.addObject(NIL, f.name + ' [' + join(', ', props)
+      + ']', f.node) do
     begin
-    imageIndex:=f.node.imageIndex;
-    selectedIndex:=imageIndex;
+      imageIndex := f.node.imageIndex;
+      selectedIndex := imageIndex;
     end;
   end;
-end; // updateAccessBox
+end;
 
 procedure ToptionsFrm.checkRedir();
 begin // mod by mars
-redirBox.color:=blend(clWindow, clRed,
-  ifThen((redirBox.text >'') and not fileExistsByURL(redirBox.text), 0.5, 0) );
-end; // checkRedir
+  redirBox.color := blend(clWindow, clRed,
+    ifThen((redirBox.Text > '') and not fileExistsByURL(redirBox.Text),
+    0.5, 0));
+end;
 
 procedure ToptionsFrm.loadAccountProperties();
 var
   a: Paccount;
-  b, bakWrap: boolean;
-  i: integer;
+  b, bakWrap: Boolean;
+  i: Integer;
 begin
-lastAccountSelected:=accountsBox.ItemIndex;
-b:=lastAccountSelected >= 0;
-bakWrap:=notesWrapChk.checked;
-setEnabledRecur(accountpropGrp, b);
-notesWrapChk.checked:=bakWrap;
-renAccountBtn.enabled:=b;
-deleteAccountBtn.enabled:=b;
-upBtn.Enabled:=b;
-downBtn.enabled:=b;
+  lastAccountSelected := accountsBox.itemIndex;
+  b := lastAccountSelected >= 0;
+  bakWrap := notesWrapChk.checked;
+  setEnabledRecur(accountpropGrp, b);
+  notesWrapChk.checked := bakWrap;
+  renaccountBtn.enabled := b;
+  deleteaccountBtn.enabled := b;
+  upBtn.enabled := b;
+  downBtn.enabled := b;
 
-if not accountpropGrp.Enabled then exit;
-a:=@tempAccounts[lastAccountSelected];
-accountEnabledChk.checked:=a.enabled;
-pwdBox.Text:=a.pwd;
-groupChk.Checked:=a.group;
-accountLinkBox.text:=join(';',a.link);
-ignoreLimitsChk.Checked:=a.noLimits;
-redirBox.Text:=a.redir;
-notesBox.text:=a.notes;
+  if not accountpropGrp.enabled then
+    exit;
+  a := @tempAccounts[lastAccountSelected];
+  accountenabledChk.checked := a.enabled;
+  pwdBox.Text := a.pwd;
+  groupChk.checked := a.group;
+  accountLinkBox.Text := join(';', a.link);
+  ignoreLimitsChk.checked := a.noLimits;
+  redirBox.Text := a.redir;
+  notesBox.Text := a.notes;
 
-groupsBtn.enabled:=FALSE;;
-for i:=0 to length(tempAccounts)-1 do
-  if tempAccounts[i].group and (i <> accountsBox.itemIndex) then
-    groupsBtn.enabled:=TRUE;
+  groupsBtn.enabled := FALSE;;
+  for i := 0 to length(tempAccounts) - 1 do
+    if tempAccounts[i].group and (i <> accountsBox.itemIndex) then
+      groupsBtn.enabled := TRUE;
 
-updateAccessBox();
-accountsBox.invalidate();
-end; // loadAccountProperties
+  updateAccessBox();
+  accountsBox.invalidate();
+end;
 
-function ToptionsFrm.saveAccountProperties():boolean;
+function ToptionsFrm.saveAccountProperties(): Boolean;
 const
-  MSG_CHARS = 'The characters below are not allowed'
-    +#13'/\:?*"<>|;&&@';
-  MSG_PWD = 'Invalid password.'#13+MSG_CHARS;
+  MSG_CHARS = 'The characters below are not allowed' + #13'/\:?*"<>|;&&@';
+  MSG_PWD = 'Invalid password.'#13 + MSG_CHARS;
 var
   a: Paccount;
 begin
-result:=TRUE;
-if lastAccountSelected < 0 then exit;
-result:=FALSE;
-if not validUsername(pwdbox.Text, TRUE) then
+  result := TRUE;
+  if lastAccountSelected < 0 then
+    exit;
+  result := FALSE;
+  if not validUsername(pwdBox.Text, TRUE) then
   begin
-	msgDlg(MSG_PWD, MB_ICONERROR);
-  exit;
+    msgDlg(MSG_PWD, MB_ICONERROR);
+    exit;
   end;
 
-a:=@tempAccounts[lastAccountSelected];
-a.enabled:=accountEnabledChk.checked;
-a.pwd:=pwdBox.Text;
-a.noLimits:=ignoreLimitsChk.checked;
-a.redir:=redirBox.Text;
-a.notes:=notesBox.text;
-a.link:=split(';', trim(accountLinkBox.text));
-a.group:=groupChk.Checked;
-uniqueStrings(a.link);
-result:=TRUE;
-accountsBox.invalidate();
-end; // saveAccountProperties
+  a := @tempAccounts[lastAccountSelected];
+  a.enabled := accountenabledChk.checked;
+  a.pwd := pwdBox.Text;
+  a.noLimits := ignoreLimitsChk.checked;
+  a.redir := redirBox.Text;
+  a.notes := notesBox.Text;
+  a.link := split(';', trim(accountLinkBox.Text));
+  a.group := groupChk.checked;
+  uniqueStrings(a.link);
+  result := TRUE;
+  accountsBox.invalidate();
+end;
 
-function findUser(user:string):integer;
+function findUser(user: string): Integer;
 begin
-result:=length(tempAccounts)-1;
-while (result >= 0) and not sameText(tempAccounts[result].user, user) do
-  dec(result);
+  result := length(tempAccounts) - 1;
+  while (result >= 0) and not sameText(tempAccounts[result].user, user) do
+    dec(result);
 end; // findUser
 
-function userExists(user:string):boolean; overload;
-begin result:=findUser(user) >= 0 end;
-
-function userExists(user:string; excpt:integer):boolean; overload;
-var
-  i: integer;
+function userExists(user: string): Boolean; overload;
 begin
-i:=findUser(user);
-result:=(i >= 0) and (i <> excpt);
+  result := findUser(user) >= 0
+end;
+
+function userExists(user: string; excpt: Integer): Boolean; overload;
+var
+  i: Integer;
+begin
+  i := findUser(user);
+  result := (i >= 0) and (i <> excpt);
 end;
 
 procedure ToptionsFrm.addaccountBtnClick(Sender: TObject);
 var
-  i: integer;
+  i: Integer;
   a: Taccount;
 begin
-a.user:=getUniqueName('new user', userExists);
-a.pwd:='';
-a.enabled:=TRUE;
-a.noLimits:=FALSE;
-a.redir:='';
+  a.user := getUniqueName('new user', userExists);
+  a.pwd := '';
+  a.enabled := TRUE;
+  a.noLimits := FALSE;
+  a.redir := '';
 
-i:=length(tempAccounts);
-setLength(tempAccounts, i+1);
-tempAccounts[i]:=a;
-accountsBox.items.add();
-selectAccount(i);
+  i := length(tempAccounts);
+  setLength(tempAccounts, i + 1);
+  tempAccounts[i] := a;
+  accountsBox.items.Add();
+  selectAccount(i);
 
-renaccountBtnClick(sender);
+  renaccountBtnClick(Sender);
 end;
 
-procedure ToptionsFrm.deleteAccount(idx:integer=-1);
+procedure ToptionsFrm.deleteAccount(idx: Integer = -1);
 var
-  i: integer;
+  i: Integer;
 begin
-if idx < 0 then
-	begin
-  idx:=accountsBox.itemIndex;
-  if idx < 0 then exit;
- 	if msgDlg('Delete?', MB_ICONQUESTION+MB_YESNO) = IDNO then
-  	exit;
+  if idx < 0 then
+  begin
+    idx := accountsBox.itemIndex;
+    if idx < 0 then
+      exit;
+    if msgDlg('Delete?', MB_ICONQUESTION + MB_YESNO) = IDNO then
+      exit;
   end;
-// shift
-for i:=idx+1 to length(tempAccounts)-1 do
-  tempAccounts[i-1]:=tempAccounts[i];
-// shorten
-with accountsBox.items do count:=count-1; // dunno why, but invoking delete* methods doesn't work
-setlength(tempAccounts, length(tempAccounts)-1);
-selectAccount(min(idx, length(tempAccounts)-1), FALSE);
-end; // deleteAccount
+  // shift
+  for i := idx + 1 to length(tempAccounts) - 1 do
+    tempAccounts[i - 1] := tempAccounts[i];
+  // shorten
+  with accountsBox.items do
+    count := count - 1; // dunno why, but invoking delete* methods doesn't work
+  setLength(tempAccounts, length(tempAccounts) - 1);
+  selectAccount(min(idx, length(tempAccounts) - 1), FALSE);
+end;
 
 procedure ToptionsFrm.deleteaccountBtnClick(Sender: TObject);
-begin deleteAccount() end;
-
-procedure swapItems(i, j:integer);
-var
-  s: integer;
 begin
-s:=length(tempAccounts)-1;
-if not inRange(i, 0,s) or not inRange(j, 0,s) then exit;
-s:=optionsFrm.accountsBox.itemIndex;
-lastAccountSelected:=-1; // avoid data saving from fields while moving
-swapMem(tempAccounts[i], tempAccounts[j], sizeof(tempAccounts[i]));
-if i = s then
-  s:=j
-else if j = s then
-  s:=i;
-with optionsFrm.accountsBox do
+  deleteAccount()
+end;
+
+procedure swapItems(i, j: Integer);
+var
+  S: Integer;
+begin
+  S := length(tempAccounts) - 1;
+  if not inRange(i, 0, S) or not inRange(j, 0, S) then
+    exit;
+  S := optionsFrm.accountsBox.itemIndex;
+  lastAccountSelected := -1; // avoid data saving from fields while moving
+  swapMem(tempAccounts[i], tempAccounts[j], sizeof(tempAccounts[i]));
+  if i = S then
+    S := j
+  else if j = S then
+    S := i;
+  with optionsFrm.accountsBox do
   begin
-  itemIndex:=s;
-  selected.focused:=TRUE;
-  invalidate();
+    itemIndex := S;
+    Selected.focused := TRUE;
+    invalidate();
   end;
 end; // swapItems
 
-procedure ToptionsFrm.accountsBoxChange(Sender: TObject; Item: TListItem; Change: TItemChange);
+procedure ToptionsFrm.accountsBoxChange(Sender: TObject; Item: TListItem;
+  Change: TItemChange);
 begin
-if (change = ctState) and assigned(item) and item.selected then
-  selectAccount(item.index);
+  if (Change = ctState) and assigned(Item) and Item.Selected then
+    selectAccount(Item.Index);
 end;
 
 procedure ToptionsFrm.accountsBoxClick(Sender: TObject);
 begin
-selectAccount(accountsBox.itemIndex);
+  selectAccount(accountsBox.itemIndex);
 end;
 
 procedure ToptionsFrm.accountsBoxData(Sender: TObject; Item: TListItem);
 var
   a: Paccount;
 begin
-if (item = NIL) or not inRange(item.index, 0,length(tempAccounts)-1) then
-  exit;
-a:=@tempAccounts[item.index];
-item.caption:=a.user;
-item.imageIndex:=if_(item.index = lastAccountSelected,
-  accountIcon(accountenabledChk.checked, groupChk.checked),
-  accountIcon(a)
-);
+  if (Item = NIL) or not inRange(Item.Index, 0, length(tempAccounts) - 1) then
+    exit;
+  a := @tempAccounts[Item.Index];
+  Item.caption := a.user;
+  Item.imageIndex := if_(Item.Index = lastAccountSelected,
+    accountIcon(accountenabledChk.checked, groupChk.checked), accountIcon(a));
 end;
 
 procedure ToptionsFrm.accountsBoxDblClick(Sender: TObject);
-begin renaccountBtnClick(renaccountBtn) end;
-
-procedure ToptionsFrm.accountsBoxDragDrop(Sender, Source: TObject; X,
-  Y: Integer);
 begin
-swapItems(accountsBox.getItemAt(x,y).index, accountsBox.itemIndex);
+  renaccountBtnClick(renaccountBtn)
 end;
 
-procedure ToptionsFrm.accountsBoxDragOver(Sender, Source: TObject; X,
-  Y: Integer; State: TDragState; var Accept: Boolean);
+procedure ToptionsFrm.accountsBoxDragDrop(Sender, Source: TObject;
+  X, Y: Integer);
 begin
-accept:=(sender = source) and assigned(accountsBox.getItemAt(x,y));
+  swapItems(accountsBox.getItemAt(X, Y).Index, accountsBox.itemIndex);
 end;
 
-procedure ToptionsFrm.accountsBoxEdited(Sender: TObject; Item: TListItem; var S: String);
+procedure ToptionsFrm.accountsBoxDragOver(Sender, Source: TObject;
+  X, Y: Integer; State: TDragState; var Accept: Boolean);
+begin
+  Accept := (Sender = Source) and assigned(accountsBox.getItemAt(X, Y));
+end;
+
+procedure ToptionsFrm.accountsBoxEdited(Sender: TObject; Item: TListItem;
+  var S: String);
 var
   old, err: string;
-  i, idx: integer;
+  i, idx: Integer;
 begin
-renamingAccount:=FALSE;
-try idx:=item.index  // workaround to wine's bug http://www.rejetto.com/forum/index.php/topic,9563.msg1053890.html#msg1053890
-except idx:=lastAccountSelected end;
-old:=tempAccounts[idx].user;
-if not validUsername(s) then
-  err:='Invalid username'
-else if userExists(s, accountsBox.itemIndex) then
-  err:='Username already used'
-else
-  err:='';
-
-if err > '' then
-  begin
-  msgDlg(err, MB_ICONERROR);
-  s:=old;
-  exit;
+  renamingAccount := FALSE;
+  try
+    idx := Item.Index
+    // workaround to wine's bug http://www.rejetto.com/forum/index.php/topic,9563.msg1053890.html#msg1053890
+  except
+    idx := lastAccountSelected
   end;
-// update linkings
-for i:=0 to length(tempAccounts)-1 do
-  replaceString(tempAccounts[i].link, old, s);
-tempAccounts[idx].user:=s;
+  old := tempAccounts[idx].user;
+  if not validUsername(S) then
+    err := 'Invalid username'
+  else if userExists(S, accountsBox.itemIndex) then
+    err := 'Username already used'
+  else
+    err := '';
+
+  if err > '' then
+  begin
+    msgDlg(err, MB_ICONERROR);
+    S := old;
+    exit;
+  end;
+  // update linkings
+  for i := 0 to length(tempAccounts) - 1 do
+    replaceString(tempAccounts[i].link, old, S);
+  tempAccounts[idx].user := S;
 end;
 
 procedure ToptionsFrm.accountsBoxEditing(Sender: TObject; Item: TListItem;
   var AllowEdit: Boolean);
 begin
-renamingAccount:=TRUE;
+  renamingAccount := TRUE;
 end;
 
 procedure ToptionsFrm.accountsBoxKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-if shift = [] then
-	case key of
-  	VK_F2: renaccountBtn.click();
-    VK_INSERT: addaccountBtn.click(); // mod by mars
-    VK_DELETE: deleteAccount();
+  if Shift = [] then
+    case Key of
+      VK_F2:
+        renaccountBtn.click();
+      VK_INSERT:
+        addaccountBtn.click(); // mod by mars
+      VK_DELETE:
+        deleteAccount();
     end;
-{mod by mars}
-if shift = [ssAlt] then
-  case key of
-    VK_UP: upBtn.click();
-    VK_DOWN: downBtn.click();
+  { mod by mars }
+  if Shift = [ssAlt] then
+    case Key of
+      VK_UP:
+        upBtn.click();
+      VK_DOWN:
+        downBtn.click();
     end;
-{/mod}
+  { /mod }
 end;
 
 procedure ToptionsFrm.accountsBoxKeyPress(Sender: TObject; var Key: Char);
 var
-  s, i, ir, n: integer;
+  S, i, ir, n: Integer;
 begin
-if renamingAccount then
-  exit;
-key:=upcase(key);
-if key in ['0'..'9','A'..'Z'] then
+  if renamingAccount then
+    exit;
+  Key := upcase(Key);
+  if Key in ['0' .. '9', 'A' .. 'Z'] then
   begin
-  s:=accountsBox.ItemIndex;
-  n:=length(tempAccounts);
-  for i:=1 to n-1 do
+    S := accountsBox.itemIndex;
+    n := length(tempAccounts);
+    for i := 1 to n - 1 do
     begin
-    ir:=(s+i) mod n;
-    if key = upcase(tempAccounts[ir].user[1]) then
+      ir := (S + i) mod n;
+      if Key = upcase(tempAccounts[ir].user[1]) then
       begin
-      selectAccount(ir);
-      exit;
+        selectAccount(ir);
+        exit;
       end;
     end;
   end;
 end;
 
 procedure ToptionsFrm.redirBoxChange(Sender: TObject);
-begin checkRedir() end;
+begin
+  checkRedir()
+end;
 
 procedure ToptionsFrm.renaccountBtnClick(Sender: TObject);
 begin
-if accountsBox.selected = NIL then exit;
-accountsBox.Selected.editCaption();
+  if accountsBox.Selected = NIL then
+    exit;
+  accountsBox.Selected.editCaption();
 end;
 
 procedure ToptionsFrm.accountLinkBoxExit(Sender: TObject);
 const
-  MSG_MISSING_USERS = 'Cannot find these linked usernames: %s'
-    +#13'This is abnormal, but you may add them later.';
+  MSG_MISSING_USERS = 'Cannot find these linked usernames: %s' +
+    #13'This is abnormal, but you may add them later.';
 var
-  users, missing: TStringDynArray;
-  i: integer;
+  users, missing: TstringDynArray;
+  i: Integer;
 begin
-users:=split(';', trim(accountLinkBox.text));
-// check for non-existent linked account
-missing:=NIL;
-for i:=0 to length(users)-1 do
-  if not userExists(users[i]) then
-    addString(users[i], missing);
-if assigned(missing) then
-  msgDlg(format(MSG_MISSING_USERS, [join(', ', missing)]), MB_ICONWARNING);
-// permissions may have been changed
-updateAccessBox();
+  users := split(';', trim(accountLinkBox.Text));
+  // check for non-existent linked account
+  missing := NIL;
+  for i := 0 to length(users) - 1 do
+    if not userExists(users[i]) then
+      addString(users[i], missing);
+  if assigned(missing) then
+    msgDlg(format(MSG_MISSING_USERS, [join(', ', missing)]), MB_ICONWARNING);
+  // permissions may have been changed
+  updateAccessBox();
 end;
 
 procedure ToptionsFrm.accountAccessBoxDblClick(Sender: TObject);
 begin
-with sender as Ttreeview do
+  with Sender as TTreeView do
   begin
-  if selected = NIL then exit;
-  mainfrm.filesBox.selected:=selected.Data;
-  mainfrm.setFocus();
+    if Selected = NIL then
+      exit;
+    mainfrm.filesBox.Selected := Selected.data;
+    mainfrm.SetFocus();
   end;
 end;
 
 procedure ToptionsFrm.accountenabledChkClick(Sender: TObject);
-begin accountsBox.invalidate() end;
-
-procedure ToptionsFrm.accountAccessBoxContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
 begin
-with sender as Ttreeview do
-  if selected = NIL then handled:=TRUE
-  else mainfrm.filesBox.selected:=selected.data;
+  accountsBox.invalidate()
+end;
+
+procedure ToptionsFrm.accountAccessBoxContextPopup(Sender: TObject;
+  MousePos: TPoint; var Handled: Boolean);
+begin
+  with Sender as TTreeView do
+    if Selected = NIL then
+      Handled := TRUE
+    else
+      mainfrm.filesBox.Selected := Selected.data;
 end;
 
 procedure ToptionsFrm.cancelBtnClick(Sender: TObject);
-begin close() end;
+begin
+  close()
+end;
 
 procedure ToptionsFrm.applyBtnClick(Sender: TObject);
-begin saveValues() end;
+begin
+  saveValues()
+end;
 
 procedure ToptionsFrm.okBtnClick(Sender: TObject);
-begin if saveValues() then close() end;
+begin
+  if saveValues() then
+    close()
+end;
 
 procedure ToptionsFrm.Button1Click(Sender: TObject);
-begin msgDlg(getRes('invertBan')) end;
+begin
+  msgDlg(getRes('invertBan'))
+end;
 
 procedure ToptionsFrm.groupsBtnClick(Sender: TObject);
 var
-  i: integer;
-  there: TStringDynArray;
-  groups: TstringList;
-  s: string;
+  i: Integer;
+  there: TstringDynArray;
+  groups: TStringList;
+  S: string;
 begin
-there:=split(';', accountLinkBox.Text);
-groups:=TstringList.create;
-try
-  for i:=0 to length(tempAccounts)-1 do
-    if tempAccounts[i].group and (i <> accountsBox.itemIndex) then
+  there := split(';', accountLinkBox.Text);
+  groups := TStringList.create;
+  try
+    for i := 0 to length(tempAccounts) - 1 do
+      if tempAccounts[i].group and (i <> accountsBox.itemIndex) then
       begin
-      s:=tempAccounts[i].user;
-      groups.AddObject(s, if_(stringExists(s, there), PTR1, NIL));
+        S := tempAccounts[i].user;
+        groups.addObject(S, if_(stringExists(S, there), PTR1, NIL));
       end;
-  if not listSelect('Select groups', groups) then exit;
-  s:='';
-  for i:=0 to groups.Count-1 do
-    if groups.Objects[i] <> NIL then
-      s:=s+groups[i]+';';
-  accountLinkBox.Text:=getTill(-1, s);
-finally groups.free end;
+    if not listSelect('Select groups', groups) then
+      exit;
+    S := '';
+    for i := 0 to groups.count - 1 do
+      if groups.Objects[i] <> NIL then
+        S := S + groups[i] + ';';
+    accountLinkBox.Text := getTill(-1, S);
+  finally
+    groups.free
+  end;
 end;
 
 procedure ToptionsFrm.pwdBoxEnter(Sender: TObject);
-begin if pwdBox.Text > '' then pwdBox.passwordChar:=#0 end;
+begin
+  if pwdBox.Text > '' then
+    pwdBox.passwordChar := #0
+end;
 
 procedure ToptionsFrm.pwdBoxExit(Sender: TObject);
-begin pwdBox.passwordChar:='*' end;
+begin
+  pwdBox.passwordChar := '*'
+end;
 
 procedure ToptionsFrm.addBtnClick(Sender: TObject);
-begin bansBox.InsertRow('','',TRUE) end;
+begin
+  bansBox.insertRow('', '', TRUE)
+end;
 
 procedure ToptionsFrm.deleteBtnClick(Sender: TObject);
 begin
-if bansbox.strings.count > 0 then
-  bansBox.Strings.Delete(bansBox.Row-1)
+  if bansBox.Strings.count > 0 then
+    bansBox.Strings.Delete(bansBox.row - 1)
 end;
 
 procedure ToptionsFrm.addMimeBtnClick(Sender: TObject);
-begin mimeBox.InsertRow('','',TRUE) end;
+begin
+  mimeBox.insertRow('', '', TRUE)
+end;
 
 procedure ToptionsFrm.deleteMimeBtnClick(Sender: TObject);
 begin
-if mimeBox.strings.count > 0 then
-  mimeBox.Strings.Delete(mimeBox.Row-1)
+  if mimeBox.Strings.count > 0 then
+    mimeBox.Strings.Delete(mimeBox.row - 1)
 end;
 
 procedure ToptionsFrm.addA2NbtnClick(Sender: TObject);
 begin
-a2nBox.insertRow('','',TRUE);
-a2nBox.setFocus();
+  a2nBox.insertRow('', '', TRUE);
+  a2nBox.SetFocus();
 end;
 
 procedure ToptionsFrm.deleteA2NbtnClick(Sender: TObject);
 begin
-if a2nBox.strings.count > 0 then
-  a2nBox.Strings.Delete(a2nBox.Row-1)
+  if a2nBox.Strings.count > 0 then
+    a2nBox.Strings.Delete(a2nBox.row - 1)
 end;
 
-procedure ToptionsFrm.iconsBoxDrawItem(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
+procedure ToptionsFrm.iconsBoxDrawItem(Control: TWinControl; Index: Integer;
+  Rect: TRect; State: TOwnerDrawState);
 var
   cnv: TCanvas;
   bmp: Tbitmap;
 begin
-cnv:=iconsBox.Canvas;
-bmp:=Tbitmap.create;
-try
-  mainfrm.images.GetBitmap(index, bmp);
-  cnv.FillRect(rect);
-  cnv.Draw(rect.Left, rect.Top, bmp);
-  cnv.TextOut(rect.Left+mainfrm.images.Width+2, rect.Top, idx_label(index));
-finally bmp.free end;
+  cnv := iconsBox.Canvas;
+  bmp := Tbitmap.create;
+  try
+    mainfrm.images.GetBitmap(index, bmp);
+    cnv.FillRect(Rect);
+    cnv.Draw(Rect.Left, Rect.Top, bmp);
+    cnv.TextOut(Rect.Left + mainfrm.images.Width + 2, Rect.Top,
+      idx_label(index));
+  finally
+    bmp.free
+  end;
 end;
 
 procedure ToptionsFrm.updateIconsBox();
 // alloc enough slots. the text is not used, labels are built by the paint event
-begin iconsBox.Items.Text:=dupeString(CRLF, mainfrm.images.count) end;
+begin
+  iconsBox.items.Text := dupeString(CRLF, mainfrm.images.count)
+end;
 
 procedure ToptionsFrm.iconsBoxDropDown(Sender: TObject);
-begin updateIconsBox() end;
-
-procedure ToptionsFrm.ListView1DragOver(Sender, Source: TObject; X, Y: Integer; State: TDragState; var Accept: Boolean);
 begin
-accept:=source = sender;
+  updateIconsBox()
+end;
+
+procedure ToptionsFrm.ListView1DragOver(Sender, Source: TObject; X, Y: Integer;
+  State: TDragState; var Accept: Boolean);
+begin
+  Accept := Source = Sender;
 end;
 
 procedure ToptionsFrm.upBtnClick(Sender: TObject);
 var
-  i, dir: integer;
+  i, dir: Integer;
 begin
-dir:=if_(sender = upBtn, -1, +1);
-i:=accountsBox.itemIndex;
-if not inRange(i+dir, 0,length(tempAccounts)-1) then exit;
-swapItems(i, i+dir);
+  dir := if_(Sender = upBtn, -1, +1);
+  i := accountsBox.itemIndex;
+  if not inRange(i + dir, 0, length(tempAccounts) - 1) then
+    exit;
+  swapItems(i, i + dir);
 end;
 
 procedure ToptionsFrm.upBtnMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
-accountsBox.setFocus()
+  accountsBox.SetFocus()
 end;
 
 procedure ToptionsFrm.updateIconMap();
 begin
-if not iconsBox.DroppedDown then
-  iconsBox.ItemIndex:=tempIcons[iconMasksBox.CaretPos.Y];
+  if not iconsBox.DroppedDown then
+    iconsBox.itemIndex := tempIcons[iconMasksBox.CaretPos.Y];
 end;
 
 procedure ToptionsFrm.iconsBoxChange(Sender: TObject);
-begin tempIcons[iconMasksBox.CaretPos.Y]:=iconsBox.ItemIndex end;
+begin
+  tempIcons[iconMasksBox.CaretPos.Y] := iconsBox.itemIndex
+end;
 
 procedure ToptionsFrm.iconMasksBoxChange(Sender: TObject);
-begin setLength(tempIcons, iconMasksBox.Lines.count+1) end;
+begin
+  setLength(tempIcons, iconMasksBox.lines.count + 1)
+end;
 
 end.

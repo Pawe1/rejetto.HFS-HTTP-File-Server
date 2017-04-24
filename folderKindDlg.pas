@@ -3,8 +3,8 @@ unit folderKindDlg;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Buttons, strUtils, ExtCtrls;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons;
 
 type
   TfolderKindFrm = class(TForm)
@@ -25,10 +25,14 @@ implementation
 
 {$R *.dfm}
 
+uses
+  System.StrUtils;
+
 procedure TfolderKindFrm.FormCreate(Sender: TObject);
 begin
-realBtn.Font.Style:=[fsBold];
-with hintLbl do caption:=ansiReplaceStr(caption,'? ','?'#13);
+  realBtn.Font.Style := [fsBold];
+  with hintLbl do
+    caption := ansiReplaceStr(caption, '? ', '?'#13);
 end;
 
 end.
