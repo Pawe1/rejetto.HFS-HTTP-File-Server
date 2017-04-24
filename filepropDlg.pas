@@ -80,7 +80,7 @@ implementation
 
 uses
   System.Math,
-  utilLib, hslib,
+  Rejetto.Utils, hslib,
   optionsDlg;
 
 {$R *.dfm}

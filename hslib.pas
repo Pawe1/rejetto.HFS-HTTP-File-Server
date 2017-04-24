@@ -29,7 +29,10 @@ unit HSlib;
 interface
 
 uses
-  OverbyteIcsWSocket, classes, messages, winprocs, forms, extctrls, sysutils, contnrs, strUtils, winsock, inifiles, types;
+  System.Classes, Winapi.Messages, Vcl.Forms, Vcl.ExtCtrls,
+  System.SysUtils, System.Contnrs, System.StrUtils, Winapi.WinSock,
+  System.IniFiles, System.Types,
+  OverbyteIcsWSocket;
 
 const
   VERSION = '2.10.0';
@@ -331,7 +334,7 @@ function ipos(ss, s: string; ofs: integer = 1): integer; overload;
 implementation
 
 uses
-  Windows;
+  Winapi.Windows;
 
 const
   CRLF = #13#10;

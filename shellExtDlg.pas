@@ -29,7 +29,7 @@ implementation
 
 uses
   Vcl.Imaging.GIFImg,
-  utilLib;
+  Rejetto.Utils;
 
 procedure TshellExtFrm.FormCreate(Sender: TObject);
 var

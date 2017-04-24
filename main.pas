@@ -26,13 +26,22 @@ interface
 
 uses
   // delphi libs
-  Windows, Messages, SysUtils, Forms, Menus, Graphics, Controls, ComCtrls, Dialogs, math,
-  registry, ExtCtrls, shellapi, ImgList, ToolWin, StdCtrls, strutils, AppEvnts, types,
-  winsock, clipbrd, shlobj, activex, Buttons, FileCtrl, dateutils, iniFiles, Classes,
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
+  Vcl.Menus, Vcl.ComCtrls, Vcl.ExtCtrls, System.ImageList, Vcl.ImgList,
+  Vcl.Buttons, Vcl.StdCtrls, Vcl.ToolWin, Vcl.AppEvnts,
+  System.Math, System.Win.Registry,  Winapi.ShellAPI, System.StrUtils,
+  System.Types, Winapi.WinSock, Vcl.Clipbrd, Winapi.ShlObj, Winapi.ActiveX,
+  Vcl.FileCtrl, System.DateUtils, System.IniFiles,
+
   // 3rd part libs. ensure you have all of these, the same version reported in dev-notes.txt
-  OverbyteIcsWSocket, OverbyteIcsHttpProt, OverbyteicsMD5, zlibex, regexpr,
+  OverbyteIcsWSocket, OverbyteIcsHttpProt, OverbyteicsMD5,
+  zlibex,
+  regexpr,
+
   // rejetto libs
-  HSlib, traylib, monoLib, progFrmLib, classesLib, System.ImageList;
+  HSlib, traylib, monoLib, progFrmLib, classesLib,
+  Rejetto.Tpl;
 
 const
   VERSION = '2.3j';
@@ -311,7 +320,7 @@ type
     downloadingWhat: TdownloadingWhat;
     preReply: TpreReply;
     banReason: string;
-    lastBytesSent, lastBytesGot: int64; // used for print to log only the recent amount of bytes  
+    lastBytesSent, lastBytesGot: int64; // used for print to log only the recent amount of bytes
     lastActivityTime, fileXferStart: Tdatetime;
     uploadSrc, uploadDest: string;
     uploadFailed: string; // reason (empty on success)
@@ -353,7 +362,7 @@ type
     str:string;
     int:integer;
     end;
-    
+
   TmainFrm = class(TForm)
     filemenu: TPopupMenu;
     newfolder1: TMenuItem;
@@ -1057,7 +1066,7 @@ implementation
 {$R data.res}
 
 uses
-  newuserpassDlg, optionsDlg, utilLib, folderKindDlg, shellExtDlg, diffDlg, ipsEverDlg, parserLib, MMsystem,
+  newuserpassDlg, optionsDlg, Rejetto.Utils, folderKindDlg, shellExtDlg, diffDlg, ipsEverDlg, parserLib, MMsystem,
   purgeDlg, filepropDlg, runscriptDlg, scriptLib,
   Vcl.Imaging.GIFImg;
 
@@ -1071,7 +1080,7 @@ var
   clock: integer;       // program ticks (tenths of second)
   // workaround for splitters' bad behaviour
   lastGoodLogWidth, lastGoodConnHeight: integer;
-  etags: THashedStringList; 
+  etags: THashedStringList;
   tray_ico: Ticon;             // the actual icon shown in tray
   usingFreePort: boolean=TRUE; // the actual server port set was 0
   upTime: Tdatetime;           // the server is up since...
@@ -1733,7 +1742,7 @@ this would let us have "=" inside the names, but names cannot be assigned
       end;
     if FA_UNIT in f.flags then
       begin
-      if sysutils.directoryExists(f.resource+'\') then
+      if System.SysUtils.DirectoryExists(f.resource+'\') then
         addToListing(f);
       continue;
       end;
@@ -1750,7 +1759,7 @@ this would let us have "=" inside the names, but names cannot be assigned
       if not hasRightAttributes(sr.attr) then continue;
       end
     else // why findFirst() failed? is it a shared folder?
-      if not sysutils.directoryExists(f.resource) then continue;
+      if not System.SysUtils.DirectoryExists(f.resource) then continue;
     addToListing(f);
     end;
   end; // includeItemsFromVFS
@@ -2259,7 +2268,7 @@ freeAndNIL(postVars);
 freeAndNIL(urlvars);
 freeAndNIL(tplCounters);
 freeAndNIL(limiter);
-// do NOT free "tpl". It is just a reference to cached tpl. It will be freed only at quit time. 
+// do NOT free "tpl". It is just a reference to cached tpl. It will be freed only at quit time.
 if assigned(f) then
   begin
   closeFile(f^);
@@ -2306,7 +2315,7 @@ atime:=now();
 mtime:=atime;
 flags:=[];
 setResource(fullpath);
-if (resource > '') and sysutils.directoryExists(resource) then
+if (resource > '') and System.SysUtils.DirectoryExists(resource) then
   flags:=flags+[FA_FOLDER, FA_BROWSABLE];
 end; // create
 
@@ -2428,7 +2437,7 @@ begin
 result:=FALSE;
 if not isFolder() then exit;
 listing:=TfileListing.create();
-//** i fear it is not ok to use fromFolder() to know if the folder is empty, because it gives empty also for unallowed folders. 
+//** i fear it is not ok to use fromFolder() to know if the folder is empty, because it gives empty also for unallowed folders.
 listing.fromFolder( self, cd, FALSE, 1 );
 result:= length(listing.dir) = 0;
 listing.free;
@@ -2740,7 +2749,7 @@ result:='';
 diff:='';
 runPath:='';
 f:=self;
-if assigned(outInherited) then outInherited^:=FALSE;     
+if assigned(outInherited) then outInherited^:=FALSE;
 if assigned(outFromDisk) then outFromDisk^:=FALSE;
 first:=TRUE;
 while assigned(f) do
@@ -2808,7 +2817,7 @@ if not isTemp() then
     exit;
     end;
 
-if not isRealFolder() or not sysutils.directoryExists(resource) then exit;
+if not isRealFolder() or not System.SysUtils.DirectoryExists(resource) then exit;
 
 while mask > '' do
   begin
@@ -2984,7 +2993,7 @@ f:=self;
 while assigned(f) do
   begin
   list:=f.accounts[FA_ACCESS]; // shortcut
-  
+
   if (username = '') and stringExists(USER_ANONYMOUS, list, TRUE) then break;
   // first check in user/pass
   if (f.user > '') and sameText(f.user, username) and (f.pwd = password) then break;
@@ -2998,7 +3007,7 @@ while assigned(f) do
     if assigned(a) and (a.pwd = password) and
       (stringExists(USER_ANY_ACCOUNT, list, TRUE) or (findEnabledLinkedAccount(a, list, TRUE) <> NIL))
     then break;
-      
+
     exit;
     end;
   // there's a user/pass restriction, but the password didn't match (if we got this far). We didn't exit before to give accounts a chance.
@@ -3161,7 +3170,7 @@ var
   while i < length(parts) do
     begin
     if parts[i] = '.' then
-      goto REMOVE; // 10+ years have passed since the last time i used labels in pascal. It's a thrill. 
+      goto REMOVE; // 10+ years have passed since the last time i used labels in pascal. It's a thrill.
     if parts[i] <> '..' then
       begin
       inc(i);
@@ -4951,7 +4960,7 @@ var
       getPage('deny', data);
       exit;
       end;
-    
+
     if conn.reply.contentType = '' then
       conn.reply.contentType:=if_(trim(getTill('<', s))='', 'text/html', 'text/plain');
     conn.reply.mode:=HRM_REPLY;
@@ -5234,7 +5243,7 @@ var
   if enableNoDefaultChk.checked and (urlCmd = '~nodefault') then
     urlCmd:='';
 
-  if f.isRealFolder() and not sysutils.directoryExists(f.resource)
+  if f.isRealFolder() and not System.SysUtils.DirectoryExists(f.resource)
   or f.isFile() and not fileExists(f.resource) then
     begin
     getPage('not found', data);
@@ -5303,7 +5312,7 @@ var
       try
         // NB: section [] is not accessible, because of the s>'' test
         section:=getsection(s);
-        if assigned(section) and not section.nourl then // it has to exist and be accessible 
+        if assigned(section) and not section.nourl then // it has to exist and be accessible
           begin
           getPage(s, data, f, me());
           exit;
@@ -5404,7 +5413,7 @@ var
     conn.addHeader('ETag: '+getEtag(f.resource));
   except end;
   }
-  
+
   data.fileXferStart:=now();
   if data.countAsDownload and (flashOn = 'download') then flash();
 
@@ -5895,7 +5904,7 @@ if f.isFile() and fingerprintsChk.checked and (autoFingerprint > 0) then
       end;
   except
   end;
-  
+
 if (f.resource = '') or not f.isVirtualFolder() then exit;
 // virtual folders must be run at addition-time
 if findFirst(f.resource+'\*',faAnyfile, sr) <> 0 then exit;
@@ -6893,7 +6902,7 @@ end; // setcfg
 
 function loadCfg(var ini,tpl:string):boolean;
 
-  // until 2.2 the template could be kept in the registry, so we need to move it now.  
+  // until 2.2 the template could be kept in the registry, so we need to move it now.
   // returns true if the registry source can be deleted
   function moveLegacyTpl(tpl:string):boolean;
   begin
@@ -7578,7 +7587,7 @@ var
   if not stringExists(defaultIP, getPossibleAddresses()) then
     // previous address not available anymore (it happens using dial-up)
     findSimilarIP(defaultIP);
-    
+
   if searchbetteripChk.checked
   and not stringExists(defaultIP, customIPs) // we don't mess with custom IPs
   and isLocalIP(defaultIP) then // we prefer non-local addresses
@@ -7824,7 +7833,7 @@ var
     if i in drives then
       begin
       driveLetter:=chr(i+ord('A')-1);
-      if not sysutils.directoryExists(driveLetter+':\') then continue;
+      if not System.SysUtils.DirectoryExists(driveLetter+':\') then continue;
       if diskfree(i) div MEGA <= minDiskSpace then
         addString(driveLetter, driveLetters);
       end;
@@ -8165,7 +8174,7 @@ try
       kind:=if_(res = mrYes, 'virtual', 'real');
       end;
 
-    if kind = 'virtual' then                                             
+    if kind = 'virtual' then
       include(f.flags, FA_VIRTUAL);
     end;
 
@@ -8243,9 +8252,9 @@ end; // WMEndSession
 
 procedure TmainFrm.WMNCLButtonDown(var msg:TWMNCLButtonDown);
 begin
-if (msg.hitTest = windows.HTCLOSE) and trayInsteadOfQuitChk.checked then
+if (msg.hitTest = Winapi.Windows.HTCLOSE) and trayInsteadOfQuitChk.checked then
   begin
-  msg.hitTest:=windows.HTCAPTION; // cancel closing
+  msg.hitTest:=Winapi.Windows.HTCAPTION; // cancel closing
   minimizeToTray();
   end;
 inherited;
@@ -8717,7 +8726,7 @@ end;
 function TmainFrm.appEventsHelp(Command: Word; Data: Integer; var CallHelp: Boolean): Boolean;
 begin
 callHelp:=FALSE; // avoid exception to be thrown
-result:=FALSE; 
+result:=FALSE;
 end;
 
 procedure TmainFrm.appEventsMinimize(Sender: TObject);
@@ -8739,7 +8748,7 @@ if userInteraction.disabled then exit;
 case ev of
   TE_RCLICK:
     begin
-    setForegroundWindow(handle); // application.bringToFront() will act up when the window is minimized: the popped up menu will stay up forever  
+    setForegroundWindow(handle); // application.bringToFront() will act up when the window is minimized: the popped up menu will stay up forever
     with mouse.cursorPos do
       menu.popup(x,y);
     end;
@@ -9452,7 +9461,7 @@ var
   i: integer;
 begin
 if mi.shortcut = sc then mi.click();
-for i:=0 to mi.count-1 do resendShortcut(mi.items[i], sc); 
+for i:=0 to mi.count-1 do resendShortcut(mi.items[i], sc);
 end;
 
 procedure TmainFrm.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -9678,7 +9687,7 @@ var
   i: integer;
 begin
 dlg:=TopenDialog.create(self);
-if sysutils.directoryExists(lastDialogFolder) then
+if System.SysUtils.DirectoryExists(lastDialogFolder) then
   dlg.InitialDir:=lastDialogFolder;
 dlg.Options:=dlg.Options+[ofAllowMultiSelect, ofFileMustExist, ofPathMustExist];
 if dlg.Execute() then
@@ -10794,7 +10803,7 @@ if i = sbarIdxs.banStatus then BannedIPaddresses1Click(NIL);
 if i = sbarIdxs.customTpl then Edit1Click(NIL);
 if i = sbarIdxs.oos then Minimumdiskspace1Click(NIL);
 if i = sbarIdxs.out then Speedlimit1Click(NIL);
-if i = sbarIdxs.notSaved then Savefilesystem1Click(NIL); 
+if i = sbarIdxs.notSaved then Savefilesystem1Click(NIL);
 end;
 
 procedure TmainFrm.sbarMouseDown(Sender: TObject; Button: TMouseButton;
@@ -10810,7 +10819,7 @@ const
   MSG = 'This option makes pointless the option "Find external address at startup", which has now been disabled for your convenience.';
 begin
 dyndns.url:=url;
-if url = '' then exit; 
+if url = '' then exit;
 // this function is called when setting any dyndns service.
 // calling it from somewhere else may make the following test unsuitable
 if mainfrm.findExtOnStartupChk.checked then
@@ -11003,7 +11012,7 @@ const
       http.agent:=HFS_HTTP_AGENT;
       try http.get()
       except // a redirection will result in an exception
-        if (http.statusCode < 300) or (http.statusCode >= 400) then exit;        
+        if (http.statusCode < 300) or (http.statusCode >= 400) then exit;
         result:=TRUE;
         host:=http.hostname;
         port:=http.ctrlSocket.Port;
@@ -11593,7 +11602,7 @@ and only1instanceChk.checked and not mono.master then
 
 if not cfgLoaded then
   setTplText(defaultTpl);
-  
+
 processParams_before(params);
 
 if not quitASAP then
@@ -11715,14 +11724,14 @@ result:=[];
 if f.locked or f.isRoot() then exit;
 result:=[FCB_RECALL_AFTER_CHILDREN];
 if f.isFile() and purgeFrm.rmFilesChk.checked and not fileExists(f.resource)
-or f.isRealFolder() and purgeFrm.rmRealFoldersChk.checked and not sysutils.directoryExists(f.resource)
+or f.isRealFolder() and purgeFrm.rmRealFoldersChk.checked and not System.SysUtils.DirectoryExists(f.resource)
 or f.isVirtualFolder() and purgeFrm.rmEmptyFoldersChk.checked and (f.node.count = 0)
 then result:=[FCB_DELETE]; // don't dig further
 end; // purgeFilesCB
 
 procedure TmainFrm.Properties1Click(Sender: TObject);
 begin
-if selectedFile = NIL then exit;                                                                           
+if selectedFile = NIL then exit;
 
 filepropFrm:=TfilepropFrm.Create(mainFrm);
 try
@@ -11920,7 +11929,7 @@ while current > '' do
     'dynamic-dns-user', 'dynamic-dns-host', 'ips-ever', 'ips-ever-connected',
     'icon-masks-user-images', 'last-external-address', 'last-dialog-folder'])
   then continue;
-  
+
   defV:=default.values[k];
   if defV = v then continue;
   if k = 'dynamic-dns-updater' then

@@ -49,7 +49,7 @@ implementation
 {$R *.dfm}
 
 uses
-  utilLib;
+  Rejetto.Utils;
 
 procedure TnewuserpassFrm.okBtnClick(Sender: TObject);
 var

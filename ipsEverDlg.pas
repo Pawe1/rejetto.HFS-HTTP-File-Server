@@ -30,7 +30,7 @@ implementation
 {$R *.dfm}
 
 uses
-  main, utilLib;
+  main, Rejetto.Utils;
 
 procedure TipsEverFrm.resetBtnClick(Sender: TObject);
 begin

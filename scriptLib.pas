@@ -21,7 +21,10 @@ unit scriptLib;
 
 interface
 
-uses main, classesLib, iniFiles, types;
+uses
+  System.Types,
+  main, classesLib, iniFiles,
+  Rejetto.Tpl;
 
 type
   TmacroData = record
@@ -52,7 +55,7 @@ procedure resetLog();
 implementation
 
 uses
-  windows, utilLib, trayLib, parserLib, graphics, classes, sysutils,
+  windows, Rejetto.Utils, trayLib, parserLib, graphics, classes, sysutils,
   StrUtils, hslib, comctrls, math, controls, forms, clipbrd, MMsystem;
 
 const

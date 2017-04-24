@@ -3,7 +3,10 @@ unit parserLib;
 interface
 
 uses
-  strutils, sysutils, classes, types, utilLib, windows, intlist;
+  System.StrUtils, System.SysUtils, System.Classes, System.Types,
+  Winapi.Windows,
+  Rejetto.Utils,
+  intlist;
 
 type
   TmacroCB = function(fullMacro: string; pars: Tstrings;

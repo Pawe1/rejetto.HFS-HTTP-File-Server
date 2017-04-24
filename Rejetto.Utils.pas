@@ -19,15 +19,22 @@ This file is part of HFS ~ HTTP File Server.
 }
 {$INCLUDE defs.inc }
 
-unit utilLib;
+unit Rejetto.Utils;
 
 interface
 
 uses
-	main, hslib, regexpr, types, windows, graphics, dialogs, registry, classes, dateUtils,
-  shlobj, shellapi, activex, comobj, strutils, forms, stdctrls, controls, psAPI, menus, math,
-  longinputDlg, OverbyteIcsWSocket, OverbyteIcshttpProt, comCtrls, iniFiles, richedit, sysutils, classesLib, fastmm4,
-  Vcl.Imaging.GIFImg;
+  System.Types, Winapi.Windows, Vcl.Graphics, Vcl.Dialogs, System.Win.Registry,
+  System.Classes, System.DateUtils, Winapi.ShlObj, Winapi.ShellAPI,
+  Winapi.ActiveX, System.Win.ComObj, System.StrUtils, Vcl.Forms, Vcl.StdCtrls,
+  Vcl.Controls, Winapi.PsAPI, Vcl.Menus, System.Math, Vcl.Imaging.GIFImg,
+  Vcl.ComCtrls, System.IniFiles, Winapi.RichEdit, System.SysUtils,
+  fastmm4,
+  OverbyteIcsWSocket, OverbyteIcshttpProt,
+  regexpr,
+  classesLib, hslib,
+  main, longinputDlg,
+  Rejetto.Tpl;
 
 const
   ILLEGAL_FILE_CHARS = [#0..#31,'/','\',':','?','*','"','<','>','|'];
@@ -1167,7 +1174,7 @@ begin
   SetLength(path, 1000);
   SetLength(path, getTempPath(length(path), @path[1]));
   SetLength(result, 1000);
-  if windows.getTempFilename(pchar(path), 'hfs.', 0, @result[1]) = 0 then
+  if Winapi.Windows.getTempFilename(pchar(path), 'hfs.', 0, @result[1]) = 0 then
     result := ''
   else
     SetLength(result, StrLen(PansiChar(@result[1])));
@@ -2371,7 +2378,7 @@ var
 begin
   result := TRUE;
   vi.dwOSVersionInfoSize := SizeOf(vi);
-  if not windows.getVersionEx(vi) then
+  if not Winapi.Windows.getVersionEx(vi) then
     exit;
   result := vi.dwPlatformId = VER_PLATFORM_WIN32_NT;
 end; // isNT

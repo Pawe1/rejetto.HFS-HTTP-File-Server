@@ -25,7 +25,7 @@ implementation
 {$R *.dfm}
 
 uses
-  utilLib;
+  Rejetto.Utils;
 
 function listSelect(title: string; var options: TstringList): boolean;
 var

@@ -35,7 +35,7 @@ uses
   main in 'main.pas' {mainFrm},
   newuserpassDlg in 'newuserpassDlg.pas' {newuserpassFrm},
   optionsDlg in 'optionsDlg.pas' {optionsFrm},
-  utillib in 'utillib.pas',
+  Rejetto.Utils in 'Rejetto.Utils.pas',
   longinputDlg in 'longinputDlg.pas' {longinputFrm},
   folderKindDlg in 'folderKindDlg.pas' {folderKindFrm},
   shellExtDlg in 'shellExtDlg.pas' {shellExtFrm},
@@ -47,7 +47,8 @@ uses
   listSelectDlg in 'listSelectDlg.pas' {listSelectFrm},
   filepropDlg in 'filepropDlg.pas' {filepropFrm},
   runscriptDlg in 'runscriptDlg.pas' {runScriptFrm},
-  scriptLib in 'scriptLib.pas';
+  scriptLib in 'scriptLib.pas',
+  Rejetto.Tpl in 'Rejetto.Tpl.pas';
 
 {$R *.res}
 
