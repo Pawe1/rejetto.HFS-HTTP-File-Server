@@ -17,13 +17,13 @@ This file is part of HFS ~ HTTP File Server.
     along with HFS; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 }
-unit scriptLib;
+unit Rejetto.Script;
 
 interface
 
 uses
   System.Types,
-  main, classesLib, iniFiles,
+  main, Rejetto, iniFiles,
   Rejetto.Tpl;
 
 type
@@ -55,8 +55,12 @@ procedure resetLog();
 implementation
 
 uses
-  windows, Rejetto.Utils, trayLib, parserLib, graphics, classes, sysutils,
-  StrUtils, hslib, comctrls, math, controls, forms, clipbrd, MMsystem;
+  windows,
+  StrUtils,
+  graphics, classes, sysutils,
+  Rejetto.Utils, Rejetto.Parser, Rejetto.HS,
+  trayLib,
+  comctrls, math, controls, forms, clipbrd, MMsystem;
 
 const
   HEADER = '<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><style>'

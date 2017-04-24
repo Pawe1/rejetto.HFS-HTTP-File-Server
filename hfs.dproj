@@ -90,8 +90,8 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="monoLib.pas"/>
-        <DCCReference Include="hslib.pas"/>
+        <DCCReference Include="Rejetto.Mono.pas"/>
+        <DCCReference Include="Rejetto.HS.pas"/>
         <DCCReference Include="main.pas">
             <Form>mainFrm</Form>
             <FormType>dfm</FormType>
@@ -121,12 +121,12 @@
             <Form>diffFrm</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="classesLib.pas"/>
+        <DCCReference Include="Rejetto.pas"/>
         <DCCReference Include="ipsEverDlg.pas">
             <Form>ipsEverFrm</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="parserLib.pas"/>
+        <DCCReference Include="Rejetto.Parser.pas"/>
         <DCCReference Include="purgeDlg.pas">
             <Form>purgeFrm</Form>
             <FormType>dfm</FormType>
@@ -143,7 +143,7 @@
             <Form>runScriptFrm</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="scriptLib.pas"/>
+        <DCCReference Include="Rejetto.Script.pas"/>
         <DCCReference Include="Rejetto.Tpl.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>

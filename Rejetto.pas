@@ -18,13 +18,13 @@ This file is part of HFS ~ HTTP File Server.
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 }
 {$INCLUDE defs.inc }
-unit classesLib;
+unit Rejetto;
 
 interface
 
 uses
   System.Classes, System.Types, System.IniFiles,
-  hslib;
+  Rejetto.HS;
 
 type
   TfastStringAppend = class

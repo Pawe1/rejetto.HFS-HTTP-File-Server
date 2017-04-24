@@ -23,14 +23,14 @@ program hfs;
 
 uses
   FastMM4,
-{$IFDEF EX_DEBUG}
+  {$IFDEF EX_DEBUG}
   ftmExceptionForm,
-{$ENDIF}
-  monoLib in 'monoLib.pas',
+  {$ENDIF }
+  Rejetto.Mono in 'Rejetto.Mono.pas',
   Vcl.Forms,
   Winapi.Windows,
   System.Types,
-  hslib in 'hslib.pas',
+  Rejetto.HS in 'Rejetto.HS.pas',
   System.SysUtils,
   main in 'main.pas' {mainFrm},
   newuserpassDlg in 'newuserpassDlg.pas' {newuserpassFrm},
@@ -40,14 +40,14 @@ uses
   folderKindDlg in 'folderKindDlg.pas' {folderKindFrm},
   shellExtDlg in 'shellExtDlg.pas' {shellExtFrm},
   diffDlg in 'diffDlg.pas' {diffFrm},
-  classesLib in 'classesLib.pas',
+  Rejetto in 'Rejetto.pas',
   ipsEverDlg in 'ipsEverDlg.pas' {ipsEverFrm},
-  parserLib in 'parserLib.pas',
+  Rejetto.Parser in 'Rejetto.Parser.pas',
   purgeDlg in 'purgeDlg.pas' {purgeFrm},
   listSelectDlg in 'listSelectDlg.pas' {listSelectFrm},
   filepropDlg in 'filepropDlg.pas' {filepropFrm},
   runscriptDlg in 'runscriptDlg.pas' {runScriptFrm},
-  scriptLib in 'scriptLib.pas',
+  Rejetto.Script in 'Rejetto.Script.pas',
   Rejetto.Tpl in 'Rejetto.Tpl.pas';
 
 {$R *.res}

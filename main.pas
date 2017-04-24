@@ -40,7 +40,7 @@ uses
   regexpr,
 
   // rejetto libs
-  HSlib, traylib, monoLib, progFrmLib, classesLib,
+  Rejetto.HS, traylib, Rejetto.Mono, progFrmLib, Rejetto,
   Rejetto.Tpl;
 
 const
@@ -1066,9 +1066,9 @@ implementation
 {$R data.res}
 
 uses
-  newuserpassDlg, optionsDlg, Rejetto.Utils, folderKindDlg, shellExtDlg, diffDlg, ipsEverDlg, parserLib, MMsystem,
-  purgeDlg, filepropDlg, runscriptDlg, scriptLib,
-  Vcl.Imaging.GIFImg;
+  newuserpassDlg, optionsDlg, Rejetto.Utils, folderKindDlg, shellExtDlg, diffDlg, ipsEverDlg, Rejetto.Parser, MMsystem,
+  Vcl.Imaging.GIFImg,
+  purgeDlg, filepropDlg, runscriptDlg, Rejetto.Script;
 
 // global variables
 var
@@ -2618,7 +2618,7 @@ function encodeURL(s:string; fullEncode:boolean=FALSE):string;
 begin
 if fullEncode or mainFrm.encodenonasciiChk.checked then
   s:=ansiToUTF8(s);
-result:=HSlib.encodeURL(s, mainFrm.encodeNonasciiChk.checked,
+result:= Rejetto.HS.encodeURL(s, mainFrm.encodeNonasciiChk.checked,
   fullEncode or mainFrm.encodeSpacesChk.checked)
 end; // encodeURL
 
@@ -11452,7 +11452,7 @@ var
 begin
 i:=paramCount();
 setlength(result, i+2);
-result[0]:=monoLib.initialPath;
+result[0]:=Rejetto.Mono.initialPath;
 for i:=0 to i do result[i+1]:=paramStr(i);
 end; // paramsAsArray
 

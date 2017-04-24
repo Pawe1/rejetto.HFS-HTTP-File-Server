@@ -18,7 +18,7 @@ Copyright (C) 2002-2008 Massimo Melina (www.rejetto.com)
 
 This lib ensures only one instance of the software does run
 }
-unit monoLib;
+unit Rejetto.Mono;
 
 interface
 

@@ -4,56 +4,62 @@ interface
 
 uses
   System.Classes, System.Types, System.IniFiles,
-  hslib;
+  Rejetto.HS;
 
 type
-  PtplSection = ^TtplSection;
   TtplSection = record
     name, txt: string;
     nolog, nourl: boolean;
   end;
+  PtplSection = ^TtplSection;
 
   Ttpl = class
+  strict private
+    type
+      TLast = record
+        section: string;
+        idx: integer;
+      end;
   protected
     src: string;
-    lastExt,   // cache for getTxtByExt()
-    last: record section:string; idx:integer; end; // cache for getIdx()
+    lastExt, // cache for getTxtByExt()
+    last: TLast; // cache for getIdx()
     fileExts: TStringDynArray;
     strTable: THashedStringList;
     fUTF8: boolean;
     fOver: Ttpl;
-    function  getIdx(section:string):integer;
-    function  getTxt(section:string):string;
-    function  newSection(section:string):PtplSection;
-    procedure fromString(txt:string);
-    procedure setOver(v:Ttpl);
+    function getIdx(section: string): integer;
+    function getTxt(section: string): string;
+    function newSection(section: string): PtplSection;
+    procedure fromString(txt: string);
+    procedure setOver(v: Ttpl);
     procedure updateUTF8();
   public
     onChange: TNotifyEvent;
     sections: array of TtplSection;
-    constructor create(txt:string=''; over:Ttpl=NIL);
+    constructor create(txt: string = ''; over: Ttpl = NIL);
     destructor Destroy; override;
-    property txt[section:string]:string read getTxt; default;
-    property fullText:string read src write fromString;
-    property utf8:boolean read fUTF8;
-    property over:Ttpl read fOver write setOver;
-    function sectionExist(section:string):boolean;
-    function getTxtByExt(fileExt:string):string;
-    function getSection(section:string):PtplSection;
-    function getSections():TStringDynArray;
-    procedure appendString(txt:string);
-    function getStrByID(id:string):string;
-    function me():Ttpl;
+    property txt[section: string]: string read getTxt; default;
+    property fullText: string read src write fromString;
+    property utf8: boolean read fUTF8;
+    property over: Ttpl read fOver write setOver;
+    function sectionExist(section: string): boolean;
+    function getTxtByExt(fileExt: string): string;
+    function getSection(section: string): PtplSection;
+    function getSections(): TStringDynArray;
+    procedure appendString(txt: string);
+    function getStrByID(id: string): string;
+    function me(): Ttpl;
   end; // Ttpl
 
   TcachedTplObj = class
     ts: Tdatetime;
-    tpl: Ttpl;
-    end;
+    Tpl: Ttpl;
+  end;
 
   TcachedTpls = class(THashedStringList)
   public
-    function getTplFor(fn:string):Ttpl;
+    function getTplFor(fn: string): Ttpl;
     destructor Destroy; override;
   end; // TcachedTpls
 

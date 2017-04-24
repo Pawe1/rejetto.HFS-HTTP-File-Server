@@ -32,7 +32,7 @@ uses
   fastmm4,
   OverbyteIcsWSocket, OverbyteIcshttpProt,
   regexpr,
-  classesLib, hslib,
+  Rejetto, Rejetto.HS,
   main, longinputDlg,
   Rejetto.Tpl;
 
@@ -287,7 +287,9 @@ procedure enforceNUL(var s: string);
 implementation
 
 uses
-  clipbrd, AnsiStringReplaceJOHIA32Unit13, JclNTFS, JclWin32, parserLib, newuserpassDlg, winsock, OverbyteicsMD5;
+  clipbrd, AnsiStringReplaceJOHIA32Unit13, JclNTFS, JclWin32,
+  Rejetto.Parser,
+  newuserpassDlg, winsock, OverbyteicsMD5;
 
 var
   ipToInt_cache: ThashedStringList;
@@ -2013,7 +2015,7 @@ begin
   while (i > 0) and (s[i] = '.') do
     dec(i);
   SetLength(s, i);
-  result := checkAddressSyntax(s) and not hslib.isLocalIP(s);
+  result := checkAddressSyntax(s) and not Rejetto.HS.isLocalIP(s);
   if not result then
     exit;
   if (res <> s) and mainfrm.logOtherEventsChk.checked then
@@ -2768,7 +2770,7 @@ end;
 
 function isLocalIP(ip: string): boolean;
 begin
-  result := checkAddressSyntax(ip, FALSE) and hslib.isLocalIP(ip)
+  result := checkAddressSyntax(ip, FALSE) and Rejetto.HS.isLocalIP(ip)
 end;
 
 function reduceSpaces(s: string; replacement: string = ' ';

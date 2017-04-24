@@ -28,8 +28,8 @@ implementation
 {$R *.dfm}
 
 uses
-  main, Rejetto.Utils, classesLib, scriptLib,
-  Rejetto.Tpl;
+  main, Rejetto.Utils, Rejetto,
+  Rejetto.Script, Rejetto.Tpl;
 
 procedure TrunScriptFrm.runBtnClick(Sender: TObject);
 var

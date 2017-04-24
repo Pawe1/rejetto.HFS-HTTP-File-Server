@@ -164,7 +164,7 @@ implementation
 uses
   System.Types, System.Math,
   main, CheckLst,
-  Rejetto.Utils, HSlib, strUtils, classesLib, listSelectDlg;
+  Rejetto.Utils, Rejetto.HS, strUtils, Rejetto, listSelectDlg;
 
 var
   lastAccountSelected: integer = -1; // stores the previous selection index
