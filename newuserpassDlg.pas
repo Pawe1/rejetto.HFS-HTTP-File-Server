@@ -22,8 +22,8 @@ unit newuserpassDlg;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, utilLib;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls;
 
 type
   TnewuserpassFrm = class(TForm)
@@ -48,43 +48,50 @@ implementation
 
 {$R *.dfm}
 
+uses
+  utilLib;
+
 procedure TnewuserpassFrm.okBtnClick(Sender: TObject);
 var
   error: string;
 begin
-userBox.text:=trim(userBox.text);
-pwdBox.text:=trim(pwdBox.text);
-error:='';
-if (userBox.text > '') and not validUsername(userBox.Text)
-or (pwdBox.text > '') and not validUsername(pwdBox.text) then
-  error:='The characters below are not allowed'#13'/\:?*"<>|;&&@'
-else if (pwdBox.text > '') and (userBox.text = '') then
-  error:='User is mandatory'
-else if pwdBox.text <> pwd2Box.text then
-  error:='The two passwords you entered don''t match';
+  userBox.text := trim(userBox.text);
+  pwdBox.text := trim(pwdBox.text);
+  error := '';
+  if (userBox.text > '') and not validUsername(userBox.text) or
+    (pwdBox.text > '') and not validUsername(pwdBox.text) then
+    error := 'The characters below are not allowed'#13'/\:?*"<>|;&&@'
+  else if (pwdBox.text > '') and (userBox.text = '') then
+    error := 'User is mandatory'
+  else if pwdBox.text <> pwd2Box.text then
+    error := 'The two passwords you entered don''t match';
 
-if error = '' then ModalResult:=mrOk
-else msgDlg(error, MB_ICONERROR);
+  if error = '' then
+    ModalResult := mrOk
+  else
+    msgDlg(error, MB_ICONERROR);
 end;
 
 procedure TnewuserpassFrm.resetBtnClick(Sender: TObject);
 begin
-userBox.text:='';
-pwdBox.text:='';
-pwd2Box.text:='';
+  userBox.text := '';
+  pwdBox.text := '';
+  pwd2Box.text := '';
 end;
 
 procedure TnewuserpassFrm.FormShow(Sender: TObject);
-begin userBox.SetFocus() end;
-
-function TnewuserpassFrm.prompt(var usr,pwd:string):boolean;
 begin
-userBox.Text:=usr;
-pwdBox.text:=pwd;
-pwd2Box.text:=pwd;
-result:= ShowModal() = mrOk;
-usr:=userBox.Text;
-pwd:=pwdBox.text;
+  userBox.SetFocus()
+end;
+
+function TnewuserpassFrm.prompt(var usr, pwd: string): boolean;
+begin
+  userBox.text := usr;
+  pwdBox.text := pwd;
+  pwd2Box.text := pwd;
+  result := ShowModal() = mrOk;
+  usr := userBox.text;
+  pwd := pwdBox.text;
 end;
 
 end.

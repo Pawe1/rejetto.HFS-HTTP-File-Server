@@ -162,7 +162,8 @@ implementation
 {$R *.dfm}
 
 uses
-  types, main, CheckLst,
+  System.Types, System.Math,
+  main, CheckLst,
   utilLib, HSlib, strUtils, classesLib, listSelectDlg;
 
 var

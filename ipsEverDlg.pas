@@ -3,8 +3,8 @@ unit ipsEverDlg;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls;
 
 type
   TipsEverFrm = class(TForm)
@@ -34,27 +34,31 @@ uses
 
 procedure TipsEverFrm.resetBtnClick(Sender: TObject);
 begin
-ipsEverConnected.clear();
-refreshData();
+  ipsEverConnected.clear();
+  refreshData();
 end;
 
 procedure TipsEverFrm.editBtnClick(Sender: TObject);
 var
   fn: string;
 begin
-fn:=saveTempFile(ipsEverConnected.text);
-if renameFile(fn, fn+'.txt') then exec(fn+'.txt')
-else msgDlg(MSG_NO_TEMP, MB_ICONERROR);
+  fn := saveTempFile(ipsEverConnected.text);
+  if renameFile(fn, fn + '.txt') then
+    exec(fn + '.txt')
+  else
+    msgDlg(MSG_NO_TEMP, MB_ICONERROR);
 end;
 
 procedure TipsEverFrm.FormShow(Sender: TObject);
-begin refreshData() end;
+begin
+  refreshData()
+end;
 
 procedure TipsEverFrm.refreshData();
 begin
-ipsBox.text:=ipsEverConnected.text;
-totalLbl.caption:=format('Total: %d', [ipsEverConnected.count]);
-repaintTray();
-end; // refreshData
+  ipsBox.text := ipsEverConnected.text;
+  totalLbl.caption := format('Total: %d', [ipsEverConnected.count]);
+  repaintTray();
+end;
 
 end.

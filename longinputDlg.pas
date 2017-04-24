@@ -3,8 +3,8 @@ unit longinputDlg;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls;
 
 type
   TlonginputFrm = class(TForm)
@@ -29,16 +29,17 @@ implementation
 
 procedure TlonginputFrm.bottomPnlResize(Sender: TObject);
 begin
-okBtn.left:=(bottomPnl.Width-cancelBtn.BoundsRect.right+okBtn.BoundsRect.left) div 2;
-cancelBtn.left:=okBtn.BoundsRect.Right+10;
+  okBtn.left := (bottomPnl.Width - cancelBtn.BoundsRect.right +
+    okBtn.BoundsRect.left) div 2;
+  cancelBtn.left := okBtn.BoundsRect.right + 10;
 end;
 
 procedure TlonginputFrm.inputBoxKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-if shift = [ssCtrl] then
-  if key = ord('A') then
-    inputBox.SelectAll();
+  if Shift = [ssCtrl] then
+    if Key = ord('A') then
+      inputBox.SelectAll();
 end;
 
 end.
