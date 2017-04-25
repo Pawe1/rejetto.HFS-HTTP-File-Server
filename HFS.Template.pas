@@ -1,4 +1,4 @@
-unit Rejetto.Tpl;
+unit HFS.Template;
 
 {$SCOPEDENUMS ON}
 
@@ -9,13 +9,13 @@ uses
   Rejetto.HS;
 
 type
-  TTplSection = record
+  TTemplateSection = record
     name, txt: string;
     nolog, nourl: boolean;
   end;
-  PTplSection = ^TTplSection;
+  PTemplateSection = ^TTemplateSection;
 
-  TTpl = class
+  TTemplate = class
   strict private
     type
       TLast = record
@@ -29,39 +29,39 @@ type
     fileExts: TStringDynArray;
     strTable: THashedStringList;
     fUTF8: boolean;
-    fOver: TTpl;
+    fOver: TTemplate;
     function getIdx(section: string): integer;
     function getTxt(section: string): string;
-    function newSection(section: string): PTplSection;
+    function newSection(section: string): PTemplateSection;
     procedure fromString(txt: string);
-    procedure setOver(v: TTpl);
+    procedure setOver(v: TTemplate);
     procedure updateUTF8();
   public
     onChange: TNotifyEvent;
-    sections: array of TTplSection;
-    constructor create(txt: string = ''; over: TTpl = NIL);
+    sections: array of TTemplateSection;
+    constructor create(txt: string = ''; over: TTemplate = NIL);
     destructor Destroy; override;
     property txt[section: string]: string read getTxt; default;
     property fullText: string read src write fromString;
     property utf8: boolean read fUTF8;
-    property over: TTpl read fOver write setOver;
+    property over: TTemplate read fOver write setOver;
     function sectionExist(section: string): boolean;
     function getTxtByExt(fileExt: string): string;
-    function getSection(section: string): PTplSection;
+    function getSection(section: string): PTemplateSection;
     function getSections(): TStringDynArray;
     procedure appendString(txt: string);
     function getStrByID(id: string): string;
-    function me(): TTpl;
+    function me(): TTemplate;
   end;
 
   TCachedTplObj = class
     ts: Tdatetime;
-    Tpl: TTpl;
+    Tpl: TTemplate;
   end;
 
-  TCachedTpls = class(THashedStringList)
+  TCachedTemplates = class(THashedStringList)
   public
-    function getTplFor(fn: string): TTpl;
+    function getTplFor(fn: string): TTemplate;
     destructor Destroy; override;
   end;
 
@@ -74,7 +74,7 @@ uses
 
 /// ///////// TcachedTpls
 
-destructor TCachedTpls.Destroy;
+destructor TCachedTemplates.Destroy;
 var
   i: integer;
 begin
@@ -82,7 +82,7 @@ begin
     objects[i].free;
 end;
 
-function TCachedTpls.getTplFor(fn: string): TTpl;
+function TCachedTemplates.getTplFor(fn: string): TTemplate;
 var
   i: integer;
   o: TCachedTplObj;
@@ -105,7 +105,7 @@ begin
   s := loadFile(fn);
   if o.tpl = NIL then
   begin
-    result := TTpl.create();
+    result := TTemplate.create();
     o.tpl := result;
   end;
   o.tpl.fromString(s);
@@ -113,19 +113,19 @@ end; // getTplFor
 
 /// ///////// Ttpl
 
-constructor TTpl.create(txt: string = ''; over: TTpl = NIL);
+constructor TTemplate.create(txt: string = ''; over: TTemplate = NIL);
 begin
   fullText := txt;
   self.over := over;
 end;
 
-destructor TTpl.Destroy;
+destructor TTemplate.Destroy;
 begin
   freeAndNIL(strTable);
   inherited;
 end; // destroy
 
-function TTpl.getStrByID(id: string): string;
+function TTemplate.getStrByID(id: string): string;
 begin
   if strTable = NIL then
   begin
@@ -137,7 +137,7 @@ begin
     result := over.getStrByID(id)
 end; // getStrByID
 
-function TTpl.getIdx(section: string): integer;
+function TTemplate.getIdx(section: string): integer;
 begin
   if section <> last.section then
   begin
@@ -153,7 +153,7 @@ begin
   result := last.idx
 end; // getIdx
 
-function TTpl.newSection(section: string): PTplSection;
+function TTemplate.newSection(section: string): PTemplateSection;
 var
   i: integer;
 begin
@@ -177,14 +177,14 @@ begin
   lastExt.idx := last.idx;
 end; // newSection
 
-function TTpl.sectionExist(section: string): boolean;
+function TTemplate.sectionExist(section: string): boolean;
 begin
   result := getIdx(section) >= 0;
   if not result and assigned(over) then
     result := over.sectionExist(section);
 end;
 
-function TTpl.getSection(section: string): PTplSection;
+function TTemplate.getSection(section: string): PTemplateSection;
 var
   i: integer;
 begin
@@ -196,7 +196,7 @@ begin
     result := over.getSection(section);
 end; // getSection
 
-function TTpl.getTxt(section: string): string;
+function TTemplate.getTxt(section: string): string;
 var
   i: integer;
 begin
@@ -209,7 +209,7 @@ begin
     result := ''
 end; // getTxt
 
-function TTpl.getTxtByExt(fileExt: string): string;
+function TTemplate.getTxtByExt(fileExt: string): string;
 var
   i: integer;
 begin
@@ -236,7 +236,7 @@ begin
   result := sections[i].txt;
 end; // getTxtByExt
 
-procedure TTpl.fromString(txt: string);
+procedure TTemplate.fromString(txt: string);
 begin
   src := '';
   sections := NIL;
@@ -248,7 +248,7 @@ begin
   appendString(txt);
 end; // fromString
 
-procedure TTpl.appendString(txt: string);
+procedure TTemplate.appendString(txt: string);
 var
   ptxt, bos: Pchar;
   cur_section, next_section: string;
@@ -289,10 +289,10 @@ var
     ss: TstringDynArray;
     s: string;
     i, si: integer;
-    base: TTplSection;
+    base: TTemplateSection;
     till: Pchar;
     append: boolean;
-    sect, from: PTplSection;
+    sect, from: PTemplateSection;
   begin
     till := pred(bos);
     if till = NIL then
@@ -378,18 +378,18 @@ begin
     onChange(self);
 end; // appendString
 
-procedure TTpl.setOver(v: TTpl);
+procedure TTemplate.setOver(v: TTemplate);
 begin
   fOver := v;
   updateUTF8();
 end; // setOver
 
-procedure TTpl.updateUTF8();
+procedure TTemplate.updateUTF8();
 begin
   fUTF8 := assigned(over) and over.utf8 or utf8test(fullText)
 end;
 
-function TTpl.getSections(): TstringDynArray;
+function TTemplate.getSections(): TstringDynArray;
 var
   i: integer;
 begin
@@ -399,7 +399,7 @@ begin
     result[i] := sections[i].name;
 end;
 
-function TTpl.me(): TTpl;
+function TTemplate.me(): TTemplate;
 begin
   result := self
 end;

@@ -24,12 +24,12 @@ interface
 uses
   System.Types,
   main, Rejetto, iniFiles,
-  Rejetto.Tpl;
+  HFS.Template;
 
 type
   TmacroData = record
     cd: TconnData;
-    tpl: TTpl;
+    tpl: TTemplate;
     folder, f: Tfile;
     afterTheList, archiveAvailable, hideExt, breaking: boolean;
     aliases, tempVars: THashedStringList;
@@ -40,13 +40,13 @@ type
 var
   defaultAlias: THashedStringList;
   staticVars : THashedStringList; // these scripting variables are held for the whole run-time
-  eventScripts: TTpl;
+  eventScripts: TTemplate;
 
 function tryApplyMacrosAndSymbols(var txt: string; var md: TmacroData;
   removeQuotings: boolean = true): boolean;
 function macroQuote(s: string): string;
 function runScript(script: string; table: TStringDynArray = NIL;
-  tpl_: TTpl = NIL; f: Tfile = NIL; folder: Tfile = NIL;
+  tpl_: TTemplate = NIL; f: Tfile = NIL; folder: Tfile = NIL;
   cd: TconnData = NIL): string;
 function runEventScript(event: string; table: TStringDynArray = NIL;
   cd: TconnData = NIL): string;
@@ -70,7 +70,7 @@ const
 
 var
   stopOnMacroRename: boolean; // this ugly global var is used to avoid endless recursion on a renaming rename event. this method won't work on a multithreaded system, but i opted for it because otherwise the changes would have been big.
-  cachedTpls: TCachedTpls;
+  cachedTpls: TCachedTemplates;
   flog: ^file;
 
 function macrosLog(textIn, textOut: string; ts: boolean = FALSE): boolean;
@@ -622,7 +622,7 @@ var
 
   procedure section(ofs: integer);
   var
-    t: TTpl;
+    t: TTemplate;
     s: string;
   begin
     if not satisfied(md.tpl) then
@@ -648,7 +648,7 @@ var
     end;
     // template in other file
 
-    t := TTpl.create;
+    t := TTemplate.create;
     try
       t.fullText := loadFile(par(ofs, 'file'));
       result := t[p];
@@ -2883,7 +2883,7 @@ begin
 end; // tryApplyMacrosAndSymbols
 
 function runScript(script: string; table: TStringDynArray = NIL;
-  tpl_: TTpl = NIL; f: Tfile = NIL; folder: Tfile = NIL;
+  tpl_: TTemplate = NIL; f: Tfile = NIL; folder: Tfile = NIL;
   cd: TconnData = NIL): string;
 var
   md: TmacroData;
@@ -2908,8 +2908,8 @@ begin
 end; // runEventScript
 
 initialization
-  cachedTpls := TCachedTpls.create();
-  eventScripts := TTpl.create();
+  cachedTpls := TCachedTemplates.create();
+  eventScripts := TTemplate.create();
   defaultAlias := THashedStringList.create();
   defaultAlias.caseSensitive := FALSE;
   defaultAlias.text := getRes('alias');

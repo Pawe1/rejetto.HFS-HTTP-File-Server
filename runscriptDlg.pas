@@ -29,13 +29,13 @@ implementation
 
 uses
   main, Rejetto.Utils, Rejetto,
-  Rejetto.Script, Rejetto.Tpl;
+  Rejetto.Script, HFS.Template;
 
 procedure TrunScriptFrm.runBtnClick(Sender: TObject);
 var
-  tpl: TTpl;
+  tpl: TTemplate;
 begin
-  tpl := TTpl.create;
+  tpl := TTemplate.create;
   try
     try
       tpl.fullText := loadFile(tempScriptFilename);
