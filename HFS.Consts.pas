@@ -10,11 +10,14 @@ const
   VERSION_BUILD = '298';
   VERSION_STABLE = {$IFDEF STABLE } TRUE {$ELSE} FALSE {$ENDIF};
   CURRENT_VFS_FORMAT: integer = 1;
+
   CRLF = #13#10;
   TAB = #9;
+
   BAK_EXT = '.bak';
   CORRUPTED_EXT = '.corrupted';
   COMMENT_FILE_EXT = '.comment';
+
   VFS_FILE_IDENTIFIER = 'HFS.VFS';
   CFG_KEY = 'Software\rejetto\HFS';
   CFG_FILE = 'hfs.ini';

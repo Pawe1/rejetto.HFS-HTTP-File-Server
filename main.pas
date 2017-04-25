@@ -40,7 +40,7 @@ uses
   regexpr,
 
   // rejetto libs
-  Rejetto.HS, traylib, Rejetto.Mono, progFrmLib, Rejetto,
+  Rejetto.HTTPServer, traylib, Rejetto.Mono, progFrmLib, Rejetto,
   HFS.Template, HFS.Consts;
 
 type
@@ -2749,7 +2749,7 @@ function encodeURL(s: string; fullEncode: boolean = FALSE): string;
 begin
   if fullEncode or mainfrm.encodenonasciiChk.checked then
     s := ansiToUTF8(s);
-  result := Rejetto.HS.encodeURL(s, mainfrm.encodenonasciiChk.checked,
+  result := Rejetto.HTTPServer.encodeURL(s, mainfrm.encodenonasciiChk.checked,
     fullEncode or mainfrm.encodeSpacesChk.checked)
 end; // encodeURL
 

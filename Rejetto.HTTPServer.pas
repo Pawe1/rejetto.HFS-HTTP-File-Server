@@ -24,7 +24,7 @@ HTTP Server Lib
 }
 {$I- }
 
-unit Rejetto.HS;
+unit Rejetto.HTTPServer;
 
 interface
 

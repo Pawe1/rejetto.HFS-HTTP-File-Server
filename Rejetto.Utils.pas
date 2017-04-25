@@ -32,7 +32,7 @@ uses
   fastmm4,
   OverbyteIcsWSocket, OverbyteIcshttpProt,
   regexpr,
-  Rejetto, Rejetto.HS,
+  Rejetto, Rejetto.HTTPServer,
   main, longinputDlg,
   HFS.Template;
 
@@ -52,6 +52,7 @@ type
   TreCB = procedure(re: TregExpr; var res: string; data: pointer);
   PstringDynArray = ^TstringDynArray;
   TnameExistsFun = function(user: string): boolean;
+  Tnewline = (NL_UNK, NL_D, NL_A, NL_DA, NL_MIXED);
 
 procedure doNothing(); inline; // useful for readability
 function accountExists(user: string; evenGroups: boolean = FALSE): boolean;
@@ -295,9 +296,11 @@ uses
 var
   ipToInt_cache: ThashedStringList;
   onlyDotsRE: TRegExpr;
+  reTempCache, reFixedCache: ThashedStringList;
+  TZinfo: TTimeZoneInformation;
 
 // method TregExpr.ReplaceEx does the same thing, but doesn't allow the extra data field (sometimes necessary).
-  // Moreover, here i use the TfastStringAppend that will give us good performance with many replacements.
+// Moreover, here i use the TfastStringAppend that will give us good performance with many replacements.
 function reCB(expr, subj: string; cb: TreCB; data: pointer = NIL): string;
 var
   r: string;
@@ -500,9 +503,6 @@ function copyFile(src, dst: string): boolean;
 begin
   result := moveFile(src, dst, FO_COPY)
 end;
-
-var
-  reTempCache, reFixedCache: ThashedStringList;
 
 function reCache(exp: string; mods: string = 'm'): TregExpr;
 const
@@ -2016,7 +2016,7 @@ begin
   while (i > 0) and (s[i] = '.') do
     dec(i);
   SetLength(s, i);
-  result := checkAddressSyntax(s) and not Rejetto.HS.isLocalIP(s);
+  result := checkAddressSyntax(s) and not Rejetto.HTTPServer.isLocalIP(s);
   if not result then
     exit;
   if (res <> s) and mainfrm.logOtherEventsChk.checked then
@@ -2771,7 +2771,7 @@ end;
 
 function isLocalIP(ip: string): boolean;
 begin
-  result := checkAddressSyntax(ip, FALSE) and Rejetto.HS.isLocalIP(ip)
+  result := checkAddressSyntax(ip, FALSE) and Rejetto.HTTPServer.isLocalIP(ip)
 end;
 
 function reduceSpaces(s: string; replacement: string = ' ';
@@ -3478,9 +3478,6 @@ begin
   result := getAccount(user, evenGroups) <> NIL
 end;
 
-type
-  Tnewline = (NL_UNK, NL_D, NL_A, NL_DA, NL_MIXED);
-
 function newlineType(s: string): Tnewline;
 var
   d, a, l: integer;
@@ -3592,9 +3589,6 @@ begin
   if s > '' then
     SetLength(s, StrLen(@s[1]))
 end; // enforceNUL
-
-var
-  TZinfo: TTimeZoneInformation;
 
 INITIALIZATION
   FormatSettings.DecimalSeparator := '.'; // standardize

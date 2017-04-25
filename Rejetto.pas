@@ -24,7 +24,7 @@ interface
 
 uses
   System.Classes, System.Types, System.IniFiles,
-  Rejetto.HS;
+  Rejetto.HTTPServer;
 
 type
   TfastStringAppend = class

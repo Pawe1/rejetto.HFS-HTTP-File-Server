@@ -7,7 +7,7 @@ interface
 uses
   System.Classes, System.Types, System.SysUtils,
   System.IniFiles,
-  Rejetto.HS;
+  Rejetto.HTTPServer;
 
 type
   TTemplateSection = record
@@ -76,7 +76,7 @@ type
 implementation
 
 uses
-  System.StrUtils, System.SysUtils, System.Math,
+  System.StrUtils, System.Math,
   windows, dateUtils,
   Rejetto.Utils, main;
 

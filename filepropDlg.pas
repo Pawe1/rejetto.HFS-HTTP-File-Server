@@ -82,7 +82,7 @@ implementation
 
 uses
   System.Math,
-  Rejetto.Utils, Rejetto.HS,
+  Rejetto.Utils, Rejetto.HTTPServer,
   optionsDlg,
   HFS.Consts;
 

@@ -58,7 +58,7 @@ uses
   windows,
   StrUtils,
   graphics, classes, sysutils,
-  Rejetto.Utils, Rejetto.Parser, Rejetto.HS,
+  Rejetto.Utils, Rejetto.Parser, Rejetto.HTTPServer,
   trayLib,
   comctrls, math, controls, forms, clipbrd, MMsystem,
   HFS.Consts;

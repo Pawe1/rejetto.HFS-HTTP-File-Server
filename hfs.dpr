@@ -30,7 +30,7 @@ uses
   Vcl.Forms,
   Winapi.Windows,
   System.Types,
-  Rejetto.HS in 'Rejetto.HS.pas',
+  Rejetto.HTTPServer in 'Rejetto.HTTPServer.pas',
   System.SysUtils,
   main in 'main.pas' {mainFrm},
   newuserpassDlg in 'newuserpassDlg.pas' {newuserpassFrm},
@@ -48,7 +48,7 @@ uses
   filepropDlg in 'filepropDlg.pas' {filepropFrm},
   runscriptDlg in 'runscriptDlg.pas' {runScriptFrm},
   Rejetto.Script in 'Rejetto.Script.pas',
-  Rejetto.Tpl in 'Rejetto.Tpl.pas',
+  HFS.Template in 'HFS.Template.pas',
   HFS.Consts in 'HFS.Consts.pas';
 
 {$R *.res}
