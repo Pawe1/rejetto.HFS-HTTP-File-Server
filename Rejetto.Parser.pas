@@ -12,12 +12,6 @@ type
   TmacroCB = function(fullMacro: string; pars: Tstrings;
     cbData: pointer): string;
 
-  ETplError = class(Exception)
-    pos, row, col: integer;
-    code: string;
-    constructor Create(const msg, code: string; row, col: integer);
-  end;
-
 const
   MARKER_OPEN = '{.';
   MARKER_CLOSE = '.}';
@@ -34,19 +28,14 @@ procedure applyMacrosAndSymbols(var txt: string; cb: TmacroCB; cbData: pointer;
 
 implementation
 
+uses
+  HFS.Template;
+
 const
   MAX_RECUR_LEVEL = 50;
 
 type
   TparserIdsStack = array [1 .. MAX_RECUR_LEVEL] of string;
-
-constructor ETplError.Create(const msg, code: string; row, col: integer);
-begin
-  inherited Create(msg);
-  self.row := row;
-  self.col := col;
-  self.code := code;
-end;
 
 procedure applyMacrosAndSymbols2(var txt: string; cb: TmacroCB; cbData: pointer;
   var idsStack: TparserIdsStack; recurLevel: integer = 0);
@@ -234,7 +223,7 @@ const
             CLOSE_ID:
               begin
                 if Nstack = 0 then
-                  raise ETplError.Create('unmatched marker', copy(txt, i, 30),
+                  raise ETemplateError.Create('unmatched marker', copy(txt, i, 30),
                     row, i - lastNL);
                 if (Nstack > 0) and stack[Nstack - 1].quote then
                   continue; // don't consider quoted CLOSE markers
@@ -257,7 +246,7 @@ const
     end;
     if Nstack > 0 then
       with stack[Nstack - 1] do
-        raise ETplError.Create('unmatched marker', copy(txt, pos, 30), row, col)
+        raise ETemplateError.Create('unmatched marker', copy(txt, pos, 30), row, col)
   end; // handleMacros
 
 begin

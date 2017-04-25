@@ -2869,7 +2869,7 @@ begin
       applyMacrosAndSymbols(txt, cbMacros, @md, removeQuotings);
       result := true;
     except
-      on e: ETplError do
+      on e: ETemplateError do
         mainfrm.setStatusBarText(format('Template error at %d,%d: %s: %s ...',
           [e.row, e.col, e.message, e.code]), 1000);
       on Exception do

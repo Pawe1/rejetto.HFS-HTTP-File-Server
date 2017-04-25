@@ -5,7 +5,8 @@ unit HFS.Template;
 interface
 
 uses
-  System.Classes, System.Types, System.IniFiles,
+  System.Classes, System.Types, System.SysUtils,
+  System.IniFiles,
   Rejetto.HS;
 
 type
@@ -22,7 +23,7 @@ type
         section: string;
         idx: integer;
       end;
-  protected
+  strict private
     src: string;
     lastExt, // cache for getTxtByExt()
     last: TLast; // cache for getIdx()
@@ -33,18 +34,15 @@ type
     function getIdx(section: string): integer;
     function getTxt(section: string): string;
     function newSection(section: string): PTemplateSection;
-    procedure fromString(txt: string);
     procedure setOver(v: TTemplate);
     procedure updateUTF8();
+  protected
+    procedure fromString(txt: string);
   public
     onChange: TNotifyEvent;
     sections: array of TTemplateSection;
     constructor create(txt: string = ''; over: TTemplate = NIL);
     destructor Destroy; override;
-    property txt[section: string]: string read getTxt; default;
-    property fullText: string read src write fromString;
-    property utf8: boolean read fUTF8;
-    property over: TTemplate read fOver write setOver;
     function sectionExist(section: string): boolean;
     function getTxtByExt(fileExt: string): string;
     function getSection(section: string): PTemplateSection;
@@ -52,6 +50,10 @@ type
     procedure appendString(txt: string);
     function getStrByID(id: string): string;
     function me(): TTemplate;
+    property txt[section: string]: string read getTxt; default;
+    property fullText: string read src write fromString;
+    property utf8: boolean read fUTF8;
+    property over: TTemplate read fOver write setOver;
   end;
 
   TCachedTplObj = class
@@ -61,8 +63,14 @@ type
 
   TCachedTemplates = class(THashedStringList)
   public
-    function getTplFor(fn: string): TTemplate;
     destructor Destroy; override;
+    function getTplFor(fn: string): TTemplate;
+  end;
+
+  ETemplateError = class(Exception)
+    pos, row, col: integer;
+    code: string;
+    constructor Create(const msg, code: string; row, col: integer);
   end;
 
 implementation
@@ -402,6 +410,14 @@ end;
 function TTemplate.me(): TTemplate;
 begin
   result := self
+end;
+
+constructor ETemplateError.Create(const msg, code: string; row, col: integer);
+begin
+  inherited Create(msg);
+  self.row := row;
+  self.col := col;
+  self.code := code;
 end;
 
 end.
