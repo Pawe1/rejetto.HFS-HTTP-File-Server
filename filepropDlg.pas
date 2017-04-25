@@ -83,7 +83,8 @@ implementation
 uses
   System.Math,
   Rejetto.Utils, Rejetto.HS,
-  optionsDlg;
+  optionsDlg,
+  HFS.Consts;
 
 {$R *.dfm}
 

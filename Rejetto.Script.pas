@@ -60,7 +60,8 @@ uses
   graphics, classes, sysutils,
   Rejetto.Utils, Rejetto.Parser, Rejetto.HS,
   trayLib,
-  comctrls, math, controls, forms, clipbrd, MMsystem;
+  comctrls, math, controls, forms, clipbrd, MMsystem,
+  HFS.Consts;
 
 const
   HEADER = '<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><style>'
@@ -1895,7 +1896,7 @@ var
     else if name = '%now%' then
       result := floatToStr(now())
     else if name = '%version%' then
-      result := main.VERSION
+      result := HFS.Consts.VERSION
     else if name = '%build%' then
       result := VERSION_BUILD
     else if name = '%uptime%' then

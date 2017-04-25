@@ -32,7 +32,8 @@ implementation
 {$R *.dfm}
 
 uses
-  main, Rejetto.Utils;
+  main, Rejetto.Utils,
+  HFS.Consts;
 
 procedure TipsEverFrm.resetBtnClick(Sender: TObject);
 begin

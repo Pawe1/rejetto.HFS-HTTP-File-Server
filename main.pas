@@ -41,115 +41,8 @@ uses
 
   // rejetto libs
   Rejetto.HS, traylib, Rejetto.Mono, progFrmLib, Rejetto,
-  Rejetto.Tpl;
-
-const
-  VERSION = '2.3j';
-  VERSION_BUILD = '298';
-  VERSION_STABLE = {$IFDEF STABLE } TRUE {$ELSE} FALSE {$ENDIF};
-  CURRENT_VFS_FORMAT: integer = 1;
-  CRLF = #13#10;
-  TAB = #9;
-  BAK_EXT = '.bak';
-  CORRUPTED_EXT = '.corrupted';
-  COMMENT_FILE_EXT = '.comment';
-  VFS_FILE_IDENTIFIER = 'HFS.VFS';
-  CFG_KEY = 'Software\rejetto\HFS';
-  CFG_FILE = 'hfs.ini';
-  TPL_FILE = 'hfs.tpl';
-  IPS_FILE = 'hfs.ips.txt';
-  VFS_TEMP_FILE = '~temp.vfs';
-  HFS_HTTP_AGENT = 'HFS/' + VERSION;
-  COMMENTS_FILE = 'hfs.comments.txt';
-  DIFF_TPL_FILE = 'hfs.diff.tpl';
-  FILELIST_TPL_FILE = 'hfs.filelist.tpl';
-  EVENTSCRIPTS_FILE = 'hfs.events';
-  MACROS_LOG_FILE = 'macros-log.html';
-  PREVIOUS_VERSION = 'hfs.old.exe';
-  SESSION_COOKIE = 'HFS_SID_';
-  PROTECTED_FILES_MASK =
-    'hfs.*;*.htm*;descript.ion;*.comment;*.md5;*.corrupted;*.lnk';
-  G_VAR_PREFIX = '#';
-  HOURS = 24;
-  MINUTES = HOURS * 60;
-  SECONDS = MINUTES * 60; // Tdatetime * SECONDS = time in seconds
-  ETA_FRAME = 5; // time frame for ETA (in seconds)
-  DOWNLOAD_MIN_REFRESH_TIME: Tdatetime = 1 / (5 * SECONDS); // 5 Hz
-  BYTES_GROUPING_THRESHOLD: Tdatetime = 1 / SECONDS; // group bytes in log
-  IPS_THRESHOLD = 50; // used to avoid an external file for few IPs (ipsEverConnected list)
-  STATUSBAR_REFRESH = 10; // tenth of second
-  MAX_RECENT_FILES = 5;
-  MANY_ITEMS_THRESHOLD = 1000;
-  KILO = 1024;
-  MEGA = KILO * KILO;
-  COMPRESSION_THRESHOLD = 10 * KILO; // if more than X bytes, VFS files are compressed
-  STARTING_SNDBUF = 32000;
-  YESNO: array [boolean] of string = ('no', 'yes');
-  DEFAULT_MIME = 'application/octet-stream';
-  IP_SERVICES_URL = 'http://hfsservice.rejetto.com/ipservices.php';
-  SELF_TEST_URL = 'http://hfstest.rejetto.com/';
-
-  USER_ANONYMOUS = '@anonymous';
-  USER_ANYONE = '@anyone';
-  USER_ANY_ACCOUNT = '@any account';
-
-  ALWAYS_ON_WEB_SERVER = 'google.com';
-  ADDRESS_COLOR = clGreen;
-  BG_ERROR = $BBBBFF;
-  ENCODED_TABLE_HEADER = 'this is an encoded table'+CRLF;
-
-  DEFAULT_MIME_TYPES: array [0..21] of string = (
-    '*.htm;*.html', 'text/html',
-    '*.jpg;*.jpeg;*.jpe', 'image/jpeg',
-    '*.gif', 'image/gif',
-    '*.png', 'image/png',
-    '*.bmp', 'image/bmp',
-    '*.ico', 'image/x-icon',
-    '*.mpeg;*.mpg;*.mpe', 'video/mpeg',
-    '*.avi', 'video/x-msvideo',
-    '*.txt', 'text/plain',
-    '*.css', 'text/css',
-    '*.js',  'text/javascript'
-  );
-
-  ICONMENU_NEW = 1;
-
-  ICON_UNIT = 31;
-  ICON_ROOT = 1;
-  ICON_LINK = 4;
-  ICON_FILE = 37;
-  ICON_FOLDER = 6;
-  ICON_REAL_FOLDER = 19;
-  ICON_LOCK = 12;
-  ICON_EASY = 29;
-  ICON_EXPERT = 35;
-
-  USER_ICON_MASKS_OFS = 10000;
-  // messages
-  MSG_UNPROTECTED_LINKS = 'Links are NOT actually protected.'
-    +#13'The feature is there to be used with the "list protected items only..." option.'
-    +#13'Continue?';
-  MSG_SAME_NAME ='An item with the same name is already present in this folder.'
-    +#13'Continue?';
-  MSG_OPTIONS_SAVED = 'Options saved';
-  MSG_SOME_LOCKED = 'Some items were not affected because locked';
-  MSG_ITEM_LOCKED = 'The item is locked';
-  MSG_INVALID_VALUE = 'Invalid value';
-  MSG_EMPTY_NO_LIMIT = 'Leave blank to get no limits.';
-  MSG_ADDRESSES_EXCEED = 'The following addresses exceed the limit:'#13'%s';
-  MSG_NO_TEMP = 'Cannot save temporary file';
-  MSG_ERROR_REGISTRY = 'Can''t write to registry.'
-    +#13'You may lack necessary rights.';
-  MSG_MANY_ITEMS = 'You are putting many files.'
-    +#13'Try using real folders instead of virtual folders.'
-    +#13'Read documentation or ask on the forum for help.';
-  MSG_ADD_TO_HFS = '"Add to HFS" has been added to your Window''s Explorer right-click menu.';
-  MSG_SINGLE_INSTANCE = 'Sorry, this feature only works with the "Only 1 instance" option enabled.'
-    +#13#13'You can find this option under Menu -> Start/Exit'
-    +#13'(only in expert mode)';
-  MSG_ENABLED =   'Option enabled';
-  MSG_DISABLED = 'Option disabled';
-  MSG_COMM_ERROR = 'Network error. Request failed.';
+  Rejetto.Tpl,
+  HFS.Consts;
 
 type
   Pboolean = ^boolean;
@@ -1056,33 +949,38 @@ var
   lastTime: TdateTime;
 end;
 
-procedure showOptions(page:TtabSheet);
+procedure showOptions(page: TtabSheet);
 procedure kickBannedOnes();
 procedure repaintTray();
-function paramsAsArray():TStringDynArray;
-procedure processParams_before(var params:TStringDynArray; allowed:string='');
-function loadCfg(var ini,tpl:string):boolean;
-function idx_img2ico(i:integer):integer;
-function idx_ico2img(i:integer):integer;
-function idx_label(i:integer):string;
-function findEnabledLinkedAccount(account:Paccount; over:TStringDynArray; isSorted:boolean=FALSE):Paccount;
-function getImageIndexForFile(fn:string):integer;
-function conn2data(i:integer):TconnData; inline; overload;
-function uptimestr():string;
-function countIPs(onlyDownloading:boolean=FALSE; usersInsteadOfIps:boolean=FALSE):integer;
-function getSafeHost(cd:TconnData):string;
-function localDNSget(ip:string):string;
-function countDownloads(ip:string=''; user:string=''; f:Tfile=NIL):integer;
-function accountAllowed(action:TfileAction; cd:TconnData; f:Tfile):boolean;
-function getAccountList(users:boolean=TRUE; groups:boolean=TRUE):TstringDynArray;
-function fileExistsByURL(url:string):boolean;
-function createFingerprint(fn:string):string;
-function objByIP(ip:string):TperIp;
-function protoColon():string;
-procedure setSpeedLimitIP(v:real);
+function paramsAsArray(): TStringDynArray;
+procedure processParams_before(var params: TStringDynArray;
+  allowed: string = '');
+function loadCfg(var ini, tpl: string): boolean;
+function idx_img2ico(i: integer): integer;
+function idx_ico2img(i: integer): integer;
+function idx_label(i: integer): string;
+function findEnabledLinkedAccount(account: Paccount; over: TStringDynArray;
+  isSorted: boolean = FALSE): Paccount;
+function getImageIndexForFile(fn: string): integer;
+function conn2data(i: integer): TconnData; inline; overload;
+function uptimestr(): string;
+function countIPs(onlyDownloading: boolean = FALSE;
+  usersInsteadOfIps: boolean = FALSE): integer;
+function getSafeHost(cd: TconnData): string;
+function localDNSget(ip: string): string;
+function countDownloads(ip: string = ''; user: string = '';
+  f: Tfile = NIL): integer;
+function accountAllowed(action: TfileAction; cd: TconnData; f: Tfile): boolean;
+function getAccountList(users: boolean = TRUE; groups: boolean = TRUE)
+  : TStringDynArray;
+function fileExistsByURL(url: string): boolean;
+function createFingerprint(fn: string): string;
+function objByIP(ip: string): TperIp;
+function protoColon(): string;
+procedure setSpeedLimitIP(v: real);
 procedure stopServer();
-function startServer():boolean;
-function deleteAccount(name:string):boolean;
+function startServer(): boolean;
+function deleteAccount(name: string): boolean;
 
 implementation
 
@@ -5612,7 +5510,7 @@ var
 
     conn.addHeader('Accept-Ranges: bytes');
     if sendHFSidentifierChk.checked then
-      conn.addHeader('Server: HFS ' + VERSION);
+      conn.addHeader('Server: HFS ' + HFS.Consts.VERSION);
 
     case data.preReply of
       PR_OVERLOAD:
@@ -6974,7 +6872,7 @@ var
 begin
   userIconMasks := '';
   iconMasksStr := iconMasksToStr();
-  result := 'HFS ' + VERSION + ' - Build #' + VERSION_BUILD + CRLF + 'active=' +
+  result := 'HFS ' + HFS.Consts.VERSION + ' - Build #' + VERSION_BUILD + CRLF + 'active=' +
     yesno[srv.active] + CRLF + 'only-1-instance=' +
     yesno[only1instanceChk.checked] + CRLF + 'window=' +
     rectToStr(lastWindowRect) + CRLF + 'window-max=' +
@@ -8085,7 +7983,7 @@ end;
 
 procedure Tmainfrm.About1Click(Sender: Tobject);
 begin
-  msgDlg(format(getRes('copyright'), [VERSION, VERSION_BUILD]))
+  msgDlg(format(getRes('copyright'), [HFS.Consts.VERSION, VERSION_BUILD]))
 end;
 
 procedure Tmainfrm.purgeConnections();
@@ -8171,7 +8069,7 @@ begin
     while (s > '') and (s[1] <> '@') do
       msg := msg + chopLine(s) + #13;
     // before 2.0 beta14 a bare semicolon-separated string comparison was used
-    if fileMatch(l, VERSION) or fileMatch(l, '#' + VERSION_BUILD) then
+    if fileMatch(l, HFS.Consts.VERSION) or fileMatch(l, '#' + VERSION_BUILD) then
       msgDlg(msg, MB_ICONWARNING);
   end;
 end; // parseVersionNotice
@@ -8339,7 +8237,7 @@ begin
       (not VERSION_STABLE or testerUpdatesChk.checked) then
       thereSnew('untested');
     // same version? we show build number
-    if ver = VERSION then
+    if ver = HFS.Consts.VERSION then
       ver := format('Build #%s (current is #%s)', [build, VERSION_BUILD]);
     if logOtherEventsChk.checked then
       add2log('Check update: ' + ifThen(updateURL = '', 'no new version',
@@ -9887,7 +9785,7 @@ begin
   result := xtpl(first(tpl, trayMsg), ['%uptime%', uptimestr(), '%url%',
     rootFile.fullURL(), '%ip%', defaultIP, '%port%', srv.port, '%hits%',
     intToStr(hitsLogged), '%downloads%', intToStr(downloadsLogged), '%uploads%',
-    intToStr(uploadsLogged), '%version%', VERSION, '%build%', VERSION_BUILD]);
+    intToStr(uploadsLogged), '%version%', HFS.Consts.VERSION, '%build%', VERSION_BUILD]);
 end; // getTrayTipMsg
 
 procedure Tmainfrm.updateTrayTip();
@@ -10413,7 +10311,7 @@ begin
     vfsdata := TLV(FK_COMPRESSED_ZLIB, ZcompressStr2(vfsdata, zcFastest, 31, 8,
       zsDefault));
   result := TLV(FK_HEAD, VFS_FILE_IDENTIFIER) + TLV(FK_FORMAT_VER,
-    str_(CURRENT_VFS_FORMAT)) + TLV(FK_HFS_VER, VERSION) +
+    str_(CURRENT_VFS_FORMAT)) + TLV(FK_HFS_VER, HFS.Consts.VERSION) +
     TLV(FK_HFS_BUILD, VERSION_BUILD) + TLV(FK_CRC, str_(getCRC(vfsdata)));
   // CRC must always be right before data
   result := result + vfsdata
@@ -13024,8 +12922,8 @@ begin
   tray := TmyTrayIcon.create(self);
   DragAcceptFiles(Handle, TRUE);
   Caption := format('HFS ~ HTTP File Server %s%sBuild %s',
-    [VERSION, stringOfChar(' ', 80), VERSION_BUILD]);
-  application.Title := format('HFS %s (%s)', [VERSION, VERSION_BUILD]);
+    [HFS.Consts.VERSION, stringOfChar(' ', 80), VERSION_BUILD]);
+  application.Title := format('HFS %s (%s)', [HFS.Consts.VERSION, VERSION_BUILD]);
   setSpeedLimit(-1);
   setSpeedLimitIP(-1);
   setGraphRate(10);
@@ -13429,7 +13327,7 @@ begin
   default := TstringList.create();
   default.text := defaultCfg;
   current := getCfg();
-  diff := '# ' + VERSION + ' (build ' + VERSION_BUILD + ')' + CRLF;
+  diff := '# ' + HFS.Consts.VERSION + ' (build ' + VERSION_BUILD + ')' + CRLF;
 
   while current > '' do
   begin

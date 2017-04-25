@@ -289,7 +289,8 @@ implementation
 uses
   clipbrd, AnsiStringReplaceJOHIA32Unit13, JclNTFS, JclWin32,
   Rejetto.Parser,
-  newuserpassDlg, winsock, OverbyteicsMD5;
+  newuserpassDlg, winsock, OverbyteicsMD5,
+  HFS.Consts;
 
 var
   ipToInt_cache: ThashedStringList;

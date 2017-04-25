@@ -48,7 +48,8 @@ uses
   filepropDlg in 'filepropDlg.pas' {filepropFrm},
   runscriptDlg in 'runscriptDlg.pas' {runScriptFrm},
   Rejetto.Script in 'Rejetto.Script.pas',
-  Rejetto.Tpl in 'Rejetto.Tpl.pas';
+  Rejetto.Tpl in 'Rejetto.Tpl.pas',
+  HFS.Consts in 'HFS.Consts.pas';
 
 {$R *.res}
 
