@@ -172,7 +172,7 @@ type
 
   TfilterMethod = function(self:Tobject):boolean;
 
-  Thelp = ( HLP_NONE, HLP_TPL );
+  Thelp = (HLP_NONE, HLP_TPL);
 
   TdownloadingWhat = ( DW_UNK, DW_FILE, DW_FOLDERPAGE, DW_ICON, DW_ERROR, DW_ARCHIVE );
 
@@ -909,7 +909,7 @@ const
 var
   mainFrm: TmainFrm;
   srv: ThttpSrv;
-  tpl: TTemplate; // template for generated pages
+  Template: TTemplate; // template for generated pages
   customIPs: TStringDynArray; // user customized IP addresses
   iconMasks: TstringIntPairs;
   ipsEverConnected: THashedStringList;
@@ -3870,7 +3870,7 @@ end; // getETA
 
 function tplFromFile(f: Tfile): TTemplate;
 begin
-  result := TTemplate.create(optUTF8(tpl, f.getRecursiveDiffTplAsStr()), tpl)
+  result := TTemplate.create(optUTF8(Template, f.getRecursiveDiffTplAsStr()), Template)
 end;
 
 procedure setDefaultIP(v: string);
@@ -4689,7 +4689,7 @@ begin
   f := Tfile.create(tplFilename);
   fld := Tfile.create(extractFilePath(tplFilename));
   try
-    runScript(tpl['special:import'], NIL, tpl, f, fld);
+    runScript(Template['special:import'], NIL, Template, f, fld);
   finally
     freeAndNIL(f);
     freeAndNIL(fld);
@@ -4730,7 +4730,7 @@ begin
   result := FALSE; // mod by mars
   // patch290();
   // if we'd use optUTF8() here, we couldn't make use of tpl.utf8, because text would not be parsed yet
-  tpl.fullText := text;
+  Template.fullText := text;
   tplIsCustomized := text <> defaultTpl;
   if boolOnce(tplImport) then
     runTplImport();
@@ -4742,7 +4742,7 @@ begin
   begin
     if newMtime(tplFilename, tplLast) then
       if setTplText(loadFile(tplFilename)) then
-        saveFile(tplFilename, tpl.fullText);
+        saveFile(tplFilename, Template.fullText);
   end
   else if tplLast <> 0 then
   begin
@@ -5345,7 +5345,7 @@ var
       // ok, you are referring a section of the template, which virtually resides in the root because of the url starting with /~
       // but you don't have access rights to the root. We'll let you pass if it's actually a section and you are using it from a folder that you have access to.
       if not result and (f = rootFile) and ansiStartsStr('~', urlCmd) and
-        tpl.sectionExist(copy(urlCmd, 2, MAXINT)) and
+        Template.sectionExist(copy(urlCmd, 2, MAXINT)) and
         (0 < reMatch(conn.getHeader('Referer'),
         '://([^@]*@)?' + getSafeHost(data) + '(/.*)', 'i', 1, @m)) then
       begin
@@ -5834,7 +5834,7 @@ var
       if DMbrowserTplChk.checked and isDownloadManagerBrowser() then
         s := getFolderPage(f, data, dmBrowserTpl)
       else
-        s := getFolderPage(f, data, tpl);
+        s := getFolderPage(f, data, Template);
       if conn.reply.mode <> HRM_REDIRECT then
         replyWithString(s);
       exit;
@@ -6111,7 +6111,7 @@ begin
         data.fileXferStart := now();
         f := findFilebyURL(decodeURL(conn.request.url));
         data.lastFile := f; // auto-freeing
-        data.uploadSrc := optAnsi(tpl.utf8, conn.post.filename);
+        data.uploadSrc := optAnsi(Template.utf8, conn.post.filename);
         data.uploadFailed := '';
         if (f = NIL) or not accountAllowed(FA_UPLOAD, data, f) or
           not f.accessFor(data) then
@@ -12635,7 +12635,7 @@ const
   msg = 'The current template is using macros.' +
     #13'Do you want to cancel this action?';
 begin
-  if anyMacroMarkerIn(tpl.fullText) and not enableMacrosChk.checked then
+  if anyMacroMarkerIn(Template.fullText) and not enableMacrosChk.checked then
     enableMacrosChk.checked := msgDlg(msg, MB_ICONWARNING + MB_YESNO) = MRYES;
 end;
 
@@ -12862,7 +12862,7 @@ function Tmainfrm.finalInit(): boolean;
       not ansiContainsText(dyndns.url, 'nic/update') and
       (msgDlg(msg, MB_OKCANCEL + MB_ICONWARNING) = MROK) then
       NoIPtemplate1Click(NIL);
-    if (tplS > '') and assigned(tpl) then
+    if (tplS > '') and assigned(Template) then
       setTplText(tplS);
     if lastUpdateCheck = 0 then
       lastUpdateCheck := getMtime(lastUpdateCheckFN);
@@ -13626,7 +13626,7 @@ INITIALIZATION
   else
     defaultTpl := getRes('defaultTpl');
   tpl_help := getRes('tplHlp');
-  Tpl := TTemplate.create();
+  Template := TTemplate.create();
   defSorting := 'name';
   dmBrowserTpl := TTemplate.create(getRes('dmBrowserTpl'));
   filelistTpl := TTemplate.create(getRes('filelistTpl'));
@@ -13684,7 +13684,7 @@ INITIALIZATION
 FINALIZATION
   progFrm.free;
   toDelete.free;
-  tpl.free;
+  Template.free;
   filelistTpl.free;
   autoupdatedFiles.free;
   iconsCache.free;

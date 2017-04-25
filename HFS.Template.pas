@@ -11,8 +11,10 @@ uses
 
 type
   TTemplateSection = record
-    name, txt: string;
-    nolog, nourl: boolean;
+    name: string;
+    txt: string;
+    nolog: Boolean;
+    nourl: Boolean;
   end;
   PTemplateSection = ^TTemplateSection;
 
@@ -24,11 +26,11 @@ type
         idx: integer;
       end;
   strict private
-    src: string;
-    lastExt, // cache for getTxtByExt()
-    last: TLast; // cache for getIdx()
-    fileExts: TStringDynArray;
-    strTable: THashedStringList;
+    FSrc: string;
+    FLastExt, // cache for getTxtByExt()
+    FLast: TLast; // cache for getIdx()
+    FFileExts: TStringDynArray;
+    FStrTable: THashedStringList;
     fUTF8: boolean;
     fOver: TTemplate;
     function getIdx(section: string): integer;
@@ -51,7 +53,7 @@ type
     function getStrByID(id: string): string;
     function me(): TTemplate;
     property txt[section: string]: string read getTxt; default;
-    property fullText: string read src write fromString;
+    property fullText: string read FSrc write fromString;
     property utf8: boolean read fUTF8;
     property over: TTemplate read fOver write setOver;
   end;
@@ -129,36 +131,36 @@ end;
 
 destructor TTemplate.Destroy;
 begin
-  freeAndNIL(strTable);
+  freeAndNIL(FStrTable);
   inherited;
 end; // destroy
 
 function TTemplate.getStrByID(id: string): string;
 begin
-  if strTable = NIL then
+  if FStrTable = NIL then
   begin
-    strTable := ThashedStringList.create;
-    strTable.text := txt['special:strings'];
+    FStrTable := ThashedStringList.create;
+    FStrTable.text := txt['special:strings'];
   end;
-  result := strTable.values[id];
+  result := FStrTable.values[id];
   if (result = '') and assigned(over) then
     result := over.getStrByID(id)
 end; // getStrByID
 
 function TTemplate.getIdx(section: string): integer;
 begin
-  if section <> last.section then
+  if section <> FLast.section then
   begin
-    last.section := section;
+    FLast.section := section;
     for result := 0 to length(sections) - 1 do
       if sameText(sections[result].name, section) then
       begin
-        last.idx := result;
+        FLast.idx := result;
         exit;
       end;
-    last.idx := -1;
+    FLast.idx := -1;
   end;
-  result := last.idx
+  result := FLast.idx
 end; // getIdx
 
 function TTemplate.newSection(section: string): PTemplateSection;
@@ -171,18 +173,18 @@ begin
   result := @sections[i];
   result.name := section;
   // getIdx just filled 'last' with not-found, so we must update
-  last.section := section;
-  last.idx := i;
+  FLast.section := section;
+  FLast.idx := i;
   // manage file.EXT sections
   if not ansiStartsText('file.', section) then
     exit;
-  i := length(fileExts);
-  setLength(fileExts, i + 2);
+  i := length(FFileExts);
+  setLength(FFileExts, i + 2);
   delete(section, 1, 4);
-  fileExts[i] := section;
-  fileExts[i + 1] := str_(last.idx);
-  lastExt.section := section;
-  lastExt.idx := last.idx;
+  FFileExts[i] := section;
+  FFileExts[i + 1] := str_(FLast.idx);
+  FLastExt.section := section;
+  FLastExt.idx := FLast.idx;
 end; // newSection
 
 function TTemplate.sectionExist(section: string): boolean;
@@ -222,36 +224,36 @@ var
   i: integer;
 begin
   result := '';
-  if (lastExt.section > '') and (fileExt = lastExt.section) then
+  if (FLastExt.section > '') and (fileExt = FLastExt.section) then
   begin
-    if lastExt.idx >= 0 then
-      result := sections[lastExt.idx].txt;
+    if FLastExt.idx >= 0 then
+      result := sections[FLastExt.idx].txt;
     exit;
   end;
-  i := idxOf(fileExt, fileExts);
+  i := idxOf(fileExt, FFileExts);
   if (i < 0) and assigned(over) then
   begin
     result := over.getTxtByExt(fileExt);
     if result > '' then
       exit;
   end;
-  lastExt.section := fileExt;
-  lastExt.idx := i;
+  FLastExt.section := fileExt;
+  FLastExt.idx := i;
   if i < 0 then
     exit;
-  i := int_(fileExts[i + 1]);
-  lastExt.idx := i;
+  i := int_(FFileExts[i + 1]);
+  FLastExt.idx := i;
   result := sections[i].txt;
 end; // getTxtByExt
 
 procedure TTemplate.fromString(txt: string);
 begin
-  src := '';
+  FSrc := '';
   sections := NIL;
-  fileExts := NIL;
-  last.section := #255'null';
+  FFileExts := NIL;
+  FLast.section := #255'null';
   // '' is a valid (and often used) section name. This is a better null value.
-  freeAndNIL(strTable); // mod by mars
+  freeAndNIL(FStrTable); // mod by mars
 
   appendString(txt);
 end; // fromString
@@ -365,7 +367,7 @@ begin
 
   if txt = '' then
     exit;
-  src := src + txt;
+  FSrc := FSrc + txt;
   cur_section := '';
   ptxt := @txt[1];
   first := TRUE;

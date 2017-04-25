@@ -1869,7 +1869,7 @@ var
     // it only upon request. others are for centralization.
 
     if ansiStartsText('%sym-', name) then // legacy: surpassed by {.section.}
-      result := tpl[substr(name, 2, -1)]
+      result := Template[substr(name, 2, -1)]
     else if name = '%item-icon%' then
       itemIcon()
     else if name = '%item-archive%' then
@@ -1886,13 +1886,13 @@ var
     else if name = '%connections%' then
       result := intToStr(srv.conns.count)
     else if name = '%style%' then
-      result := tpl['style']
+      result := Template['style']
     else if name = '%timestamp%' then
-      result := optUTF8(tpl, dateTimeToStr(now()))
+      result := optUTF8(Template, dateTimeToStr(now()))
     else if name = '%date%' then
-      result := optUTF8(tpl, dateToStr(now()))
+      result := optUTF8(Template, dateToStr(now()))
     else if name = '%time%' then
-      result := optUTF8(tpl, timeToStr(now()))
+      result := optUTF8(Template, timeToStr(now()))
     else if name = '%now%' then
       result := floatToStr(now())
     else if name = '%version%' then
@@ -1900,7 +1900,7 @@ var
     else if name = '%build%' then
       result := VERSION_BUILD
     else if name = '%uptime%' then
-      result := optUTF8(tpl, uptimestr())
+      result := optUTF8(Template, uptimestr())
     else if name = '%speed-out%' then
       result := floatToStrF(srv.speedOut / 1000, ffFixed, 7, 2)
     else if name = '%speed-in%' then
@@ -1949,9 +1949,9 @@ var
       else if name = '%password%' then
         result := macroQuote(md.cd.conn.request.pwd)
       else if name = '%loggedin%' then
-        result := if_(usr > '', tpl['loggedin'])
+        result := if_(usr > '', Template['loggedin'])
       else if name = '%login-link%' then
-        result := if_(usr = '', tpl['login-link'])
+        result := if_(usr = '', Template['login-link'])
       else if name = '%user-notes%' then
         if md.cd.account = NIL then
           result := ''
@@ -1970,7 +1970,7 @@ var
       begin
         result := md.folder.getDynamicComment();
         if result > '' then
-          result := optUTF8(md.tpl, xtpl(tpl['folder-comment'],
+          result := optUTF8(md.tpl, xtpl(Template['folder-comment'],
             ['%item-comment%', result]));
       end
       else if name = '%diskfree%' then
@@ -2892,7 +2892,7 @@ begin
   if result = '' then
     exit;
   fillchar(md, sizeof(md), 0);
-  md.tpl := first(tpl_, tpl);
+  md.tpl := first(tpl_, Template);
   md.f := f;
   md.folder := folder;
   md.cd := cd;

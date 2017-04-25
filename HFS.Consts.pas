@@ -45,8 +45,10 @@ const
   STATUSBAR_REFRESH = 10; // tenth of second
   MAX_RECENT_FILES = 5;
   MANY_ITEMS_THRESHOLD = 1000;
+
   KILO = 1024;
   MEGA = KILO * KILO;
+
   COMPRESSION_THRESHOLD = 10 * KILO; // if more than X bytes, VFS files are compressed
   STARTING_SNDBUF = 32000;
   YESNO: array [boolean] of string = ('no', 'yes');
