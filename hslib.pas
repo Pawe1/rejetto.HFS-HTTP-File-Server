@@ -1395,7 +1395,7 @@ and (bytesToSend = 0) then
   state:=HCS_IDLE;
   end;
 
-if not persistent then
+if not persistent or not (reply.mode in [HRM_REPLY, HRM_REPLY_HEADER]) then
   disconnect()
 else
   { we must check the socket state, because a disconnection could happen while

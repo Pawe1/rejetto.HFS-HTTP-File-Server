@@ -1,6 +1,6 @@
 object mainFrm: TmainFrm
-  Left = 274
-  Top = 200
+  Left = 293
+  Top = 219
   Caption = 'HFS ~ HTTP File Server'
   ClientHeight = 391
   ClientWidth = 783

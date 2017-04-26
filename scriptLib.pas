@@ -1747,6 +1747,18 @@ var
     result:=TM_NONE
   end; // stringTotrayMessageType
 
+  function renameIt(src,dst:string):boolean;
+  var
+    srcReal, dstReal: string;
+  begin
+  srcReal:=uri2diskMaybe(src,NIL,FALSE);
+  dstReal:=uri2diskMaybeFolder(dst);
+  if isExtension(srcReal, '.lnk') 
+  and not isExtension(src, '.lnk') then
+    appendStr(dstReal, '.lnk');
+  result:=renameFile(srcReal, dstReal)
+  end; // renameIt
+
 var
   i64: int64;
   i: integer;
@@ -2168,10 +2180,13 @@ try
       end;
 
     if name = 'delete' then
+      begin
+      s:=uri2diskMaybe(p,NIL,FALSE);
       if isTrue(par('bin',TRUE,'1')) then
-        spaceIf(moveToBin(uri2diskMaybe(p), isTrue(par('forced'))))
+        spaceIf(moveToBin(s, isTrue(par('forced'))))
       else
-        spaceIf(deltree(uri2diskMaybe(p)));
+        spaceIf(deltree(s));
+      end;
 
     if name = 'disk free' then
       result:=intToStr(diskSpaceAt(uri2diskMaybe(p)));
@@ -2332,7 +2347,7 @@ try
     if name = 'rename' then
       begin
       spaceIf( not isExtension(par(1), '.lnk') and // security matters (by mars)
-        renameFile(uri2diskMaybe(p), uri2diskMaybeFolder(par(1))));
+        renameIt(p, par(1)) );
       if (result > '') and not stopOnMacroRename then // should we stop recursion?
         try
           // by default, we'll stop after first stacked [on macro rename], but recursive=1 will remove this limit
@@ -2346,7 +2361,7 @@ try
     if name = 'move' then
       begin
       s:=uri2diskMaybeFolder(par(1));
-      spaceIf((s>'') and movefile(uri2diskMaybe(p), s));
+      spaceIf((s>'') and movefile(uri2diskMaybe(p,NIL,FALSE), s));
       end;
 
     if name = 'copy' then

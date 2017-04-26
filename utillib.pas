@@ -114,8 +114,8 @@ function dirCrossing(s:string):boolean;
 function forceDirectory(path:string):boolean;
 function moveToBin(fn:string; force:boolean=FALSE):boolean; overload;
 function moveToBin(files:TstringDynArray; force:boolean=FALSE):boolean; overload;
-function uri2disk(url:string; parent:Tfile=NIL):string;
-function uri2diskMaybe(path:string; parent:Tfile=NIL):string;
+function uri2disk(url:string; parent:Tfile=NIL; resolveLnk:boolean=TRUE):string;
+function uri2diskMaybe(path:string; parent:Tfile=NIL; resolveLnk:boolean=TRUE):string;
 function freeIfTemp(var f:Tfile):boolean; inline;
 function isAbsolutePath(path:string):boolean;
 function getTempDir():string;
@@ -1449,7 +1449,7 @@ try
 except result:=FALSE end;
 end; // freeIfTemp
 
-function uri2disk(url:string; parent:Tfile=NIL):string;
+function uri2disk(url:string; parent:Tfile=NIL; resolveLnk:boolean=TRUE):string;
 var
   fi: Tfile;
   i: integer;
@@ -1468,14 +1468,14 @@ else
   end;
 try
   fi:=mainfrm.findFilebyURL(url, parent);
-  try result:=fi.resource+append;
+  try result:=ifThen(resolveLnk or (fi.lnk=''), fi.resource, fi.lnk) +append;
   finally freeIfTemp(fi) end;
 except result:='' end;
 end; // uri2disk
 
-function uri2diskMaybe(path:string; parent:Tfile=NIL):string;
+function uri2diskMaybe(path:string; parent:Tfile=NIL; resolveLnk:boolean=TRUE):string;
 begin
-if ansiContainsStr(path, '/') then result:=uri2disk(path, parent)
+if ansiContainsStr(path, '/') then result:=uri2disk(path, parent, resolveLnk)
 else result:=path;
 end; // uri2diskmaybe
 

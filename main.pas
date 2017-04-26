@@ -35,8 +35,8 @@ uses
   HSlib, traylib, monoLib, progFrmLib, classesLib;
 
 const
-  VERSION = '2.3j';
-  VERSION_BUILD = '298';
+  VERSION = '2.3k';
+  VERSION_BUILD = '299';
   VERSION_STABLE = {$IFDEF STABLE } TRUE {$ELSE} FALSE {$ENDIF};
   CURRENT_VFS_FORMAT :integer = 1;
   CRLF = #13#10;
@@ -5189,8 +5189,9 @@ var
 
   // forbid using invalid credentials
   if not freeLoginChk.checked and not specialGrant then
-    if assigned(data.account) and (data.account.pwd <> data.pwd)
-    or (data.account = NIL) and (data.usr > '') and not usersInVFS.match(data.usr, data.pwd) then
+    if (data.usr>'')
+    and ((data.account=NIL) or (data.account.pwd <> data.pwd))
+    and not usersInVFS.match(data.usr, data.pwd) then
       begin
       data.acceptedCredentials:=FALSE;
       runEventScript('unauthorized');
@@ -7608,8 +7609,11 @@ var
   if assigned(monitor) then  // checking here because the following line once thrown this AV http://www.rejetto.com/forum/?topic=5568
     for i:=0 to monitor.MonitorNum do
       dec(outside, screen.monitors[i].width);
-  if outside > 0 then
+  if (outside > 0)
+  or (boundsRect.bottom < 0)
+  or (boundsRect.right < 0) then
     makeFullyVisible();
+
 
   if dyndns.active and (dyndns.url > '') then
     begin
