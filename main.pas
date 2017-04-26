@@ -982,7 +982,13 @@ implementation
 uses
   newuserpassDlg, optionsDlg, Rejetto.Utils, folderKindDlg, shellExtDlg, diffDlg, ipsEverDlg, Rejetto.Parser, MMsystem,
   Vcl.Imaging.GIFImg,
-  purgeDlg, filepropDlg, runscriptDlg, Rejetto.Script, Rejetto.Utils.Conversion, Rejetto.Utils.Text, Rejetto.Math, Rejetto.Consts, Rejetto.Utils.Registry;
+  purgeDlg, filepropDlg, runscriptDlg,
+  Rejetto.Consts, Rejetto.Math,
+  Rejetto.Script,
+  Rejetto.Utils.Conversion,
+  Rejetto.Utils.Text,
+  Rejetto.Utils.URL,
+  Rejetto.Utils.Registry;
 
 type
   Tsysidx2Record = record
@@ -1280,7 +1286,7 @@ end; // loadDescriptionFile
 function escapeIon(s: string): string;
 begin
   // this escaping method (and also the 2-bytes marker) was reverse-engineered from Total Commander
-  result := escapeNL(s);
+  result := EscapeNL(s);
   if result <> s then
     result := result + #4#$C2;
 end; // escapeIon
@@ -1290,7 +1296,7 @@ begin
   if ansiEndsStr(#4#$C2, s) then
   begin
     setLength(s, length(s) - 2);
-    s := unescapeNL(s);
+    s := UnescapeNL(s);
   end;
   result := s;
 end; // unescapeIon
@@ -1470,7 +1476,7 @@ begin
   s := loadDescriptionFile(path);
   while s > '' do
   begin
-    l := chopLine(s);
+    l := ChopLine(s);
     if l = '' then
       continue;
     fn := chop(nonQuotedPos(' ', l), l);
@@ -1676,7 +1682,7 @@ var
           f.comment := comments.values[sr.name];
           if f.comment = '' then
             f.comment := getCommentByMaskFor(sr.name);
-          f.comment := macroQuote(unescapeNL(f.comment));
+          f.comment := macroQuote(UnescapeNL(f.comment));
 
           f.size := 0;
           if f.isFile() then
@@ -2569,7 +2575,7 @@ begin
         result := comments.values[name];
       end;
       if result > '' then
-        result := unescapeNL(result);
+        result := UnescapeNL(result);
       comments.free
     end;
   finally
@@ -2603,7 +2609,7 @@ begin
   path := extractFilePath(resource) + COMMENTS_FILE;
   if not mainfrm.supportDescriptionChk.checked or fileExists(path) and
     not fileExists(extractFilePath(resource) + 'descript.ion') then
-    saveFile(path, setKeyInString(loadFile(path), name, escapeNL(cmt)));
+    saveFile(path, setKeyInString(loadFile(path), name, EscapeNL(cmt)));
 
   if not mainfrm.supportDescriptionChk.checked then
     exit;
@@ -2742,7 +2748,7 @@ function encodeURL(s: string; fullEncode: boolean = FALSE): string;
 begin
   if fullEncode or mainfrm.encodenonasciiChk.checked then
     s := ansiToUTF8(s);
-  result := Rejetto.HTTPServer.encodeURL(s, mainfrm.encodenonasciiChk.checked,
+  result := Rejetto.Utils.URL.encodeURL(s, mainfrm.encodenonasciiChk.checked,
     fullEncode or mainfrm.encodeSpacesChk.checked)
 end; // encodeURL
 
@@ -3539,7 +3545,7 @@ begin
       MD5updateBuffer(context, @buf, i);
       if not progFrm.visible then
         continue;
-      progFrm.progress := safeDiv(0.0 + fs.position, fs.size);
+      progFrm.progress := SafeDiv(0.0 + fs.position, fs.size);
       application.ProcessMessages();
       if progFrm.cancelRequested then
         exit;
@@ -3589,7 +3595,7 @@ var
   ofsRelItemUrl, ofsRelUrl, numberFiles, numberFolders, numberLinks: integer;
   img_file: boolean;
   totalBytes: int64;
-  fast: TFastStringAppend;
+  fast: TFastStringAppender;
   buildTime: Tdatetime;
   listing: TfileListing;
   diffTpl: TTemplate;
@@ -3729,7 +3735,7 @@ var
     s := xtpl(s, nonPerc);
     md.f := f;
     tryApplyMacrosAndSymbols(s, md, FALSE);
-    fast.append(s);
+    fast.Append(s);
   end; // handleItem
 
 var
@@ -3794,7 +3800,7 @@ begin
     numberLinks := 0;
     totalBytes := 0;
     oneAccessible := FALSE;
-    fast := TFastStringAppend.create();
+    fast := TFastStringAppender.create();
     listing := TfileListing.create();
     hasher := Thasher.create();
     if fingerprintsChk.checked then
@@ -3813,7 +3819,7 @@ begin
         cd.lastActivityTime := now();
         handleItem(listing.dir[i])
       end;
-      list := fast.reset();
+      list := fast.Reset();
     finally
       listing.free;
       fast.free;
@@ -3955,7 +3961,7 @@ var
         bytes := d.conn.bytesSentLastItem;
         total := d.conn.bytesPartial;
       end;
-      perc := safeDiv(0.0 + bytes, total);
+      perc := SafeDiv(0.0 + bytes, total);
       // 0.0 forces a typecast that will call the right overloaded function
       // no file exchange
       if fn = '' then
@@ -4231,7 +4237,7 @@ procedure setupDownloadIcon(data: TconnData);
     s: string;
     perc: real;
   begin
-    perc := safeDiv(0.0 + data.conn.bytesSentLastItem, data.conn.bytesPartial);
+    perc := SafeDiv(0.0 + data.conn.bytesSentLastItem, data.conn.bytesPartial);
     s := intToStr(trunc(perc * 100)) + '%';
     bmp := getBaseTrayIcon(perc);
     drawTrayIconString(bmp.Canvas, s);
@@ -4326,7 +4332,7 @@ begin
   else
     ts := '';
 
-  first := chopLine(lines);
+  first := ChopLine(lines);
   if lines = '' then
     rest := ''
   else
@@ -4778,7 +4784,7 @@ var
 
   function calcAverageSpeed(bytes: int64): integer;
   begin
-    result := round(safeDiv(bytes, (now() - data.fileXferStart) * SECONDS))
+    result := round(SafeDiv(bytes, (now() - data.fileXferStart) * SECONDS))
   end;
 
   function runEventScript(event: string; table: array of string)
@@ -6070,7 +6076,7 @@ begin
         if leavedisconnectedconnectionsChk.checked then
         begin
           if assigned(data) then
-            data.averageSpeed := safeDiv(conn.bytesSent,
+            data.averageSpeed := SafeDiv(conn.bytesSent,
               SECONDS * (now() - data.time));
           setupDownloadIcon(data); // remove the tray icon anyway
         end
@@ -6951,7 +6957,7 @@ begin
     'last-update-check=' + floatToStr(lastUpdateCheck) + CRLF +
     'allowed-referer=' + allowedReferer + CRLF + 'forwarded-mask=' +
     forwardedMask + CRLF + 'tray-shows=' + trayShows + CRLF + 'tray-message=' +
-    escapeNL(trayMsg) + CRLF + 'speed-limit=' + floatToStr(speedLimit) + CRLF +
+    EscapeNL(trayMsg) + CRLF + 'speed-limit=' + floatToStr(speedLimit) + CRLF +
     'speed-limit-ip=' + floatToStr(speedLimitIP) + CRLF + 'max-ips=' +
     intToStr(maxIPs) + CRLF + 'max-ips-downloading=' + intToStr(maxIPsDLing) +
     CRLF + 'max-connections=' + intToStr(maxConnections) + CRLF +
@@ -7166,7 +7172,7 @@ var
       i := length(iconMasks);
       setLength(iconMasks, i + 1);
       iconMasks[i].str := chop('|', l);
-      iconMasks[i].int := StrToIntDef(chop('||', l), 0);
+      iconMasks[i].int := StrToIntDef(Chop('||', l), 0);
     end;
   end; // strToIconmasks
 
@@ -7231,8 +7237,8 @@ begin
   // prior to build #230, this header was required
   if ansiStartsStr('HFS ', cfg) then
   begin
-    l := chop(CRLF, cfg);
-    chop(' - Build #', l);
+    l := Chop(CRLF, cfg);
+    Chop(' - Build #', l);
     build := l;
   end
   else
@@ -7246,7 +7252,7 @@ begin
 
   while cfg > '' do
   begin
-    l := chop(CRLF, cfg);
+    l := Chop(CRLF, cfg);
     h := chop('=', l);
     try
       if h = 'banned-ips' then
@@ -7480,7 +7486,7 @@ begin
       if h = 'max-contemporary-dls-ip' then
         setMaxDLsIP(int);
       if h = 'tray-message' then
-        trayMsg := xtpl(unescapeNL(l), [CRLF, trayNL]);
+        trayMsg := xtpl(UnescapeNL(l), [CRLF, trayNL]);
       if h = 'ban-list' then
         loadBanlist(l);
       if h = 'no-reply-ban' then
@@ -7668,20 +7674,20 @@ begin
     moveLegacyTpl(loadFile(cfgPath + TPL_FILE));
     exit;
   end;
-  ini := loadregistry(CFG_KEY, '');
+  ini := LoadRegistry(CFG_KEY, '');
   if ini > '' then
   begin
     saveMode := SM_USER;
-    if moveLegacyTpl(loadregistry(CFG_KEY, TPL_FILE)) then
-      deleteRegistry(CFG_KEY, TPL_FILE);
+    if moveLegacyTpl(LoadRegistry(CFG_KEY, TPL_FILE)) then
+      SeleteRegistry(CFG_KEY, TPL_FILE);
     exit;
   end;
-  ini := loadregistry(CFG_KEY, '', HKEY_LOCAL_MACHINE);
+  ini := LoadRegistry(CFG_KEY, '', HKEY_LOCAL_MACHINE);
   if ini > '' then
   begin
     saveMode := SM_SYSTEM;
-    if moveLegacyTpl(loadregistry(CFG_KEY, TPL_FILE, HKEY_LOCAL_MACHINE)) then
-      deleteRegistry(CFG_KEY, TPL_FILE, HKEY_LOCAL_MACHINE);
+    if moveLegacyTpl(LoadRegistry(CFG_KEY, TPL_FILE, HKEY_LOCAL_MACHINE)) then
+      SeleteRegistry(CFG_KEY, TPL_FILE, HKEY_LOCAL_MACHINE);
     exit;
   end;
   result := FALSE;
@@ -7934,8 +7940,8 @@ begin
     SM_SYSTEM:
       begin
         deleteFile(cfgPath + CFG_FILE);
-        deleteRegistry(CFG_KEY);
-        if not saveregistry(CFG_KEY, '', cfg, HKEY_LOCAL_MACHINE) then
+        DeleteRegistry(CFG_KEY);
+        if not SaveRegistry(CFG_KEY, '', cfg, HKEY_LOCAL_MACHINE) then
         begin
           proposeUserRegistry();
           exit;
@@ -7945,7 +7951,7 @@ begin
     SM_USER:
       begin
         deleteFile(cfgPath + CFG_FILE);
-        result := saveregistry(CFG_KEY, '', cfg);
+        result := SaveRegistry(CFG_KEY, '', cfg);
       end;
   end;
   if ipsEverConnected.count >= IPS_THRESHOLD then
@@ -8051,7 +8057,7 @@ var
 begin
   while s > '' do
   begin
-    l := trim(chopLine(s));
+    l := trim(ChopLine(s));
     // the line has to start with a @ followed by involved versions
     if (length(l) < 2) or (l[1] <> '@') then
       continue;
@@ -8059,7 +8065,7 @@ begin
     // collect the message (until next @-starting line)
     msg := '';
     while (s > '') and (s[1] <> '@') do
-      msg := msg + chopLine(s) + #13;
+      msg := msg + ChopLine(s) + #13;
     // before 2.0 beta14 a bare semicolon-separated string comparison was used
     if fileMatch(l, HFS.Consts.VERSION) or fileMatch(l, '#' + VERSION_BUILD) then
       msgDlg(msg, MB_ICONWARNING);
@@ -8490,7 +8496,7 @@ var
           if userSocketBuffer > 0 then
             data.conn.sndBuf := userSocketBuffer
           else if highSpeedChk.checked and
-            (safeDiv(0.0 + size, data.conn.sndBuf, 2) > 2) then
+            (SafeDiv(0.0 + size, data.conn.sndBuf, 2) > 2) then
             data.conn.sndBuf := size;
         end;
 
@@ -8904,7 +8910,7 @@ procedure browse(url: string);
 begin
   if mainfrm.browseUsingLocalhostChk.checked then
   begin
-    chop('//', url);
+    Chop('//', url);
     chop('/', url);
     url := 'http://localhost:' + srv.port + '/' + url;
   end;
@@ -8931,24 +8937,24 @@ end;
 procedure Tmainfrm.openLogBtnClick(Sender: Tobject);
 var
   mask, fn: string;
-  s: TFastStringAppend;
+  s: TFastStringAppender;
   i: integer;
 begin
   mask := logSearchBox.text;
-  s := TFastStringAppend.create;
+  s := TFastStringAppender.create;
   try
     if Sender = openLogBtn then
-      s.append(logbox.text)
+      s.Append(logbox.text)
     else
       for i := 0 to logbox.lines.count - 1 do
         if fileMatch('*' + mask + '*', logbox.lines[i]) then
-          s.append(logbox.lines[i] + CRLF);
-    if s.length() = 0 then
+          s.Append(logbox.lines[i] + CRLF);
+    if s.Length() = 0 then
     begin
       msgDlg('It''s empty', MB_ICONWARNING);
       exit;
     end;
-    fn := saveTempFile(s.get());
+    fn := saveTempFile(s.Get());
   finally
     s.free
   end;
@@ -9020,7 +9026,7 @@ begin
   s := files;
   while s > '' do
   begin
-    fn := chopLine(s);
+    fn := ChopLine(s);
     // we must resolve links here, or we may miss duplicates
     if isExtension(fn, '.lnk') or fileExists(fn + '\target.lnk') then
     // mod by mars
@@ -9050,7 +9056,7 @@ begin
   addingItemsCounter := 0;
   try
     repeat
-      fn := chopLine(files);
+      fn := ChopLine(files);
       if fn = '' then
         continue;
       f := Tfile.create(fn);
@@ -9476,8 +9482,8 @@ procedure deleteCFG();
 begin
   deleteFile(lastUpdateCheckFN);
   deleteFile(cfgPath + CFG_FILE);
-  deleteRegistry(CFG_KEY);
-  deleteRegistry(CFG_KEY, HKEY_LOCAL_MACHINE);
+  DeleteRegistry(CFG_KEY);
+  DeleteRegistry(CFG_KEY, HKEY_LOCAL_MACHINE);
 end;
 
 procedure Tmainfrm.Clearoptionsandquit1click(Sender: Tobject);
@@ -10432,7 +10438,7 @@ begin
   cnv.Font.name := 'Small Fonts';
   cnv.Font.size := 7;
   SetBkMode(cnv.Handle, Transparent);
-  top := (graph.maxV / 1000) * safeDiv(10.0, graph.rate);
+  top := (graph.maxV / 1000) * SafeDiv(10.0, graph.rate);
   s := format('Top speed: %.1f KB/s    ---    %d kbps', [top, round(top * 8)]);
   cnv.TextOut(r.Right - cnv.TextWidth(s) - 20, 3, s);
   if assigned(globalLimiter) and (globalLimiter.maxSpeed < MAXINT) then
@@ -11766,10 +11772,10 @@ end; // checkMultiInstance
 
 function isIntegratedInShell(): boolean;
 begin
-  result := (loadregistry('*\shell\Add to HFS\command', '', HKEY_CLASSES_ROOT) >
-    '') and (loadregistry('Folder\shell\Add to HFS\command', '',
-    HKEY_CLASSES_ROOT) > '') and (loadregistry('.vfs', '', HKEY_CLASSES_ROOT) >
-    '') and (loadregistry('.vfs\shell\Open\command', '',
+  result := (LoadRegistry('*\shell\Add to HFS\command', '', HKEY_CLASSES_ROOT) >
+    '') and (LoadRegistry('Folder\shell\Add to HFS\command', '',
+    HKEY_CLASSES_ROOT) > '') and (LoadRegistry('.vfs', '', HKEY_CLASSES_ROOT) >
+    '') and (LoadRegistry('.vfs\shell\Open\command', '',
     HKEY_CLASSES_ROOT) > '')
 end; // isIntegratedInShell
 
@@ -11779,28 +11785,28 @@ var
 
   function addToContextMenuFor(kind: string): boolean;
   begin
-    deleteRegistry(kind + '\shell\HFS', HKEY_CLASSES_ROOT);
+    DeleteRegistry(kind + '\shell\HFS', HKEY_CLASSES_ROOT);
     // legacy: till version 2.0 beta23 we used this key. this call is to keep the registry clean from old unused keys.
-    result := saveregistry(kind + '\shell\Add to HFS\command', '',
+    result := SaveRegistry(kind + '\shell\Add to HFS\command', '',
       '"' + exe + '" "%1"', HKEY_CLASSES_ROOT);
   end;
 
 begin
   exe := expandFileName(paramStr(0));
   result := addToContextMenuFor('*') and addToContextMenuFor('Folder') and
-    saveregistry('.vfs', '', 'HFS file system', HKEY_CLASSES_ROOT) and
-    saveregistry('.vfs\shell\Open\command', '', '"' + exe + '" "%1"',
+    SaveRegistry('.vfs', '', 'HFS file system', HKEY_CLASSES_ROOT) and
+    SaveRegistry('.vfs\shell\Open\command', '', '"' + exe + '" "%1"',
     HKEY_CLASSES_ROOT)
 end; // integrateInShell
 
 procedure disintegrateShell();
 begin
-  deleteRegistry('*\shell\Add to HFS', HKEY_CLASSES_ROOT);
-  deleteRegistry('*\shell\HFS', HKEY_CLASSES_ROOT);
-  deleteRegistry('Folder\shell\Add to HFS', HKEY_CLASSES_ROOT);
-  deleteRegistry('Folder\shell\HFS', HKEY_CLASSES_ROOT);
-  deleteRegistry('.vfs\shell\Open\command', HKEY_CLASSES_ROOT);
-  deleteRegistry('.vfs', HKEY_CLASSES_ROOT);
+  DeleteRegistry('*\shell\Add to HFS', HKEY_CLASSES_ROOT);
+  DeleteRegistry('*\shell\HFS', HKEY_CLASSES_ROOT);
+  DeleteRegistry('Folder\shell\Add to HFS', HKEY_CLASSES_ROOT);
+  DeleteRegistry('Folder\shell\HFS', HKEY_CLASSES_ROOT);
+  DeleteRegistry('.vfs\shell\Open\command', HKEY_CLASSES_ROOT);
+  DeleteRegistry('.vfs', HKEY_CLASSES_ROOT);
 end; // disintegrateShell
 
 procedure uninstall();
@@ -11869,7 +11875,7 @@ begin
             mainfrm.setCfg(loadFile(fn));
           end;
         'c':
-          mainfrm.setCfg(unescapeNL(getSinglePar()));
+          mainfrm.setCfg(UnescapeNL(getSinglePar()));
       end;
       for consume := 1 to consume do
         removeString(params, i);
@@ -12151,7 +12157,7 @@ begin
       exit;
     dyndns.host := trim(dyndns.host);
     if pos('://', dyndns.host) > 0 then
-      chop('://', dyndns.host);
+      Chop('://', dyndns.host);
     if pos('.', dyndns.host) > 0 then
     begin
       result := TRUE;
@@ -12570,7 +12576,7 @@ end;
 function getTplEditor(): string;
 begin
   result := first([if_(fileExists(tplEditor), nonEmptyConcat('"', tplEditor,
-    '"')), loadregistry
+    '"')), LoadRegistry
     ('SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\notepad++.exe', '',
     HKEY_LOCAL_MACHINE), 'notepad.exe'])
 end;
@@ -12812,7 +12818,7 @@ function Tmainfrm.finalInit(): boolean;
   var
     i: integer;
   begin
-    result := loadregistry('HTTP\shell\open\command', '', HKEY_CLASSES_ROOT);
+    result := LoadRegistry('HTTP\shell\open\command', '', HKEY_CLASSES_ROOT);
     if result = '' then
       exit;
     i := nonQuotedPos(' ', result);
@@ -12829,10 +12835,10 @@ function Tmainfrm.finalInit(): boolean;
     var
       s: string;
     begin
-      s := loadregistry(kind + '\shell\Add to HFS\command', '',
+      s := LoadRegistry(kind + '\shell\Add to HFS\command', '',
         HKEY_CLASSES_ROOT);
       if (s > '') and (s <> should) then
-        saveregistry(kind + '\shell\Add to HFS\command', '', should,
+        SaveRegistry(kind + '\shell\Add to HFS\command', '', should,
           HKEY_CLASSES_ROOT);
     end;
 
@@ -13079,7 +13085,7 @@ procedure Tmainfrm.progFrmHttpGetUpdate(Sender: Tobject; buffer: pointer;
 begin
   with Sender as THttpCli do
   begin
-    progFrm.progress := safeDiv(0.0 + RcvdCount, contentLength);
+    progFrm.progress := SafeDiv(0.0 + RcvdCount, contentLength);
     if progFrm.cancelRequested then
       abort();
   end;
@@ -13323,7 +13329,7 @@ begin
 
   while current > '' do
   begin
-    v := chopLine(current);
+    v := ChopLine(current);
     k := chop('=', v);
     if ansiEndsStr('-width', k) or ansiEndsStr('-height', k) or
       stringExists(k, ['active', 'window', 'graph-visible', 'graph-size', 'ip',
@@ -13338,7 +13344,7 @@ begin
     if k = 'dynamic-dns-updater' then
     begin // remove login data
       v := base64decode(v);
-      chop('//', v);
+      Chop('//', v);
       v := chop('/', v);
       if ansiContainsStr(v, '@') then
         chop('@', v);

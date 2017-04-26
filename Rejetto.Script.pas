@@ -61,7 +61,10 @@ uses
   Rejetto.Utils, Rejetto.Parser, Rejetto.HTTPServer,
   trayLib,
   comctrls, math, controls, forms, clipbrd, MMsystem,
-  HFS.Consts, Rejetto.Consts, Rejetto.Utils.Text, Rejetto.Math,
+  HFS.Consts,
+  Rejetto.Consts, Rejetto.Math,
+  Rejetto.Utils.Text,
+  Rejetto.Utils.URL,
   Rejetto.Utils.Conversion,
   HFS.Accounts;
 
@@ -819,7 +822,7 @@ var
   procedure encodeuri();
   var
     i: integer;
-    cs: Tcharset;
+    cs: TCharSet;
   begin
     result := '';
     try
@@ -1075,16 +1078,16 @@ var
   begin
     e := pars.count - 2; // 3 parameters minimum (the check is outside)
     code := macroDequote(par(pars.count - 1));
-    with TFastStringAppend.create do
+    with TFastStringAppender.create do
       try
         for i := 1 to e do
         begin
           setVar(p, par(i));
           s := code;
           applyMacrosAndSymbols(s, cbMacros, cbData);
-          append(s);
+          Append(s);
         end;
-        result := reset();
+        result := Reset();
       finally
         free
       end;
@@ -1110,17 +1113,17 @@ var
       if (e < b) and (d > 0) then
         d := -d; // we care
       code := macroDequote(code);
-      with TFastStringAppend.create do
+      with TFastStringAppender.create do
         try
           for i := 1 to (e - b) div d + 1 do
           begin
             setVar(p, intToStr(b));
             s := code;
             applyMacrosAndSymbols(s, cbMacros, cbData);
-            append(s);
+            Append(s);
             inc(b, d);
           end;
-          result := reset();
+          result := Reset();
         finally
           free
         end;
@@ -1132,12 +1135,12 @@ var
   var
     bTest, bDo, s: string;
     never: boolean;
-    res: TFastStringAppend;
+    res: TFastStringAppender;
     space: THashedStringList;
     start, timeout: Tdatetime;
   begin
     result := '';
-    res := TFastStringAppend.create;
+    res := TFastStringAppender.create;
     try
       never := true;
       bDo := macroDequote(par(1)); // do-block
@@ -1174,13 +1177,13 @@ var
           break;
         s := bDo;
         applyMacrosAndSymbols(s, cbMacros, cbData);
-        res.append(s);
+        res.Append(s);
         never := FALSE;
       until FALSE;
       if never then
-        res.append(macroDequote(par('else'))); // else-block
+        res.Append(macroDequote(par('else'))); // else-block
     finally
-      result := res.reset();
+      result := res.Reset();
       try
         setVar(parEx('var'), result);
         result := '';
@@ -1195,7 +1198,7 @@ var
     space, h: THashedStringList;
     i: integer;
   begin
-    chopLine(txt); // first line is just a useless header
+    ChopLine(txt); // first line is just a useless header
     // search the variable in the varspace
     space := getVarSpace(varname);
     if not satisfied(space) then
@@ -1211,7 +1214,7 @@ var
     // create the table object
     h := THashedStringList.create();
     while txt > '' do
-      h.add(unescapeNL(chopLine(txt)));
+      h.add(UnescapeNL(ChopLine(txt)));
     // assign the variable value
     txt := h.text;
     if i < 0 then
@@ -1309,12 +1312,12 @@ var
       if not encode then
         s := space.valueFromIndex[i]
       else
-        with TFastStringAppend.create do
+        with TFastStringAppender.create do
           try // table must be codified, or they won't work at load-time
-            append(ENCODED_TABLE_HEADER);
+            Append(ENCODED_TABLE_HEADER);
             for i := 0 to h.count - 1 do
-              append(escapeNL(h.strings[i]) + CRLF);
-            s := get();
+              Append(EscapeNL(h.strings[i]) + CRLF);
+            s := Get();
           finally
             free
           end;
@@ -1597,10 +1600,10 @@ var
     space: THashedStringList;
     sep: string;
     i: integer;
-    fs: TFastStringAppend;
+    fs: TFastStringAppender;
     values: boolean;
   begin
-    fs := TFastStringAppend.create;
+    fs := TFastStringAppender.create;
     try
       values := sameText(par('get'), 'values');
       sep := par('separator', FALSE, '|');
@@ -1608,14 +1611,14 @@ var
       for i := 0 to space.count - 1 do
         if ansiStartsText(p, space.names[i]) then
         begin
-          if fs.length > 0 then
-            fs.append(sep);
+          if fs.Length > 0 then
+            fs.Append(sep);
           if values then
-            fs.append(space.valueFromIndex[i])
+            fs.Append(space.valueFromIndex[i])
           else
-            fs.append(space.names[i]);
+            fs.Append(space.names[i]);
         end;
-      result := fs.get();
+      result := fs.Get();
     finally
       fs.free
     end;
@@ -1798,7 +1801,7 @@ var
   procedure dir();
   var
     sr: TSearchRec;
-    fs: TFastStringAppend;
+    fs: TFastStringAppender;
     sep, s: string;
   begin
     result := '';
@@ -1811,15 +1814,15 @@ var
 
     sep := par('separator', FALSE, '|');
     try
-      fs := TFastStringAppend.create();
+      fs := TFastStringAppender.create();
       repeat
         if (sr.name = '.') or (sr.name = '..') then
           continue;
-        if fs.length > 0 then
-          fs.append(sep);
-        fs.append(sr.name);
+        if fs.Length > 0 then
+          fs.Append(sep);
+        fs.Append(sr.name);
       until findNext(sr) <> 0;
-      result := fs.get();
+      result := fs.Get();
     finally
       findClose(sr);
       freeAndNIL(fs);
@@ -2774,9 +2777,9 @@ begin
       if name = 'mul' then
         result := floatToStr(parF(0) * parF(1));
       if name = 'div' then
-        result := floatToStr(safeDiv(parF(0), parF(1)));
+        result := floatToStr(SafeDiv(parF(0), parF(1)));
       if name = 'mod' then
-        result := intToStr(safeMod(parI(0), parI(1)));
+        result := intToStr(SafeMod(parI(0), parI(1)));
 
       if stringExists(name, ['min', 'max']) then
         minOrMax();

@@ -3,24 +3,22 @@ unit Rejetto.Utils.Registry;
 interface
 
 uses
-  Winapi.Windows,
-  System.Win.Registry;
+  Winapi.Windows;
 
-function loadregistry(key, value: string; root: HKEY = 0): string;
-function saveregistry(key, value, data: string; root: HKEY = 0): boolean;
-function deleteRegistry(key, value: string; root: HKEY = 0): boolean; overload;
-function deleteRegistry(key: string; root: HKEY = 0): boolean; overload;
+function LoadRegistry(key, value: string; root: HKEY = 0): string;
+function SaveRegistry(key, value, data: string; root: HKEY = 0): boolean;
+function SeleteRegistry(key, value: string; root: HKEY = 0): boolean; overload;
+function DeleteRegistry(key: string; root: HKEY = 0): boolean; overload;
 
 implementation
 
 uses
-  System.SysUtils,
-  System.Classes;
+  System.SysUtils, System.Classes, System.Win.Registry;
 
-function loadregistry(key, value: string; root: HKEY = 0): string;
+function LoadRegistry(key, value: string; root: HKEY = 0): string;
 begin
   result := '';
-  with Tregistry.create do
+  with TRegistry.create do
     try
       try
         if root > 0 then
@@ -31,16 +29,16 @@ begin
           closeKey();
         end;
       finally
-        free
+        Free;
       end
     except
     end
 end;
 
-function saveregistry(key, value, data: string; root: HKEY = 0): boolean;
+function SaveRegistry(key, value, data: string; root: HKEY = 0): boolean;
 begin
   result := FALSE;
-  with Tregistry.create do
+  with TRegistry.create do
     try
       if root > 0 then
         rootKey := root;
@@ -53,31 +51,31 @@ begin
           result := TRUE;
         end;
       finally
-        free
+        Free;
       end
     except
     end;
 end;
 
-function deleteRegistry(key, value: string; root: HKEY = 0): boolean; overload;
+function SeleteRegistry(key, value: string; root: HKEY = 0): boolean; overload;
 var
-  reg: Tregistry;
+  reg: TRegistry;
 begin
-  reg := Tregistry.create;
+  reg := TRegistry.create;
   if root > 0 then
     reg.rootKey := root;
   result := reg.openKey(key, FALSE) and reg.DeleteValue(value);
   reg.free
 end;
 
-function deleteRegistry(key: string; root: HKEY = 0): boolean; overload;
+function DeleteRegistry(key: string; root: HKEY = 0): boolean; overload;
 var
-  reg: Tregistry;
+  reg: TRegistry;
   ss: TstringList;
   i: integer;
   deleteIt: boolean;
 begin
-  reg := Tregistry.create;
+  reg := TRegistry.create;
   if root > 0 then
     reg.rootKey := root;
   result := reg.DeleteKey(key);

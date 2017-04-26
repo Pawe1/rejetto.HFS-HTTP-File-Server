@@ -7,7 +7,7 @@ uses
   Rejetto.Utils.Text;
 
 function boolToPtr(b: boolean): pointer;
-function strToCharset(s: string): TcharSet;
+function strToCharset(s: string): TCharSet;
 function rectToStr(r: Trect): string;
 function strToRect(s: string): Trect;
 function dt_(s: string): Tdatetime;
@@ -29,7 +29,7 @@ begin
   result := if_(b, PTR1, NIL)
 end;
 
-function strToCharset(s: string): TcharSet;
+function strToCharset(s: string): TCharSet;
 var
   i: integer;
 begin

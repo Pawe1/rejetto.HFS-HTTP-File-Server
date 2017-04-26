@@ -150,7 +150,7 @@ function resolveLnk(fn: string): string;
 function validFilename(s: string): boolean;
 function validFilepath(fn: string; acceptUnits: boolean = TRUE): boolean;
 function match(mask, txt: pchar; fullMatch: boolean = TRUE;
-  charsNotWildcard: TcharSet = []): integer;
+  charsNotWildcard: TCharSet = []): integer;
 function filematch(mask, fn: string): boolean;
 function appendFile(fn: string; data: string): boolean;
 function getFilename(var f: file): string;
@@ -212,13 +212,13 @@ function getCRC(data: string): integer;
 function dotted(i: int64): string;
 function validUsername(s: string; acceptEmpty: boolean = FALSE): boolean;
 function anycharIn(chars, s: string): boolean; overload;
-function anycharIn(chars: TcharSet; s: string): boolean; overload;
+function anycharIn(chars: TCharSet; s: string): boolean; overload;
 function int0(i, digits: integer): string;
 function addressmatch(mask, address: string): boolean;
 function getTill(ss, s: string; included: boolean = FALSE): string; overload;
 function getTill(i: integer; s: string): string; overload;
 function singleLine(s: string): boolean;
-function poss(chars: TcharSet; s: string; ofs: integer = 1): integer;
+function poss(chars: TCharSet; s: string; ofs: integer = 1): integer;
 function optUTF8(bool: boolean; s: string): string; overload;
 function optUTF8(tpl: TTemplate; s: string): string; overload;
 function optAnsi(bool: boolean; s: string): string;
@@ -230,23 +230,22 @@ function first(a, b: double): double; overload;
 function first(a, b: pointer): pointer; overload;
 function first(a, b: string): string; overload;
 function first(a: array of string): string; overload;
-function stripChars(s: string; cs: TcharSet; invert: boolean = FALSE): string;
+function stripChars(s: string; cs: TCharSet; invert: boolean = FALSE): string;
 function isOnlyDigits(s: string): boolean;
 function strAt(s, ss: string; at: integer): boolean; inline;
 function reduceSpaces(s: string; replacement: string = ' ';
-  spaces: TcharSet = []): string;
+  spaces: TCharSet = []): string;
 function countSubstr(ss: string; s: string): integer;
-function trim2(s: string; chars: TcharSet): string;
-procedure urlToStrings(s: string; sl: Tstrings);
+function trim2(s: string; chars: TCharSet): string;
 function reCB(expr, subj: string; cb: TreCB; data: pointer = NIL): string;
 function reMatch(s, exp: string; mods: string = 'm'; ofs: integer = 1;
-  subexp: PstringDynArray = NIL): integer;
+  subexp: PStringDynArray = NIL): integer;
 function reReplace(subj, exp, repl: string; mods: string = 'm'): string;
 function reGet(s, exp: string; subexpIdx: integer = 1; mods: string = '!mi';
   ofs: integer = 1): string;
 function getSectionAt(p: pchar; out name: string): boolean;
 function isSectionAt(p: pchar): boolean;
-function dequote(s: string; quoteChars: TcharSet = ['"']): string;
+function dequote(s: string; quoteChars: TCharSet = ['"']): string;
 function quoteIfAnyChar(badChars, s: string; quote: string = '"';
   unquote: string = '"'): string;
 function getKeyFromString(s: string; key: string; def: string = ''): string;
@@ -278,10 +277,10 @@ var
   r: string;
   last: integer;
   re: TregExpr;
-  s: TFastStringAppend;
+  s: TFastStringAppender;
 begin
   re := TregExpr.create;
-  s := TFastStringAppend.create;
+  s := TFastStringAppender.create;
   try
     re.modifierI := TRUE;
     re.ModifierS := FALSE;
@@ -293,13 +292,13 @@ begin
         r := re.match[0];
         cb(re, r, data);
         if re.MatchPos[0] > 1 then
-          s.append(substr(subj, last, re.MatchPos[0] - 1));
+          s.Append(substr(subj, last, re.MatchPos[0] - 1));
         // we must IF because 0 is the end of string for substr()
-        s.append(r);
+        s.Append(r);
         last := re.MatchPos[0] + re.matchLen[0];
       until not re.execNext();
-    s.append(substr(subj, last));
-    result := s.get();
+    s.Append(substr(subj, last));
+    result := s.Get();
   finally
     re.free;
     s.free;
@@ -533,7 +532,7 @@ begin
 end; // reCache
 
 function reMatch(s, exp: string; mods: string = 'm'; ofs: integer = 1;
-  subexp: PstringDynArray = NIL): integer;
+  subexp: PStringDynArray = NIL): integer;
 var
   i: integer;
   re: TregExpr;
@@ -1115,7 +1114,7 @@ begin
   end;
 end; // resolveLnk
 
-function anycharIn(chars: TcharSet; s: string): boolean;
+function anycharIn(chars: TCharSet; s: string): boolean;
 begin
   result := poss(chars, s) > 0
 end;
@@ -1299,7 +1298,7 @@ begin
 end;
 
 function match(mask, txt: pchar; fullMatch: boolean;
-  charsNotWildcard: TcharSet): integer;
+  charsNotWildcard: TCharSet): integer;
 // charsNotWildcard is for chars that are not allowed to be matched by wildcards, like CR/LF
 var
   i: integer;
@@ -1779,7 +1778,7 @@ function getExternalAddress(var res: string; provider: Pstring = NIL): boolean;
     IPservices := NIL;
     while src > '' do
     begin
-      l := chopLine(src);
+      l := ChopLine(src);
       if ansiStartsText('http://', l) then
         addString(l, IPservices);
     end;
@@ -1817,7 +1816,7 @@ begin
     exit
   end;
   if mark > '' then
-    chop(mark, s);
+    Chop(mark, s);
   s := trim(s);
   if s = '' then
     exit;
@@ -2052,7 +2051,7 @@ end; // ipToInt
 
 function getShellFolder(id: string): string;
 begin
-  result := loadregistry
+  result := LoadRegistry
     ('Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders', id,
     HKEY_CURRENT_USER);
 end; // getShellFolder
@@ -2144,7 +2143,7 @@ begin
     strLcopy(@result[1], from, l);
 end; // getStr
 
-function poss(chars: TcharSet; s: string; ofs: integer = 1): integer;
+function poss(chars: TCharSet; s: string; ofs: integer = 1): integer;
 begin
   for result := ofs to length(s) do
     if s[result] in chars then
@@ -2369,14 +2368,14 @@ begin
 
   while s > '' do
   begin
-    l := chopLine(s);
+    l := ChopLine(s);
     if pos('LISTENING', l) = 0 then
       continue;
     chop(':', l);
     p := chop(' ', l);
     if p <> port then
       continue;
-    chop('LISTENING', l);
+    Chop('LISTENING', l);
     result := strToIntDef(trim(l), -1);
     exit;
   end;
@@ -2402,7 +2401,7 @@ begin
   end;
 end; // pid2file
 
-function stripChars(s: string; cs: TcharSet; invert: boolean = FALSE): string;
+function stripChars(s: string; cs: TCharSet; invert: boolean = FALSE): string;
 var
   i, l, ofs: integer;
   b: boolean;
@@ -2498,7 +2497,7 @@ begin
 end;
 
 function reduceSpaces(s: string; replacement: string = ' ';
-  spaces: TcharSet = []): string;
+  spaces: TCharSet = []): string;
 var
   i, c, l: integer;
 begin
@@ -2545,7 +2544,7 @@ begin
   until FALSE;
 end; // countSubstr
 
-function trim2(s: string; chars: TcharSet): string;
+function trim2(s: string; chars: TCharSet): string;
 var
   b, e: integer;
 begin
@@ -2563,25 +2562,6 @@ begin
   result := b;
   b := FALSE
 end;
-
-procedure urlToStrings(s: string; sl: Tstrings);
-var
-  i, l, p: integer;
-  t: string;
-begin
-  i := 1;
-  l := length(s);
-  while i <= l do
-  begin
-    p := posEx('&', s, i);
-    t := decodeURL(xtpl(substr(s, i, if_(p = 0, 0, p - 1)), ['+', ' ']), FALSE);
-    // TODO should we instead try to decode utf-8? doing so may affect calls to {.force ansi.} in the template
-    sl.add(t);
-    if p = 0 then
-      exit;
-    i := p + 1;
-  end;
-end; // urlToStrings
 
 // extract at p the section name of a text, if any
 function getSectionAt(p: pchar; out name: string): boolean;
@@ -2863,7 +2843,7 @@ begin
     previous := d;
 end; // newMtime
 
-function dequote(s: string; quoteChars: TcharSet = ['"']): string;
+function dequote(s: string; quoteChars: TCharSet = ['"']): string;
 begin
   if (s > '') and (s[1] = s[length(s)]) and (s[1] in quoteChars) then
     result := copy(s, 2, length(s) - 2)

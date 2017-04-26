@@ -6,9 +6,9 @@ function compare_(i1, i2: double): integer; overload;
 function compare_(i1, i2: int64): integer; overload;
 function compare_(i1, i2: integer): integer; overload;
 
-function safeDiv(a, b: real; default: real = 0): real; overload;
-function safeDiv(a, b: int64; default: int64 = 0): int64; overload;
-function safeMod(a, b: int64; default: int64 = 0): int64;
+function SafeDiv(a, b: real; default: real = 0): real; overload;
+function SafeDiv(a, b: int64; default: int64 = 0): int64; overload;
+function SafeMod(a, b: int64; default: int64 = 0): int64;
 
 implementation
 
@@ -42,7 +42,7 @@ begin
     result := 0;
 end;
 
-function safeMod(a, b: int64; default: int64 = 0): int64;
+function SafeMod(a, b: int64; default: int64 = 0): int64;
 begin
   if b = 0 then
     result := default
@@ -50,7 +50,7 @@ begin
     result := a mod b;
 end;
 
-function safeDiv(a, b: int64; default: int64 = 0): int64; inline;
+function SafeDiv(a, b: int64; default: int64 = 0): int64; inline;
 begin
   if b = 0 then
     result := default
@@ -58,7 +58,7 @@ begin
     result := a div b;
 end;
 
-function safeDiv(a, b: real; default: real = 0): real; inline;
+function SafeDiv(a, b: real; default: real = 0): real; inline;
 begin
   if b = 0 then
     result := default

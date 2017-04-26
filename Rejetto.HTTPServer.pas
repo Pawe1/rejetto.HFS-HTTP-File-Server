@@ -299,10 +299,6 @@ const
     'Ignore', 'Unallowed method', 'Redirect', 'Overload', 'Request too large',
     'Moved permanently', 'Not Modified');
 
-// decode/decode url
-function decodeURL(url: string; utf8: boolean = TRUE): string;
-function encodeURL(url: string; nonascii: boolean = TRUE;
-  spaces: boolean = TRUE; unicode: boolean = FALSE): string;
 // returns true if address is not suitable for the internet
 function isLocalIP(ip: string): boolean;
 // base64 encoding
@@ -312,8 +308,6 @@ function base64decode(s: string): string;
 function getIP(): string;
 // ensure a string ends with a specific string
 procedure includeTrailingString(var s: string; ss: string);
-// gets unicode code for specified character
-function charToUnicode(c: char): dword;
 // this version of pos() is able to skip the pattern if inside quotes
 function nonQuotedPos(ss, s: string; ofs: integer = 1; quote: string = '"';
   unquote: string = '"'): integer;
@@ -324,10 +318,10 @@ implementation
 
 uses
   Winapi.Windows,
-  Rejetto.Utils.Text;
+  Rejetto.Utils.Text, Rejetto.Utils.URL,
+  Rejetto.Consts;
 
 const
-  CRLF = #13#10;
   MAX_REQUEST_LENGTH = 16 * 1024;
   MAX_INPUT_BUFFER_LENGTH = 256 * 1024;
   // used as body content when the user did not specify any
@@ -356,11 +350,6 @@ procedure includeTrailingString(var s: string; ss: string);
 begin
   if copy(s, length(s) - length(ss) + 1, length(ss)) <> ss then
     s := s + ss
-end;
-
-function charToUnicode(c: char): dword;
-begin
-  stringToWideChar(c, @result, 4)
 end;
 
 function isLocalIP(ip: string): boolean;
@@ -505,68 +494,6 @@ begin
     inc(i, 4);
   end;
 end; // base64decode
-
-function decodeURL(url: string; utf8: boolean = TRUE): string;
-var
-  i, l: integer;
-  c: char;
-begin
-  setLength(result, length(url));
-  l := 0;
-  i := 1;
-  while i <= length(url) do
-  begin
-    if (url[i] = '%') and (i + 2 <= length(url)) then
-      try
-        c := char(strToInt('$' + url[i + 1] + url[i + 2]));
-        inc(i, 2); // three chars for one
-      except
-        c := url[i]
-      end
-    else
-      c := url[i];
-
-    inc(i);
-    inc(l);
-    result[l] := c;
-  end;
-  setLength(result, l);
-  if utf8 then
-  begin
-    url := utf8ToAnsi(result);
-    // if the string is not UTF8 compliant, the result is empty
-    if url > '' then
-      result := url;
-  end;
-end;
-
-function encodeURL(url: string; nonascii: boolean = TRUE;
-  spaces: boolean = TRUE; unicode: boolean = FALSE): string;
-var
-  i: integer;
-  encodePerc, encodeUni: set of char;
-begin
-  result := '';
-  encodeUni := [];
-  if nonascii then
-    encodeUni := [#128 .. #255];
-  encodePerc := [#0 .. #31, '#', '%', '?', '"', '''', '&', '<', '>', ':'];
-  // actually ':' needs encoding only in relative url
-  if spaces then
-    include(encodePerc, ' ');
-  if not unicode then
-  begin
-    encodePerc := encodePerc + encodeUni;
-    encodeUni := [];
-  end;
-  for i := 1 to length(url) do
-    if url[i] in encodePerc then
-      result := result + '%' + intToHex(ord(url[i]), 2)
-    else if url[i] in encodeUni then
-      result := result + '&#' + intToStr(charToUnicode(url[i])) + ';'
-    else
-      result := result + url[i];
-end; // encodeURL
 
 function getIP(): string;
 var
@@ -1096,9 +1023,9 @@ procedure ThttpConn.processInputBuffer();
 
     request.url := chop(' ', r);
 
-    s := uppercase(chopLine(r));
+    s := uppercase(ChopLine(r));
     // if 'HTTP/' is not found, chop returns S
-    if chop('HTTP/', s) = '' then
+    if Chop('HTTP/', s) = '' then
       request.ver := s;
 
     request.headers.text := r;
@@ -1144,7 +1071,7 @@ procedure ThttpConn.processInputBuffer();
     else if ansiStartsText('multipart/form-data', s) then
     begin
       post.mode := PM_MULTIPART;
-      chop('boundary=', s);
+      Chop('boundary=', s);
       post.boundary := '--' + s;
     end;
     post.length := StrToInt64Def(getHeader('Content-Length'), 0);
@@ -1212,7 +1139,7 @@ procedure ThttpConn.processInputBuffer();
       if copy(buffer, i + length(post.boundary), 4) = '--' + CRLF then
       begin
         handleLeftData(i);
-        chop('--' + CRLF, buffer);
+        Chop('--' + CRLF, buffer);
         tryNotify(HE_POST_END);
         state := HCS_REPLYING;
         break;
@@ -1223,13 +1150,13 @@ procedure ThttpConn.processInputBuffer();
       handleLeftData(i);
       post.data := '';
       post.filename := '';
-      post.header := chop(CRLF + CRLF, buffer);
-      chopLine(post.header);
+      post.header := Chop(CRLF + CRLF, buffer);
+      ChopLine(post.header);
       // parse the header part
       s := post.header;
       while s > '' do
       begin
-        l := chopLine(s);
+        l := ChopLine(s);
         if l = '' then
           continue;
         k := chop(':', l);

@@ -723,7 +723,7 @@ begin
     s := loadFile(path + sr.name);
     while s > '' do
     begin
-      l := chopline(s);
+      l := ChopLine(s);
       h := trim(chop('*', l));
       if h = '' then
         break;

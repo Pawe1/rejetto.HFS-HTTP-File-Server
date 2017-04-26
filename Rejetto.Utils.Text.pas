@@ -8,29 +8,29 @@ uses
 type
   Tnewline = (NL_UNK, NL_D, NL_A, NL_DA, NL_MIXED);
 
-  TcharSet = set of char;
-  PstringDynArray = ^TstringDynArray;
+  TCharSet = set of char;
+  PStringDynArray = ^TStringDynArray;
 
-  TFastStringAppend = class
+  TFastStringAppender = class
   protected
     buff: string;
     n: integer;
   public
-    function length(): integer;
-    function reset(): string;
-    function get(): string;
-    function append(s: string): integer;
+    function Length(): integer;
+    function Reset(): string;
+    function Get(): string;
+    function Append(s: string): integer;
   end;
 
   { split S in position where SS is found, the first part is returned
     the second part following SS is left in S }
-function chop(ss: string; var s: string): string; overload;
+function Chop(ss: string; var s: string): string; overload;
 // same as before, but separator is I
-function chop(i: integer; var s: string): string; overload;
+function Chop(i: integer; var s: string): string; overload;
 // same as before, but specifying separator length
-function chop(i, l: integer; var s: string): string; overload;
+function Chop(i, l: integer; var s: string): string; overload;
 // same as chop(lineterminator, s)
-function chopLine(var s: string): string; overload;
+function ChopLine(var s: string): string; overload;
 
 function replace(var s: string; ss: string; start, upTo: integer): integer;
 
@@ -40,18 +40,19 @@ function substr(s: string; after: string): string; overload;
 
 function xtpl(src: string; table: array of string): string;
 
-function escapeNL(s: string): string;
-function unescapeNL(s: string): string;
+// gets unicode code for specified character
+function charToUnicode(c: char): dword;
+
+function EscapeNL(s: string): string;
+function UnescapeNL(s: string): string;
 function HtmlEncode(s: string): string;
 
 implementation
 
 uses
-  System.SysUtils,
-  System.StrUtils,
-  System.Math;
+  System.SysUtils, System.StrUtils, System.Math;
 
-function chop(i, l: integer; var s: string): string; overload;
+function Chop(i, l: integer; var s: string): string; overload;
 begin
   if i = 0 then
   begin
@@ -63,17 +64,17 @@ begin
   delete(s, 1, i - 1 + l);
 end;
 
-function chop(ss: string; var s: string): string;
+function Chop(ss: string; var s: string): string;
 begin
-  result := chop(pos(ss, s), length(ss), s)
+  result := Chop(pos(ss, s), length(ss), s)
 end;
 
-function chop(i: integer; var s: string): string;
+function Chop(i: integer; var s: string): string;
 begin
-  result := chop(i, 1, s)
+  result := Chop(i, 1, s)
 end;
 
-function chopLine(var s: string): string;
+function ChopLine(var s: string): string;
 begin
   result := chop(#10, s);
   if (result > '') and (result[length(result)] = #13) then
@@ -98,21 +99,24 @@ begin
   else
   begin
     result := NL_MIXED;
+
     // search for an unpaired #10
     while (a > 0) and (s[a - 1] = #13) do
       a := posEx(#10, s, a + 1);
     if a > 0 then
       exit;
+
     // search for an unpaired #13
     l := length(s);
     while (d < l) and (s[d + 1] = #10) do
       d := posEx(#13, s, d + 1);
     if d > 0 then
       exit;
+
     // ok, all is paired
     result := NL_DA;
   end;
-end; // newlineType
+end;
 
 function replace(var s: string; ss: string; start, upTo: integer): integer;
 var
@@ -172,9 +176,9 @@ function HtmlEncode(s: string): string;
 var
   i: integer;
   p: string;
-  fs: TfastStringAppend;
+  fs: TFastStringAppender;
 begin
-  fs := TfastStringAppend.create;
+  fs := TFastStringAppender.create;
   try
     for i := 1 to length(s) do
     begin
@@ -187,15 +191,20 @@ begin
       else
         p := s[i];
       end;
-      fs.append(p);
+      fs.Append(p);
     end;
-    result := fs.get();
+    result := fs.Get();
   finally
     fs.free
   end;
 end;
 
-function escapeNL(s: string): string;
+function charToUnicode(c: char): dword;
+begin
+  stringToWideChar(c, @result, 4)
+end;
+
+function EscapeNL(s: string): string;
 begin
   s := replaceStr(s, '\', '\\');
   case newlineType(s) of
@@ -212,7 +221,7 @@ begin
   result := s;
 end;
 
-function unescapeNL(s: string): string;
+function UnescapeNL(s: string): string;
 var
   o, n: integer;
 begin
@@ -235,25 +244,25 @@ begin
   result := xtpl(s, ['\\', '\']);
 end;
 
-function TFastStringAppend.length(): integer;
+function TFastStringAppender.Length(): integer;
 begin
   result := n
 end;
 
-function TFastStringAppend.get(): string;
+function TFastStringAppender.Get(): string;
 begin
   setLength(buff, n);
   result := buff;
 end;
 
-function TFastStringAppend.reset(): string;
+function TFastStringAppender.Reset(): string;
 begin
-  result := get();
+  result := Get();
   buff := '';
   n := 0;
 end;
 
-function TFastStringAppend.append(s: string): integer;
+function TFastStringAppender.Append(s: string): integer;
 var
   ls, lb: integer;
 begin

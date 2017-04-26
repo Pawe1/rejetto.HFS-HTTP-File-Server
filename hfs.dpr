@@ -55,7 +55,8 @@ uses
   Rejetto.Utils.Registry in 'Rejetto.Utils.Registry.pas',
   Rejetto.Utils.Conversion in 'Rejetto.Utils.Conversion.pas',
   Rejetto.Math in 'Rejetto.Math.pas',
-  Rejetto.Consts in 'Rejetto.Consts.pas';
+  Rejetto.Consts in 'Rejetto.Consts.pas',
+  Rejetto.Utils.URL in 'Rejetto.Utils.URL.pas';
 
 {$R *.res}
 
@@ -80,10 +81,10 @@ begin
   params := paramsAsArray();
   processParams_before(params, 'i');
   loadCfg(ini, tpl);
-  chop('only-1-instance=', ini);
+  Chop('only-1-instance=', ini);
   if ini = '' then
     exit;
-  ini := chopLine(ini);
+  ini := ChopLine(ini);
   result := sameText(ini, 'yes');
 end;
 
