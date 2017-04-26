@@ -40,7 +40,7 @@ begin
   try
     Image1.picture.assign(gif);
   finally
-    gif.free
+    gif.Free;
   end;
 end;
 

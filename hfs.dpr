@@ -50,7 +50,12 @@ uses
   Rejetto.Script in 'Rejetto.Script.pas',
   HFS.Template in 'HFS.Template.pas',
   HFS.Consts in 'HFS.Consts.pas',
-  HFS.Accounts in 'HFS.Accounts.pas';
+  HFS.Accounts in 'HFS.Accounts.pas',
+  Rejetto.Utils.Text in 'Rejetto.Utils.Text.pas',
+  Rejetto.Utils.Registry in 'Rejetto.Utils.Registry.pas',
+  Rejetto.Utils.Conversion in 'Rejetto.Utils.Conversion.pas',
+  Rejetto.Math in 'Rejetto.Math.pas',
+  Rejetto.Consts in 'Rejetto.Consts.pas';
 
 {$R *.res}
 

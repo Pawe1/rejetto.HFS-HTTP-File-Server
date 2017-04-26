@@ -80,7 +80,7 @@ implementation
 uses
   System.StrUtils, System.Math,
   windows, dateUtils,
-  Rejetto.Utils, main;
+  Rejetto.Utils, main, Rejetto.Utils.Conversion, Rejetto.Utils.Text;
 
 /// ///////// TcachedTpls
 

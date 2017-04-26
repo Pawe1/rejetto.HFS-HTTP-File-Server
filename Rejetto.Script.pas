@@ -61,7 +61,8 @@ uses
   Rejetto.Utils, Rejetto.Parser, Rejetto.HTTPServer,
   trayLib,
   comctrls, math, controls, forms, clipbrd, MMsystem,
-  HFS.Consts,
+  HFS.Consts, Rejetto.Consts, Rejetto.Utils.Text, Rejetto.Math,
+  Rejetto.Utils.Conversion,
   HFS.Accounts;
 
 const
@@ -81,7 +82,7 @@ begin
   s := '';
   if ts then
     s := '<hr>' + dateTimeToStr(now()) + CRLF;
-  s := s + #13'<dt>' + htmlEncode(textIn) + '</dt><dd>' + htmlEncode(textOut)
+  s := s + #13'<dt>' + HtmlEncode(textIn) + '</dt><dd>' + HtmlEncode(textOut)
     + '</dd>';
   if flog = NIL then
   begin
@@ -776,8 +777,8 @@ var
 
     if not satisfied(fld) then
       exit;
-    e := htmlEncode(encodeMarkers(fld.url(true)));
-    d := htmlEncode(encodeMarkers(optUTF8(md.tpl,
+    e := HtmlEncode(encodeMarkers(fld.url(true)));
+    d := HtmlEncode(encodeMarkers(optUTF8(md.tpl,
       fld.getFolder() + fld.name + '/')));
     ae := split('/', e);
     ad := split('/', d);
@@ -1074,7 +1075,7 @@ var
   begin
     e := pars.count - 2; // 3 parameters minimum (the check is outside)
     code := macroDequote(par(pars.count - 1));
-    with TfastStringAppend.create do
+    with TFastStringAppend.create do
       try
         for i := 1 to e do
         begin
@@ -1109,7 +1110,7 @@ var
       if (e < b) and (d > 0) then
         d := -d; // we care
       code := macroDequote(code);
-      with TfastStringAppend.create do
+      with TFastStringAppend.create do
         try
           for i := 1 to (e - b) div d + 1 do
           begin
@@ -1131,12 +1132,12 @@ var
   var
     bTest, bDo, s: string;
     never: boolean;
-    res: TfastStringAppend;
+    res: TFastStringAppend;
     space: THashedStringList;
     start, timeout: Tdatetime;
   begin
     result := '';
-    res := TfastStringAppend.create;
+    res := TFastStringAppend.create;
     try
       never := true;
       bDo := macroDequote(par(1)); // do-block
@@ -1308,7 +1309,7 @@ var
       if not encode then
         s := space.valueFromIndex[i]
       else
-        with TfastStringAppend.create do
+        with TFastStringAppend.create do
           try // table must be codified, or they won't work at load-time
             append(ENCODED_TABLE_HEADER);
             for i := 0 to h.count - 1 do
@@ -1596,10 +1597,10 @@ var
     space: THashedStringList;
     sep: string;
     i: integer;
-    fs: TfastStringAppend;
+    fs: TFastStringAppend;
     values: boolean;
   begin
-    fs := TfastStringAppend.create;
+    fs := TFastStringAppend.create;
     try
       values := sameText(par('get'), 'values');
       sep := par('separator', FALSE, '|');
@@ -1797,7 +1798,7 @@ var
   procedure dir();
   var
     sr: TSearchRec;
-    fs: TfastStringAppend;
+    fs: TFastStringAppend;
     sep, s: string;
   begin
     result := '';
@@ -1810,7 +1811,7 @@ var
 
     sep := par('separator', FALSE, '|');
     try
-      fs := TfastStringAppend.create();
+      fs := TFastStringAppend.create();
       repeat
         if (sr.name = '.') or (sr.name = '..') then
           continue;
@@ -1998,7 +1999,7 @@ var
         s := md.f.name;
         if md.hideExt and md.f.isFile() then
           setLength(s, length(s) - length(extractFileExt(s)));
-        result := htmlEncode(macroQuote(optUTF8(md.tpl, s)))
+        result := HtmlEncode(macroQuote(optUTF8(md.tpl, s)))
       end
       else if name = '%item-size-b%' then
         result := intToStr(md.f.size)
@@ -2532,7 +2533,7 @@ begin
       end;
 
       if name = 'encode html' then
-        result := htmlEncode(p);
+        result := HtmlEncode(p);
 
       if name = 'play' then
       begin

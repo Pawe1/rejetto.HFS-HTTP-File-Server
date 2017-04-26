@@ -165,6 +165,7 @@ uses
   System.Types, System.Math,
   main, CheckLst,
   Rejetto.Utils, Rejetto.HTTPServer, strUtils, Rejetto, listSelectDlg,
+  Rejetto.Utils.Text, Rejetto.Consts, Rejetto.Math,
   HFS.Consts,
   HFS.Accounts;
 

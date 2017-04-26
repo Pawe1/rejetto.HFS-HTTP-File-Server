@@ -85,7 +85,8 @@ uses
   Rejetto.Utils, Rejetto.HTTPServer,
   optionsDlg,
   HFS.Consts,
-  HFS.Accounts;
+  HFS.Accounts,
+  Rejetto.Utils.Text;
 
 {$R *.dfm}
 

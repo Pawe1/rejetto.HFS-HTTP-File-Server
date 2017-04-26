@@ -83,7 +83,7 @@ type
 
   TfileAction = (FA_ACCESS, FA_DELETE, FA_UPLOAD);
 
-  Tfile = class (Tobject)
+  Tfile = class
   private
     locked: boolean;
     FDLcount: integer;
@@ -162,7 +162,7 @@ type
     function isLocked(): boolean;
   end; // Tfile
 
-  TfilterMethod = function(self:Tobject):boolean;
+  TfilterMethod = function(self: Tobject): boolean;
 
   Thelp = (HLP_NONE, HLP_TPL);
 
@@ -191,7 +191,7 @@ type
         since: Tdatetime;
       end;
   private
-    FlastFile: Tfile;
+    FLastFile: Tfile;
     procedure setLastFile(f: Tfile);
   public
     address: string;   // this is address shown in the log, and it is not necessarily the same as the socket address
@@ -246,7 +246,7 @@ type
     function sessionGet(k: string): string;
     procedure sessionSet(k, v: string);
     procedure disconnect(reason: string);
-    property lastFile: Tfile read FlastFile write setLastFile;
+    property lastFile: Tfile read FLastFile write setLastFile;
   end; // Tconndata
 
   Tautosave = record
@@ -982,7 +982,7 @@ implementation
 uses
   newuserpassDlg, optionsDlg, Rejetto.Utils, folderKindDlg, shellExtDlg, diffDlg, ipsEverDlg, Rejetto.Parser, MMsystem,
   Vcl.Imaging.GIFImg,
-  purgeDlg, filepropDlg, runscriptDlg, Rejetto.Script;
+  purgeDlg, filepropDlg, runscriptDlg, Rejetto.Script, Rejetto.Utils.Conversion, Rejetto.Utils.Text, Rejetto.Math, Rejetto.Consts, Rejetto.Utils.Registry;
 
 type
   Tsysidx2Record = record
@@ -2378,8 +2378,8 @@ end; // sessionSet
 // we'll automatically free and previous temporary object
 procedure TconnData.setLastFile(f: Tfile);
 begin
-  freeIfTemp(FlastFile);
-  FlastFile := f;
+  freeIfTemp(FLastFile);
+  FLastFile := f;
 end;
 
 constructor Tfile.create(fullpath: string);
@@ -3589,7 +3589,7 @@ var
   ofsRelItemUrl, ofsRelUrl, numberFiles, numberFolders, numberLinks: integer;
   img_file: boolean;
   totalBytes: int64;
-  fast: TfastStringAppend;
+  fast: TFastStringAppend;
   buildTime: Tdatetime;
   listing: TfileListing;
   diffTpl: TTemplate;
@@ -3794,7 +3794,7 @@ begin
     numberLinks := 0;
     totalBytes := 0;
     oneAccessible := FALSE;
-    fast := TfastStringAppend.create();
+    fast := TFastStringAppend.create();
     listing := TfileListing.create();
     hasher := Thasher.create();
     if fingerprintsChk.checked then
@@ -4000,7 +4000,7 @@ var
       with data.uploadResults[i] do
         files := files + xtpl(tpl2use[if_(reason = '', 'upload-success',
           'upload-failed')], ['%item-name%',
-          htmlEncode(macroQuote(optUTF8(tpl2use, fn))), '%item-url%',
+          HtmlEncode(macroQuote(optUTF8(tpl2use, fn))), '%item-url%',
           macroQuote(encodeURL(fn)), '%item-size%', smartsize(size),
           '%item-resource%', f.resource + '\' + fn, '%idx%', intToStr(i + 1),
           '%reason%', optUTF8(tpl2use, reason), '%speed%',
@@ -8931,11 +8931,11 @@ end;
 procedure Tmainfrm.openLogBtnClick(Sender: Tobject);
 var
   mask, fn: string;
-  s: TfastStringAppend;
+  s: TFastStringAppend;
   i: integer;
 begin
   mask := logSearchBox.text;
-  s := TfastStringAppend.create;
+  s := TFastStringAppend.create;
   try
     if Sender = openLogBtn then
       s.append(logbox.text)

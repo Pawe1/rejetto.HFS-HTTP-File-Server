@@ -29,7 +29,8 @@ procedure applyMacrosAndSymbols(var txt: string; cb: TmacroCB; cbData: pointer;
 implementation
 
 uses
-  HFS.Template;
+  HFS.Template,
+  Rejetto.Utils.Text;
 
 const
   MAX_RECUR_LEVEL = 50;

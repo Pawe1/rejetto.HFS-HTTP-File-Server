@@ -3,16 +3,14 @@ unit HFS.Consts;
 interface
 
 uses
-  Vcl.Graphics;
+  Vcl.Graphics,
+  Rejetto.Consts;
 
 const
   VERSION = '2.3j';
   VERSION_BUILD = '298';
   VERSION_STABLE = {$IFDEF STABLE } TRUE {$ELSE} FALSE {$ENDIF};
   CURRENT_VFS_FORMAT: integer = 1;
-
-  CRLF = #13#10;
-  TAB = #9;
 
   BAK_EXT = '.bak';
   CORRUPTED_EXT = '.corrupted';
@@ -35,9 +33,7 @@ const
   PROTECTED_FILES_MASK =
     'hfs.*;*.htm*;descript.ion;*.comment;*.md5;*.corrupted;*.lnk';
   G_VAR_PREFIX = '#';
-  HOURS = 24;
-  MINUTES = HOURS * 60;
-  SECONDS = MINUTES * 60; // Tdatetime * SECONDS = time in seconds
+
   ETA_FRAME = 5; // time frame for ETA (in seconds)
   DOWNLOAD_MIN_REFRESH_TIME: Tdatetime = 1 / (5 * SECONDS); // 5 Hz
   BYTES_GROUPING_THRESHOLD: Tdatetime = 1 / SECONDS; // group bytes in log
@@ -45,9 +41,6 @@ const
   STATUSBAR_REFRESH = 10; // tenth of second
   MAX_RECENT_FILES = 5;
   MANY_ITEMS_THRESHOLD = 1000;
-
-  KILO = 1024;
-  MEGA = KILO * KILO;
 
   COMPRESSION_THRESHOLD = 10 * KILO; // if more than X bytes, VFS files are compressed
   STARTING_SNDBUF = 32000;

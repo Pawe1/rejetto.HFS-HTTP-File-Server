@@ -33,13 +33,13 @@ uses
 
 procedure TrunScriptFrm.runBtnClick(Sender: TObject);
 var
-  tpl: TTemplate;
+  Template: TTemplate;
 begin
-  tpl := TTemplate.create;
+  Template := TTemplate.Create;
   try
     try
-      tpl.fullText := loadFile(tempScriptFilename);
-      resultBox.text := runScript(tpl[''], NIL, tpl);
+      Template.fullText := loadFile(tempScriptFilename);
+      resultBox.text := runScript(Template[''], NIL, Template);
       sizeLbl.Caption := getTill(':', sizeLbl.Caption) + ': ' +
         intToStr(length(resultBox.text));
     except
@@ -47,7 +47,7 @@ begin
         resultBox.text := e.message
     end;
   finally
-    tpl.free
+    Template.Free;
   end;
 end;
 

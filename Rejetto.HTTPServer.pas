@@ -16,8 +16,6 @@ Copyright (C) 2002-2014 Massimo Melina (www.rejetto.com)
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 
-HTTP Server Lib
-
 ==== TO DO
 * upload bandwidth control (can it be done without multi-threading?)
 
@@ -291,8 +289,8 @@ type
 
 const
   TIMER_HZ = 100;
-  MINIMUM_CHUNK_SIZE = 2*1024;
-  MAXIMUM_CHUNK_SIZE = 1024*1024;
+  MINIMUM_CHUNK_SIZE = 2 * 1024;
+  MAXIMUM_CHUNK_SIZE = 1024 * 1024;
   HRM2CODE: array [ThttpReplyMode] of integer = (200, 200, 403, 401, 404, 400,
   	500, 0, 0, 405, 302, 503, 413, 301, 304 );
   METHOD2STR: array [ThttpMethod] of string = ('UNK','GET','POST','HEAD');
@@ -301,15 +299,6 @@ const
     'Ignore', 'Unallowed method', 'Redirect', 'Overload', 'Request too large',
     'Moved permanently', 'Not Modified');
 
-  { split S in position where SS is found, the first part is returned
-    the second part following SS is left in S }
-function chop(ss: string; var s: string): string; overload;
-// same as before, but separator is I
-function chop(i: integer; var s: string): string; overload;
-// same as before, but specifying separator length
-function chop(i, l: integer; var s: string): string; overload;
-// same as chop(lineterminator, s)
-function chopLine(var s: string): string; overload;
 // decode/decode url
 function decodeURL(url: string; utf8: boolean = TRUE): string;
 function encodeURL(url: string; nonascii: boolean = TRUE;
@@ -334,7 +323,8 @@ function ipos(ss, s: string; ofs: integer = 1): integer; overload;
 implementation
 
 uses
-  Winapi.Windows;
+  Winapi.Windows,
+  Rejetto.Utils.Text;
 
 const
   CRLF = #13#10;
@@ -611,34 +601,7 @@ begin
     result := name + ': ' + str + CRLF;
 end;
 
-function chop(i, l: integer; var s: string): string; overload;
-begin
-  if i = 0 then
-  begin
-    result := s;
-    s := '';
-    exit;
-  end;
-  result := copy(s, 1, i - 1);
-  delete(s, 1, i - 1 + l);
-end; // chop
 
-function chop(ss: string; var s: string): string;
-begin
-  result := chop(pos(ss, s), length(ss), s)
-end;
-
-function chop(i: integer; var s: string): string;
-begin
-  result := chop(i, 1, s)
-end;
-
-function chopLine(var s: string): string;
-begin
-  result := chop(#10, s);
-  if (result > '') and (result[length(result)] = #13) then
-    setLength(result, length(result) - 1);
-end; // chopline
 
 /// //// SERVER
 

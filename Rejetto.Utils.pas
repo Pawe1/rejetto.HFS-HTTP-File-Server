@@ -24,7 +24,7 @@ unit Rejetto.Utils;
 interface
 
 uses
-  System.Types, Winapi.Windows, Vcl.Graphics, Vcl.Dialogs, System.Win.Registry,
+  System.Types, Winapi.Windows, Vcl.Graphics, Vcl.Dialogs,
   System.Classes, System.DateUtils, Winapi.ShlObj, Winapi.ShellAPI,
   Winapi.ActiveX, System.Win.ComObj, System.StrUtils, Vcl.Forms, Vcl.StdCtrls,
   Vcl.Controls, Winapi.PsAPI, Vcl.Menus, System.Math, Vcl.Imaging.GIFImg,
@@ -34,7 +34,8 @@ uses
   regexpr,
   Rejetto, Rejetto.HTTPServer,
   main, longinputDlg,
-  HFS.Template, HFS.Accounts;
+  HFS.Template, HFS.Accounts,
+  Rejetto.Utils.Text;
 
 const
   ILLEGAL_FILE_CHARS = [#0..#31,'/','\',':','?','*','"','<','>','|'];
@@ -48,11 +49,8 @@ var
   winVersion: (WV_LOWER, WV_2000, WV_VISTA, WV_SEVEN, WV_HIGHER);
 
 type
-  TcharSet = set of char;
   TreCB = procedure(re: TregExpr; var res: string; data: pointer);
-  PstringDynArray = ^TstringDynArray;
   TnameExistsFun = function(user: string): boolean;
-  Tnewline = (NL_UNK, NL_D, NL_A, NL_DA, NL_MIXED);
 
 procedure doNothing(); inline; // useful for readability
 function accountExists(user: string; evenGroups: boolean = FALSE): boolean;
@@ -86,9 +84,7 @@ function blend(from, to_: Tcolor; perc: real): Tcolor;
 function isNT(): boolean;
 function setClip(s: string): boolean;
 function eos(s: Tstream): boolean;
-function safeDiv(a, b: real; default: real = 0): real; overload;
-function safeDiv(a, b: int64; default: int64 = 0): int64; overload;
-function safeMod(a, b: int64; default: int64 = 0): int64;
+
 function smartsize(size: int64): string;
 function httpGet(url: string; from: int64 = 0; size: int64 = -1): string;
 function httpGetFile(url, filename: string; tryTimes: integer = 1;
@@ -111,9 +107,6 @@ function captureExec(DosApp: string; out output: string; out exitcode: cardinal;
 function openURL(url: string): boolean;
 function getRes(name: pchar; typ: string = 'TEXT'): string;
 function bmpToHico(bitmap: Tbitmap): hicon;
-function compare_(i1, i2: double): integer; overload;
-function compare_(i1, i2: int64): integer; overload;
-function compare_(i1, i2: integer): integer; overload;
 function msgDlg(msg: string; code: integer = 0; title: string = ''): integer;
 function if_(v: boolean; v1: string; v2: string = ''): string; overload; inline;
 function if_(v: boolean; v1: int64; v2: int64 = 0): int64; overload; inline;
@@ -170,11 +163,6 @@ function selectFileOrFolder(caption: string; var fileOrFolder: string): boolean;
 function isExtension(filename, ext: string): boolean;
 function getMtimeUTC(filename: string): Tdatetime;
 function getMtime(filename: string): Tdatetime;
-// registry
-function loadregistry(key, value: string; root: HKEY = 0): string;
-function saveregistry(key, value, data: string; root: HKEY = 0): boolean;
-function deleteRegistry(key, value: string; root: HKEY = 0): boolean; overload;
-function deleteRegistry(key: string; root: HKEY = 0): boolean; overload;
 // strings array
 function split(separator, s: string; nonQuoted: boolean = FALSE)
   : TstringDynArray;
@@ -204,22 +192,11 @@ function listToArray(l: Tstrings): TstringDynArray;
 function arrayToList(a: TstringDynArray; list: TstringList = NIL): TstringList;
 procedure sortArray(var a: TstringDynArray);
 // convert
-function boolToPtr(b: boolean): pointer;
-function strToCharset(s: string): TcharSet;
 function ipToInt(ip: string): dword;
-function rectToStr(r: Trect): string;
-function strToRect(s: string): Trect;
-function dt_(s: string): Tdatetime;
-function int_(s: string): integer;
 function str_(i: integer): string; overload;
 function str_(fa: TfileAttributes): string; overload;
 function str_(t: Tdatetime): string; overload;
 function str_(b: boolean): string; overload;
-function strToUInt(s: string): integer;
-function elapsedToStr(t: Tdatetime): string;
-function dateToHTTP(gmtTime: Tdatetime): string; overload;
-function dateToHTTP(filename: string): string; overload;
-function toSA(a: array of string): TstringDynArray;
 // this is just to have a way to typecast
 function stringToColorEx(s: string; default: Tcolor = clNone): Tcolor;
 // misc string
@@ -233,7 +210,6 @@ function TLV_NOT_EMPTY(t: integer; data: string): string;
 function popTLV(var s, data: string): integer;
 function getCRC(data: string): integer;
 function dotted(i: int64): string;
-function xtpl(src: string; table: array of string): string;
 function validUsername(s: string; acceptEmpty: boolean = FALSE): boolean;
 function anycharIn(chars, s: string): boolean; overload;
 function anycharIn(chars: TcharSet; s: string): boolean; overload;
@@ -257,12 +233,8 @@ function first(a: array of string): string; overload;
 function stripChars(s: string; cs: TcharSet; invert: boolean = FALSE): string;
 function isOnlyDigits(s: string): boolean;
 function strAt(s, ss: string; at: integer): boolean; inline;
-function substr(s: string; start: integer; upTo: integer = 0): string;
-  inline; overload;
-function substr(s: string; after: string): string; overload;
 function reduceSpaces(s: string; replacement: string = ' ';
   spaces: TcharSet = []): string;
-function replace(var s: string; ss: string; start, upTo: integer): integer;
 function countSubstr(ss: string; s: string): integer;
 function trim2(s: string; chars: TcharSet): string;
 procedure urlToStrings(s: string; sl: Tstrings);
@@ -280,9 +252,6 @@ function quoteIfAnyChar(badChars, s: string; quote: string = '"';
 function getKeyFromString(s: string; key: string; def: string = ''): string;
 function setKeyInString(s: string; key: string; val: string = ''): string;
 function getFirstChar(s: string): char;
-function escapeNL(s: string): string;
-function unescapeNL(s: string): string;
-function htmlEncode(s: string): string;
 procedure enforceNUL(var s: string);
 
 implementation
@@ -291,7 +260,10 @@ uses
   clipbrd, AnsiStringReplaceJOHIA32Unit13, JclNTFS, JclWin32,
   Rejetto.Parser,
   newuserpassDlg, winsock, OverbyteicsMD5,
-  HFS.Consts;
+  HFS.Consts,
+  Rejetto.Utils.Registry,
+  Rejetto.Utils.Conversion,
+  Rejetto.Consts;
 
 var
   ipToInt_cache: ThashedStringList;
@@ -306,10 +278,10 @@ var
   r: string;
   last: integer;
   re: TregExpr;
-  s: TfastStringAppend;
+  s: TFastStringAppend;
 begin
   re := TregExpr.create;
-  s := TfastStringAppend.create;
+  s := TFastStringAppend.create;
   try
     re.modifierI := TRUE;
     re.ModifierS := FALSE;
@@ -632,28 +604,6 @@ begin
   Move(t, result[1], 8 div SizeOf(char));
 end; // str_
 
-// converts from string[4] to integer
-function int_(s: string): integer;
-begin
-  result := Pinteger(@s[1])^
-end;
-
-// converts from string[8] to datetime
-function dt_(s: string): Tdatetime;
-begin
-  result := Pdatetime(@s[1])^
-end;
-
-function strToUInt(s: string): integer;
-begin
-  s := trim(s);
-  if s = '' then
-    result := 0
-  else
-    result := strToInt(s);
-  if result < 0 then
-    raise Exception.create('strToUInt: Signed value not accepted');
-end; // strToUInt
 
 function split(separator, s: string; nonQuoted: boolean = FALSE)
   : TstringDynArray;
@@ -859,49 +809,6 @@ begin
   FreeResource(h2);
   result := ansi;
 end; // getRes
-
-function compare_(i1, i2: int64): integer; overload;
-begin
-  if i1 < i2 then
-    result := -1
-  else if i1 > i2 then
-    result := 1
-  else
-    result := 0
-end; // compare_
-
-function compare_(i1, i2: integer): integer; overload;
-begin
-  if i1 < i2 then
-    result := -1
-  else if i1 > i2 then
-    result := 1
-  else
-    result := 0
-end; // compare_
-
-function compare_(i1, i2: double): integer; overload;
-begin
-  if i1 < i2 then
-    result := -1
-  else if i1 > i2 then
-    result := 1
-  else
-    result := 0
-end; // compare_
-
-function rectToStr(r: Trect): string;
-begin
-  result := format('%d,%d,%d,%d', [r.left, r.top, r.right, r.bottom])
-end;
-
-function strToRect(s: string): Trect;
-begin
-  result.left := strToInt(chop(',', s));
-  result.top := strToInt(chop(',', s));
-  result.right := strToInt(chop(',', s));
-  result.bottom := strToInt(chop(',', s));
-end; // strToRect
 
 function TLV(t: integer; data: string): string;
 begin
@@ -1189,92 +1096,6 @@ begin
   if result > '' then
     saveFile(result, data);
 end; // saveTempFile
-
-function loadregistry(key, value: string; root: HKEY = 0): string;
-begin
-  result := '';
-  with Tregistry.create do
-    try
-      try
-        if root > 0 then
-          rootKey := root;
-        if openKey(key, FALSE) then
-        begin
-          result := readString(value);
-          closeKey();
-        end;
-      finally
-        free
-      end
-    except
-    end
-end; // loadregistry
-
-function saveregistry(key, value, data: string; root: HKEY = 0): boolean;
-begin
-  result := FALSE;
-  with Tregistry.create do
-    try
-      if root > 0 then
-        rootKey := root;
-      try
-        createKey(key);
-        if openKey(key, FALSE) then
-        begin
-          WriteString(value, data);
-          closeKey;
-          result := TRUE;
-        end;
-      finally
-        free
-      end
-    except
-    end;
-end; // saveregistry
-
-function deleteRegistry(key, value: string; root: HKEY = 0): boolean; overload;
-var
-  reg: Tregistry;
-begin
-  reg := Tregistry.create;
-  if root > 0 then
-    reg.rootKey := root;
-  result := reg.openKey(key, FALSE) and reg.DeleteValue(value);
-  reg.free
-end; // deleteRegistry
-
-function deleteRegistry(key: string; root: HKEY = 0): boolean; overload;
-var
-  reg: Tregistry;
-  ss: TstringList;
-  i: integer;
-  deleteIt: boolean;
-begin
-  reg := Tregistry.create;
-  if root > 0 then
-    reg.rootKey := root;
-  result := reg.DeleteKey(key);
-  // delete also parent keys, if empty
-  ss := TstringList.create;
-  while key > '' do
-  begin
-    i := LastDelimiter('\', key);
-    if i = 0 then
-      break;
-    SetLength(key, i - 1);
-    if not reg.OpenKeyReadOnly(key) then
-      break;
-    reg.GetValueNames(ss);
-    deleteIt := (ss.count = 0) and not reg.HasSubKeys;
-    reg.closeKey;
-    if deleteIt then
-      reg.DeleteKey(key)
-    else
-      break;
-  end;
-  ss.free;
-  reg.free
-end; // deleteRegistry
 
 function resolveLnk(fn: string): string;
 Var
@@ -1780,15 +1601,6 @@ begin
   result := stringOfChar('0', digits - length(result)) + result;
 end; // int0
 
-function elapsedToStr(t: Tdatetime): string;
-var
-  sec: integer;
-begin
-  sec := trunc(t * SECONDS);
-  result := format('%d:%.2d:%.2d', [sec div 3600, sec div 60 mod 60,
-    sec mod 60]);
-end; // elapsedToStr
-
 // ensure f.accounts does not store non-existent users
 function cbPurgeVFSaccounts(f: Tfile; callingAfterChildren: boolean;
   par, par2: integer): TfileCallbackReturn;
@@ -2169,30 +1981,6 @@ begin
   end;
 end; // selectFile
 
-function safeMod(a, b: int64; default: int64 = 0): int64;
-begin
-  if b = 0 then
-    result := default
-  else
-    result := a mod b
-end;
-
-function safeDiv(a, b: int64; default: int64 = 0): int64; inline;
-begin
-  if b = 0 then
-    result := default
-  else
-    result := a div b
-end;
-
-function safeDiv(a, b: real; default: real = 0): real; inline;
-begin
-  if b = 0 then
-    result := default
-  else
-    result := a / b
-end;
-
 function isExtension(filename, ext: string): boolean;
 begin
   result := 0 = ansiCompareText(ext, extractFileExt(filename))
@@ -2207,25 +1995,14 @@ begin
     result := s
   else
     result := copy(s, 1, i - 1 + if_(included, length(ss)));
-end; // getTill
+end;
 
 function getTill(i: integer; s: string): string;
 begin
   if i < 0 then
     i := length(s) + i;
   result := copy(s, 1, i);
-end; // getTill
-
-function dateToHTTP(filename: string): string; overload;
-begin
-  result := dateToHTTP(getMtimeUTC(filename))
 end;
-
-function dateToHTTP(gmtTime: Tdatetime): string; overload;
-begin
-  result := formatDateTime('"' + DOW2STR[dayOfWeek(gmtTime)] + '," dd "' +
-    MONTH2STR[monthOf(gmtTime)] + '" yyyy hh":"nn":"ss "GMT"', gmtTime);
-end; // dateToHTTP
 
 function getEtag(filename: string): string;
 var
@@ -2693,60 +2470,6 @@ begin
   FreeMem(temp, count);
 end; // swapMem
 
-function replace(var s: string; ss: string; start, upTo: integer): integer;
-var
-  common, oldL, surplus: integer;
-begin
-  oldL := upTo - start + 1;
-  common := min(length(ss), oldL);
-  Move(ss[1], s[start], common * SizeOf(char));
-  surplus := oldL - length(ss);
-  if surplus > 0 then
-    delete(s, start + length(ss), surplus)
-  else
-    insert(copy(ss, common + 1, -surplus), s, start + common);
-  result := -surplus;
-end; // replace
-
-function substr(s: string; start: integer; upTo: integer = 0): string; inline;
-var
-  l: integer;
-begin
-  l := length(s);
-  if start = 0 then
-    inc(start)
-  else if start < 0 then
-    start := l + start + 1;
-  if upTo <= 0 then
-    upTo := l + upTo;
-  result := copy(s, start, upTo - start + 1)
-end; // substr
-
-function substr(s: string; after: string): string;
-var
-  i: integer;
-begin
-  i := pos(after, s);
-  if i = 0 then
-    result := ''
-  else
-    result := copy(s, i + length(after), MAXINT)
-end; // substr
-
-function xtpl(src: string; table: array of string): string;
-var
-  i: integer;
-begin
-  i := 0;
-  while i < length(table) do
-  begin
-    src := stringReplace(src, table[i], table[i + 1],
-      [rfReplaceAll, rfIgnoreCase]);
-    inc(i, 2);
-  end;
-  result := src;
-end; // xtpl
-
 function clearAndReturn(var v: string): string;
 begin
   result := v;
@@ -3109,20 +2832,6 @@ begin
   result := a;
 end; // onlyExistentAccounts
 
-function strToCharset(s: string): TcharSet;
-var
-  i: integer;
-begin
-  result := [];
-  for i := 1 to length(s) do
-    include(result, ansichar(s[i]));
-end; // strToCharset
-
-function boolToPtr(b: boolean): pointer;
-begin
-  result := if_(b, PTR1, NIL)
-end;
-
 // recognize strings containing pieces (separated by backslash) made of only dots
 function dirCrossing(s: string): boolean;
 begin
@@ -3193,13 +2902,6 @@ begin
     s := quote + s + unquote;
   result := s;
 end; // quoteIfAnyChar
-
-function toSA(a: array of string): TstringDynArray;
-// this is just to have a way to typecast
-begin
-  result := NIL;
-  addArray(result, a);
-end; // toSA
 
 // this is feasible for spot and low performance needs
 function getKeyFromString(s: string; key: string; def: string = ''): string;
@@ -3478,122 +3180,33 @@ begin
   result := getAccount(user, evenGroups) <> NIL
 end;
 
-function newlineType(s: string): Tnewline;
-var
-  d, a, l: integer;
-begin
-  d := pos(#13, s);
-  a := pos(#10, s);
-  if d = 0 then
-    if a = 0 then
-      result := NL_UNK
-    else
-      result := NL_A
-  else if a = 0 then
-    result := NL_D
-  else if a = 1 then
-    result := NL_MIXED
-  else
-  begin
-    result := NL_MIXED;
-    // search for an unpaired #10
-    while (a > 0) and (s[a - 1] = #13) do
-      a := posEx(#10, s, a + 1);
-    if a > 0 then
-      exit;
-    // search for an unpaired #13
-    l := length(s);
-    while (d < l) and (s[d + 1] = #10) do
-      d := posEx(#13, s, d + 1);
-    if d > 0 then
-      exit;
-    // ok, all is paired
-    result := NL_DA;
-  end;
-end; // newlineType
-
-function escapeNL(s: string): string;
-begin
-  s := replaceStr(s, '\', '\\');
-  case newlineType(s) of
-    NL_D:
-      s := replaceStr(s, #13, '\n');
-    NL_A:
-      s := replaceStr(s, #10, '\n');
-    NL_DA:
-      s := replaceStr(s, #13#10, '\n');
-    NL_MIXED:
-      s := replaceStr(replaceStr(replaceStr(s, #13#10, '\n'), #13, '\n'), #10,
-        '\n'); // bad case, we do our best
-  end;
-  result := s;
-end; // escapeNL
-
-function unescapeNL(s: string): string;
-var
-  o, n: integer;
-begin
-  o := 1;
-  while o <= length(s) do
-  begin
-    o := posEx('\n', s, o);
-    if o = 0 then
-      break;
-    n := 1;
-    while (o - n > 0) and (s[o - n] = '\') do
-      inc(n);
-    if odd(n) then
-    begin
-      s[o] := #13;
-      s[o + 1] := #10;
-    end;
-    inc(o, 2);
-  end;
-  result := xtpl(s, ['\\', '\']);
-end; // unescapeNL
-
-function htmlEncode(s: string): string;
-var
-  i: integer;
-  p: string;
-  fs: TfastStringAppend;
-begin
-  fs := TfastStringAppend.create;
-  try
-    for i := 1 to length(s) do
-    begin
-      case s[i] of
-        '&': p := '&amp;';
-        '<': p := '&lt;';
-        '>': p := '&gt;';
-        '"': p := '&quot;';
-        '''': p := '&#039;';
-      else
-        p := s[i];
-      end;
-      fs.append(p);
-    end;
-    result := fs.get();
-  finally
-    fs.free
-  end;
-end; // htmlEncode
-
 procedure enforceNUL(var s: string);
 begin
   if s > '' then
     SetLength(s, StrLen(@s[1]))
-end; // enforceNUL
+end;
 
-INITIALIZATION
-  FormatSettings.DecimalSeparator := '.'; // standardize
+procedure DetectWindowsVersion;
+begin
+  case byte(getversion()) of
+    1..4: winVersion := WV_LOWER;
+    5: winVersion := WV_2000;
+    6:
+      case hibyte(getversion()) of
+        0:
+          winVersion := WV_VISTA;
+        1:
+          winVersion := WV_SEVEN;
+      else
+        winVersion := WV_HIGHER;
+      end;
+    7..15:
+      winVersion := WV_HIGHER;
+  end;
+end;
 
-  ipToInt_cache := ThashedStringList.create;
-  ipToInt_cache.Sorted := TRUE;
-  ipToInt_cache.Duplicates := dupIgnore;
-  inputQueryLongdlg := TlonginputFrm.create(NIL); // mainFrm is NIL at this time
-
-  // calculate GMToffset
+procedure CalculateGMTOffset;
+begin
   GetTimeZoneInformation(TZinfo);
   case GetTimeZoneInformation(TZinfo) of
     TIME_ZONE_ID_STANDARD:
@@ -3604,25 +3217,18 @@ INITIALIZATION
     GMToffset := 0;
   end;
   GMToffset := -(TZinfo.bias + GMToffset);
+end;
 
-  // windows version detect
-  case byte(getversion()) of
-    1 .. 4:
-      winVersion := WV_LOWER;
-    5:
-      winVersion := WV_2000;
-    6:
-      case hibyte(getversion()) of
-        0:
-          winVersion := WV_VISTA;
-        1:
-          winVersion := WV_SEVEN;
-      else
-        winVersion := WV_HIGHER;
-      end;
-    7 .. 15:
-      winVersion := WV_HIGHER;
-  end;
+INITIALIZATION
+  FormatSettings.DecimalSeparator := '.'; // standardize
+
+  ipToInt_cache := ThashedStringList.create;
+  ipToInt_cache.Sorted := TRUE;
+  ipToInt_cache.Duplicates := dupIgnore;
+  inputQueryLongdlg := TlonginputFrm.create(NIL); // mainFrm is NIL at this time
+
+  CalculateGMTOffset;
+  DetectWindowsVersion;
 
   trayMsg := '%ip%' + trayNL + 'Uptime: %uptime%' + trayNL +
     'Downloads: %downloads%';

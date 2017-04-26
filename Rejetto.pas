@@ -27,16 +27,6 @@ uses
   Rejetto.HTTPServer;
 
 type
-  TfastStringAppend = class
-  protected
-    buff: string;
-    n: integer;
-  public
-    function length(): integer;
-    function reset(): string;
-    function get(): string;
-    function append(s: string): integer;
-  end;
 
   PcachedIcon = ^TcachedIcon;
 
@@ -165,7 +155,9 @@ implementation
 uses
   System.StrUtils, System.SysUtils, System.Math,
   windows, dateUtils, {forms}
-  Rejetto.Utils, main;
+  Rejetto.Utils,
+  Rejetto.Utils.Text,
+  main;
 
 constructor TperIp.create();
 begin
@@ -312,39 +304,6 @@ begin
       inc(m);
     end;
 end; // purge
-
-/// ///////// TfastStringAppend
-
-function TfastStringAppend.length(): integer;
-begin
-  result := n
-end;
-
-function TfastStringAppend.get(): string;
-begin
-  setLength(buff, n);
-  result := buff;
-end; // get
-
-function TfastStringAppend.reset(): string;
-begin
-  result := get();
-  buff := '';
-  n := 0;
-end; // reset
-
-function TfastStringAppend.append(s: string): integer;
-var
-  ls, lb: integer;
-begin
-  ls := System.length(s);
-  lb := System.length(buff);
-  if n + ls > lb then
-    setLength(buff, lb + ls + 20000);
-  move(s[1], buff[n + 1], ls);
-  inc(n, ls);
-  result := n;
-end; // append
 
 /// ///////// TarchiveStream
 
