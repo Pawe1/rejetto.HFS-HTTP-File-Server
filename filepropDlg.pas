@@ -84,7 +84,8 @@ uses
   System.Math,
   Rejetto.Utils, Rejetto.HTTPServer,
   optionsDlg,
-  HFS.Consts;
+  HFS.Consts,
+  HFS.Accounts;
 
 {$R *.dfm}
 
@@ -491,7 +492,7 @@ end;
 
 procedure TfilepropFrm.newaccBtnClick(Sender: TObject);
 var
-  acc: Paccount;
+  acc: PAccount;
 begin
   acc := createAccountOnTheFly();
   if acc = NIL then
@@ -543,7 +544,7 @@ end;
 procedure TfilepropFrm.updateAccountsBox;
 var
   i: integer;
-  a: Paccount;
+  a: PAccount;
 begin
   accountsBox.clear();
   for i := 0 to length(accounts) - 1 do

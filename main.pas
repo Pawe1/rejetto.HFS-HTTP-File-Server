@@ -41,7 +41,8 @@ uses
 
   // rejetto libs
   Rejetto.HTTPServer, traylib, Rejetto.Mono, progFrmLib, Rejetto,
-  HFS.Template, HFS.Consts;
+  HFS.Template, HFS.Consts,
+  HFS.Accounts;
 
 type
   Pboolean = ^boolean;
@@ -161,25 +162,17 @@ type
     function isLocked(): boolean;
   end; // Tfile
 
-  Paccount = ^Taccount;
-	Taccount = record // user/pass profile
-    user, pwd, redir, notes: string;
-    wasUser: string; // used in user renaming panel
-    enabled, noLimits, group: boolean;
-    link: TStringDynArray;
-  end;
-  Taccounts = array of Taccount;
-
   TfilterMethod = function(self:Tobject):boolean;
 
   Thelp = (HLP_NONE, HLP_TPL);
 
-  TdownloadingWhat = ( DW_UNK, DW_FILE, DW_FOLDERPAGE, DW_ICON, DW_ERROR, DW_ARCHIVE );
+  TdownloadingWhat = (DW_UNK, DW_FILE, DW_FOLDERPAGE, DW_ICON, DW_ERROR, DW_ARCHIVE);
 
-  TpreReply =  (PR_NONE, PR_BAN, PR_OVERLOAD);
+  TPreReply = (PR_NONE, PR_BAN, PR_OVERLOAD);
 
   TuploadResult = record
-    fn, reason: string;
+    fn: string;
+    reason: string;
     speed: integer;
     size: int64;
   end;
@@ -216,7 +209,7 @@ type
     { or before, during the request as we get a file (HE_POST_FILE). }
     agent: string;
     conn: ThttpConn;
-    account: Paccount;
+    account: PAccount;
     usr, pwd: string;
     acceptedCredentials: boolean;
     limiter: TspeedLimiter;
@@ -227,7 +220,7 @@ type
     error: string;         // error details
     eta: TETA;
     downloadingWhat: TdownloadingWhat;
-    preReply: TpreReply;
+    preReply: TPreReply;
     banReason: string;
     lastBytesSent, lastBytesGot: int64; // used for print to log only the recent amount of bytes
     lastActivityTime, fileXferStart: Tdatetime;
@@ -248,12 +241,12 @@ type
     { the size of this record, while it is NIL for most connections }
     f: ^file; // uploading file handle
 
-    property lastFile: Tfile read FlastFile write setLastFile;
     constructor create(conn: ThttpConn);
     destructor Destroy; override;
     function sessionGet(k: string): string;
     procedure sessionSet(k, v: string);
     procedure disconnect(reason: string);
+    property lastFile: Tfile read FlastFile write setLastFile;
   end; // Tconndata
 
   Tautosave = record
@@ -923,7 +916,7 @@ var
   banlist: array of TBanRecord;
   trayMsg: string; // template for the tray hint
   customIPservice: string;
-  accounts: Taccounts;
+  accounts: TAccounts;
   tplFilename: string; // when empty, we are using the default tpl
   trayNL: string = #13;
   mimeTypes, address2name, IPservices: TStringDynArray;
@@ -958,8 +951,8 @@ function loadCfg(var ini, tpl: string): boolean;
 function idx_img2ico(i: integer): integer;
 function idx_ico2img(i: integer): integer;
 function idx_label(i: integer): string;
-function findEnabledLinkedAccount(account: Paccount; over: TStringDynArray;
-  isSorted: boolean = FALSE): Paccount;
+function findEnabledLinkedAccount(account: PAccount; over: TStringDynArray;
+  isSorted: boolean = FALSE): PAccount;
 function getImageIndexForFile(fn: string): integer;
 function conn2data(i: integer): TconnData; inline; overload;
 function uptimestr(): string;
@@ -1163,9 +1156,9 @@ begin
 end; // isFingerprintFile
 
 // this function follows account linking until it finds and returns the account matching the stopCase
-function accountRecursion(account: Paccount;
+function accountRecursion(account: PAccount;
   stopCase: TaccountRecursionStopCase; data: pointer = NIL;
-  data2: pointer = NIL): Paccount;
+  data2: pointer = NIL): PAccount;
 
   function shouldStop(): boolean;
   begin
@@ -1211,13 +1204,13 @@ begin
   end;
 end; // accountRecursion
 
-function findEnabledLinkedAccount(account: Paccount; over: TstringDynArray;
-  isSorted: boolean = FALSE): Paccount;
+function findEnabledLinkedAccount(account: PAccount; over: TstringDynArray;
+  isSorted: boolean = FALSE): PAccount;
 begin
   result := accountRecursion(account, ARSC_IN_SET, over, boolToPtr(isSorted))
 end;
 
-function noLimitsFor(account: Paccount): boolean;
+function noLimitsFor(account: PAccount): boolean;
 begin
   account := accountRecursion(account, ARSC_NOLIMITS);
   result := assigned(account) and account.noLimits;
@@ -3166,7 +3159,7 @@ end; // accessFor
 
 function Tfile.accessFor(username, password: string): boolean;
 var
-  a: Paccount;
+  a: PAccount;
   f: Tfile;
   list: TStringDynArray;
 begin
@@ -5444,7 +5437,7 @@ var
 
     function getAccountRedirect(): string;
     var
-      acc: Paccount;
+      acc: PAccount;
     begin
       result := '';
       acc := accountRecursion(data.account, ARSC_REDIR);
@@ -6803,7 +6796,7 @@ type
   function accountsToStr(): string;
   var
     i: integer;
-    a: Paccount;
+    a: PAccount;
 
     function prop(name, value: string; encoding: Tencoding = E_PLAIN): string;
     begin
@@ -7121,7 +7114,7 @@ var
   var
     s, t, p: string;
     i: integer;
-    a: Paccount;
+    a: PAccount;
   begin
     accounts := NIL;
     while l > '' do
@@ -7732,7 +7725,7 @@ begin
   trayiconforeachdownload1.visible := trayfordownloadChk.checked and fromTray;
 end;
 
-function expandAccountByLink(a: Paccount; noGroups: boolean = TRUE)
+function expandAccountByLink(a: PAccount; noGroups: boolean = TRUE)
   : TStringDynArray;
 var
   i: integer;
@@ -8090,7 +8083,7 @@ var
   fn: string;
 begin
   result := FALSE;
-  if not mono.working then
+  if not mono.Working then
   begin
     msgDlg(MSG_LIMITED, MB_ICONWARNING);
     openURL(url);
@@ -9485,7 +9478,7 @@ begin
   deleteFile(cfgPath + CFG_FILE);
   deleteRegistry(CFG_KEY);
   deleteRegistry(CFG_KEY, HKEY_LOCAL_MACHINE);
-end; // deleteCFG
+end;
 
 procedure Tmainfrm.Clearoptionsandquit1click(Sender: Tobject);
 begin
@@ -11371,7 +11364,7 @@ end;
 
 procedure Tmainfrm.copyURLwithPasswordMenuClick(Sender: Tobject);
 var
-  a: Paccount;
+  a: PAccount;
   user, pwd: string;
   f: Tfile;
 begin
@@ -11766,7 +11759,7 @@ end;
 
 function checkMultiInstance(): boolean;
 begin
-  result := not mono.working;
+  result := not mono.Working;
   if result then
     msgDlg(MSG_SINGLE_INSTANCE, MB_ICONERROR);
 end; // checkMultiInstance
@@ -11997,7 +11990,7 @@ end;
 
 procedure Tmainfrm.resetOptions1Click(Sender: Tobject);
 var
-  keepAccounts: Taccounts;
+  keepAccounts: TAccounts;
 begin
   (Sender as TMenuItem).enabled := FALSE;
   restoreCfgBtn.show();
@@ -12957,7 +12950,7 @@ begin
     setStatusBarText('Clean start');
 
   // CTRL avoids the only1instance setting
-  if not holdingKey(VK_CONTROL) and only1instanceChk.checked and not mono.master
+  if not holdingKey(VK_CONTROL) and only1instanceChk.checked and not mono.Master
   then
   begin
     result := FALSE;

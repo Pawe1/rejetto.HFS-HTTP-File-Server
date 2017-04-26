@@ -34,7 +34,7 @@ uses
   regexpr,
   Rejetto, Rejetto.HTTPServer,
   main, longinputDlg,
-  HFS.Template;
+  HFS.Template, HFS.Accounts;
 
 const
   ILLEGAL_FILE_CHARS = [#0..#31,'/','\',':','?','*','"','<','>','|'];
@@ -56,7 +56,7 @@ type
 
 procedure doNothing(); inline; // useful for readability
 function accountExists(user: string; evenGroups: boolean = FALSE): boolean;
-function getAccount(user: string; evenGroups: boolean = FALSE): Paccount;
+function getAccount(user: string; evenGroups: boolean = FALSE): PAccount;
 function nodeToFile(n: TtreeNode): Tfile;
 procedure fixFontFor(frm: Tform);
 function hostFromURL(s: string): string;
@@ -68,10 +68,10 @@ function filetimeToDatetime(ft: TFileTime): Tdatetime;
 function localToGMT(d: Tdatetime): Tdatetime;
 function onlyExistentAccounts(a: TstringDynArray): TstringDynArray;
 procedure onlyForExperts(controls: array of Tcontrol);
-function createAccountOnTheFly(): Paccount;
+function createAccountOnTheFly(): PAccount;
 function newMenuSeparator(lbl: string = ''): Tmenuitem;
 function accountIcon(isEnabled, isGroup: boolean): integer; overload;
-function accountIcon(a: Paccount): integer; overload;
+function accountIcon(a: PAccount): integer; overload;
 function evalFormula(s: string): real;
 function boolOnce(var b: boolean): boolean;
 procedure drawCentered(cnv: Tcanvas; r: Trect; text: string);
@@ -1824,7 +1824,7 @@ procedure purgeVFSaccounts();
 var
   usernames, renamings: ThashedStringList;
   i: integer;
-  a: Paccount;
+  a: PAccount;
 begin
   usernames := ThashedStringList.create;
   renamings := ThashedStringList.create;
@@ -3028,7 +3028,7 @@ begin
   result := if_(isGroup, if_(isEnabled, 29, 40), if_(isEnabled, 27, 28))
 end;
 
-function accountIcon(a: Paccount): integer; overload;
+function accountIcon(a: PAccount): integer; overload;
 begin
   result := accountIcon(a.enabled, a.group)
 end;
@@ -3053,9 +3053,9 @@ begin
     list.add(a[i]);
 end; // arrayToList
 
-function createAccountOnTheFly(): Paccount;
+function createAccountOnTheFly(): PAccount;
 var
-  acc: Taccount;
+  acc: TAccount;
   i: integer;
 begin
   result := NIL;
@@ -3459,7 +3459,7 @@ begin
     result := Tfile(n.data)
 end;
 
-function getAccount(user: string; evenGroups: boolean = FALSE): Paccount;
+function getAccount(user: string; evenGroups: boolean = FALSE): PAccount;
 var
   i: integer;
 begin
@@ -3563,16 +3563,11 @@ begin
     for i := 1 to length(s) do
     begin
       case s[i] of
-        '&':
-          p := '&amp;';
-        '<':
-          p := '&lt;';
-        '>':
-          p := '&gt;';
-        '"':
-          p := '&quot;';
-        '''':
-          p := '&#039;';
+        '&': p := '&amp;';
+        '<': p := '&lt;';
+        '>': p := '&gt;';
+        '"': p := '&quot;';
+        '''': p := '&#039;';
       else
         p := s[i];
       end;

@@ -61,7 +61,8 @@ uses
   Rejetto.Utils, Rejetto.Parser, Rejetto.HTTPServer,
   trayLib,
   comctrls, math, controls, forms, clipbrd, MMsystem,
-  HFS.Consts;
+  HFS.Consts,
+  HFS.Accounts;
 
 const
   HEADER = '<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><style>'
@@ -106,7 +107,7 @@ begin
   deleteFile(MACROS_LOG_FILE);
 end; // resetLog
 
-function expandLinkedAccounts(account: Paccount): TStringDynArray;
+function expandLinkedAccounts(account: PAccount): TStringDynArray;
 var
   i: integer;
 begin
@@ -1383,7 +1384,7 @@ var
 
   procedure setAccount();
   var
-    a: Paccount;
+    a: PAccount;
     s: string;
   begin
     result := '';
@@ -1449,7 +1450,7 @@ var
 
   procedure getterAccount();
   var
-    a: Paccount;
+    a: PAccount;
     s: string;
   begin
     result := '';
@@ -1486,7 +1487,7 @@ var
 
   procedure newAccount();
   var
-    a: Taccount;
+    a: TAccount;
   begin
     result := '';
     if accountExists(p, true) then
@@ -1647,7 +1648,7 @@ var
 
   procedure memberOf();
   var
-    a: Paccount;
+    a: PAccount;
     s: string;
   begin
     result := '';

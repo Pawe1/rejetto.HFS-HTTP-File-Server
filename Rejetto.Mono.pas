@@ -37,12 +37,12 @@ type
     function hook(var msg: TMessage): boolean;
   public
     onSlaveParams: procedure(params: string);
-    function init(id: string): boolean; // FALSE on error
-    procedure sendParams();
+    function Init(id: string): boolean; // FALSE on error
+    procedure SendParams();
 
-    property error: string read FError;
-    property master: boolean read FMaster;
-    property working: boolean read FWorking;
+    property Error: string read FError;
+    property Master: boolean read FMaster;
+    property Working: boolean read FWorking;
   end;
 
 var
@@ -64,7 +64,7 @@ end;
 
 function TMono.hook(var msg: TMessage): boolean;
 begin
-  result := master and (msg.msg = FMsgID) and (msg.wparam = MSG_PARAMS);
+  result := Master and (msg.msg = FMsgID) and (msg.wparam = MSG_PARAMS);
   if not result or not assigned(onSlaveParams) then
     exit;
   msg.result := 1;
@@ -72,7 +72,7 @@ begin
   GlobalDeleteAtom(msg.lparam);
 end;
 
-function TMono.init(id: string): boolean;
+function TMono.Init(id: string): boolean;
 begin
   result := FALSE;
   FMsgID := registerWindowMessage(pchar(id));
@@ -91,7 +91,7 @@ begin
   result := True;
 end;
 
-procedure TMono.sendParams();
+procedure TMono.SendParams();
 var
   s: string;
   i: integer;

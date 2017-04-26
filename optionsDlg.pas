@@ -165,11 +165,12 @@ uses
   System.Types, System.Math,
   main, CheckLst,
   Rejetto.Utils, Rejetto.HTTPServer, strUtils, Rejetto, listSelectDlg,
-  HFS.Consts;
+  HFS.Consts,
+  HFS.Accounts;
 
 var
   lastAccountSelected: integer = -1; // stores the previous selection index
-  tempAccounts: Taccounts; // the GUI part can't store the temp data
+  tempAccounts: TAccounts; // the GUI part can't store the temp data
   tempIcons: array of integer;
   renamingAccount: boolean;
 
@@ -496,7 +497,7 @@ var
   props: TstringDynArray;
   act: TfileAction;
   S: string;
-  a, other: Paccount;
+  a, other: PAccount;
 begin
   accountAccessBox.items.Clear();
   if lastAccountSelected < 0 then
@@ -546,7 +547,7 @@ end;
 
 procedure ToptionsFrm.loadAccountProperties();
 var
-  a: Paccount;
+  a: PAccount;
   b, bakWrap: Boolean;
   i: Integer;
 begin
@@ -585,7 +586,7 @@ const
   MSG_CHARS = 'The characters below are not allowed' + #13'/\:?*"<>|;&&@';
   MSG_PWD = 'Invalid password.'#13 + MSG_CHARS;
 var
-  a: Paccount;
+  a: PAccount;
 begin
   result := TRUE;
   if lastAccountSelected < 0 then
@@ -633,7 +634,7 @@ end;
 procedure ToptionsFrm.addaccountBtnClick(Sender: TObject);
 var
   i: Integer;
-  a: Taccount;
+  a: TAccount;
 begin
   a.user := getUniqueName('new user', userExists);
   a.pwd := '';
@@ -713,7 +714,7 @@ end;
 
 procedure ToptionsFrm.accountsBoxData(Sender: TObject; Item: TListItem);
 var
-  a: Paccount;
+  a: PAccount;
 begin
   if (Item = NIL) or not inRange(Item.Index, 0, length(tempAccounts) - 1) then
     exit;

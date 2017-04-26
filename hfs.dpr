@@ -49,7 +49,8 @@ uses
   runscriptDlg in 'runscriptDlg.pas' {runScriptFrm},
   Rejetto.Script in 'Rejetto.Script.pas',
   HFS.Template in 'HFS.Template.pas',
-  HFS.Consts in 'HFS.Consts.pas';
+  HFS.Consts in 'HFS.Consts.pas',
+  HFS.Accounts in 'HFS.Accounts.pas';
 
 {$R *.res}
 
@@ -85,14 +86,14 @@ begin
   mono.onSlaveParams := processSlaveParams;
   if not holdingKey(VK_CONTROL) then
   begin
-    if not mono.init('HttpFileServer') then
+    if not mono.Init('HttpFileServer') then
     begin
-      msgDlg('monoLib error: ' + mono.error, MB_ICONERROR + MB_OK);
+      msgDlg('monoLib error: ' + mono.Error, MB_ICONERROR + MB_OK);
       halt(1);
     end;
-    if not mono.master and isSingleInstance() then
+    if not mono.Master and isSingleInstance() then
     begin
-      mono.sendParams();
+      mono.SendParams();
       exit;
     end;
   end;
